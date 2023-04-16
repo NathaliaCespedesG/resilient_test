@@ -1,0 +1,36 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.7, 3.8]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Build
+        run: |
+          ./scripts/build.sh
+        env:
+          CI: 1
+      - name: ReportGenerator
+        uses: danielpalme/ReportGenerator-GitHub-Action@4.8.2
+        if: ${{ matrix.python-version == '3.8' }}
+        with:
+          reports: './build/coverage.xml'
+          targetdir: 'build'
+          reporttypes: 'lcov'
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        if: ${{ matrix.python-version == '3.8' }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: ./build/lcov.info
