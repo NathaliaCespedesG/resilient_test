@@ -1,6 +1,6 @@
 from oauthlib.oauth2.rfc6749.errors import MissingTokenError
 from withings_api import WithingsAuth, WithingsApi, AuthScope
-from withings_api.common import get_measure_value, MeasureType, CredentialsType, MeasureGetActivityResponse
+from withings_api.common import GetSleepField, GetSleepSummaryField, get_measure_value, MeasureType, CredentialsType, MeasureGetActivityResponse, AuthFailedException
 import arrow
 import time
 
@@ -86,12 +86,20 @@ class Devices_OAuth2flow(object):
 
 		if path.isfile(self.CREDENTIALS_FILE):
 			print("Attempting to load credentials from:", self.CREDENTIALS_FILE)
-			self.api = WithingsApi(self.load_credentials())
+			self.api = WithingsApi(self.load_credentials(), refresh_cb = self.save_credentials)
 			try:
 				self.api.user_get_device()
 			except MissingTokenError:
 				os.remove(self.CREDENTIALS_FILE)
 				print("Credentials in file are expired. Re-starting auth procedure...")
+			except AuthFailedException:
+				print('Im here AuthFailedException')
+
+				#m = self.load_credentials() 
+				#auth_token = m.refresh_token
+
+
+				
 
 		if not path.isfile(self.CREDENTIALS_FILE):
 
@@ -113,12 +121,14 @@ class Devices_OAuth2flow(object):
 			self.auth_code: Final = redirected_uri_params["code"]
 			print("Getting credentials with auth code", self.auth_code)
 			self.save_credentials(self.auth.get_credentials(self.auth_code))
-			self.api = WithingsApi(self.load_credentials())
-                
-                orig_access_token = api.get_credentials().access_token
-                print("Refreshing token...")
-                api.refresh_token()
-                #assert orig_access_token != api.get_credentials().access_token
+			self.api = WithingsApi(self.load_credentials(), refresh_cb = self.save_credentials)
+
+		orig_access_token = self.api.get_credentials().access_token
+		print("Refreshing token...")
+		self.api.refresh_token()
+		print("After Refreshing")
+		print( 'UserID', self.api.get_credentials().userid )
+		#assert orig_access_token != api.get_credentials().access_token
 
 			
 	
@@ -172,10 +182,18 @@ class Devices_OAuth2flow(object):
 		print(type(meas_intraactivity))
 		#self.meas_intraactivity.
 
+
+	def sleep(self):
+
+		get_sleep = self.api.sleep_get(data_fields=GetSleepField,startdate=arrow.utcnow().shift(days=-2), enddate=arrow.utcnow(),)
+		print('from sleep', get_sleep)
+
+
 	def raw_data_acquisition(self):
 
 		get_raw = self.api.get_raw_data(hash_deviceid = self.hash_deviceid, rawdata_type = 1, startdate = arrow.utcnow().shift(days=-20), enddate = arrow.utcnow().shift(days=-1))
 		#print(get_raw)
+
 
 
 
@@ -214,4 +232,5 @@ M.get_user_credentials()
 M.devices_info()
 hr = M.activity_data(type_activity = 'HR' )
 print(hr)
+#M.sleep()
 #M.raw_data_acquisition()
