@@ -1,4 +1,4 @@
-<h1> WITHINGS IMPEMENTATION </h1>
+<h1> WITHINGS IMPLEMENTATION </h1>
 
 This respository implements the withings-api (from https://github.com/vangorra/python_withings_api) to access user data. Please keep in mind that for the specific solution, the original library have been modified. Follow the next step to install the modified version. 
 
