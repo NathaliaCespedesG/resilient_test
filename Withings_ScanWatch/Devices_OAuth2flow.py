@@ -114,8 +114,15 @@ class Devices_OAuth2flow(object):
 			print("Getting credentials with auth code", self.auth_code)
 			self.save_credentials(self.auth.get_credentials(self.auth_code))
 			self.api = WithingsApi(self.load_credentials())
+                
+                orig_access_token = api.get_credentials().access_token
+                print("Refreshing token...")
+                api.refresh_token()
+                #assert orig_access_token != api.get_credentials().access_token
+
 			
 	
+
 
 	def devices_info(self):
 
