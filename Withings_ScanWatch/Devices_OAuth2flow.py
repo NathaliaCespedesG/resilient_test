@@ -1,8 +1,10 @@
+import sys
 from oauthlib.oauth2.rfc6749.errors import MissingTokenError
 from withings_api import WithingsAuth, WithingsApi, AuthScope
 from withings_api.common import GetSleepField, GetSleepSummaryField, get_measure_value, MeasureType, CredentialsType, MeasureGetActivityResponse, AuthFailedException
 import arrow
 import time
+
 
 #To save users credential and update refresh the token
 
@@ -13,6 +15,11 @@ import pickle
 from typing import cast
 from urllib import parse
 from typing_extensions import Final
+
+# Database libraries to save Users' data 
+
+import db.database as database
+
 
 
 
@@ -37,6 +44,12 @@ class Devices_OAuth2flow(object):
 					   costumer_secret: None, 
 					   callback_uri: None):
 
+
+		# Creating the database objective
+
+		self.database = database.General()
+
+
 		# Inputs: client_id, consumer_secret, callback_uri
 		# Take into account that this inputs will be created after you
 		# create your developer account
@@ -50,6 +63,13 @@ class Devices_OAuth2flow(object):
 		# used to acquire the data fromo Withings server 
 		self.CREDENTIALS_FILE: Final = path.abspath(
 			path.join(path.dirname(path.abspath(__file__)), "../.credentials"))
+
+		#Create an ID for each user
+
+		id_user = input('Please provide the id for the user: ')
+
+		self.database.register(user = id_user)
+
 
 
 
@@ -141,9 +161,15 @@ class Devices_OAuth2flow(object):
 		# are used in other services to activate functions.
 
 		devices = self.api.user_get_device()
-		#print('Devices',devices)
-		self.hash_deviceid = devices['devices']
-		self.hash_deviceid = self.hash_deviceid[0]['hash_deviceid']
+		devices = devices['devices']
+		type_d = [i['type'] for i in devices]
+		hash_deviceid = [i['hash_deviceid'] for i in devices]
+
+		devices_id = dict(zip(type_d, hash_deviceid)) 
+
+		self.database.SM.load_SensorInfo(sensor = devices_id)
+
+		print('Devices', devices_id)
 
 
 	def create_nonce(self):
@@ -163,13 +189,30 @@ class Devices_OAuth2flow(object):
 
 		activity_data = {}
 
-		self.meas_activity  =  self.api.measure_get_activity(startdateymd = arrow.utcnow().shift(days=-10), enddateymd = arrow.utcnow())
-		#print('ACTIVITY', self.meas_activity)
-		print('Meas activity', self.meas_activity.activities[0].hr_average)
+		self.meas_activity  =  self.api.measure_get_activity(startdateymd = arrow.utcnow().shift(days=-25), enddateymd = arrow.utcnow())
+		print('ACTIVITY', self.meas_activity)
+		#print('Meas activity', self.meas_activity.activities[0].hr_average)
 		activity_data['heart_rate'] = [x.hr_average for x in self.meas_activity.activities]
 		activity_data['date'] = [arrow.get(x.date) for x in self.meas_activity.activities]
-		print('This is the HR', activity_data)
-		print(type(self.meas_activity.activities[:]))
+
+		heart_rate = dict(zip(activity_data['date'], activity_data['heart_rate'])) 
+		ordered_data = dict(sorted(heart_rate.items(), reverse=True))
+		#print(ordered_data)
+		HR = ordered_data.values()
+		print('HOLAAAAAAAAAAAAAA',HR)
+
+		self.database.SM.load_ScanWatch(data = HR)
+
+		print(heart_rate)
+		print(ordered_data)
+
+		#print('This is the HR', activity_data)
+		#print(type(self.meas_activity.activities[:]))
+
+		self.meas2 = self.api.measure_get_meas(startdate=arrow.utcnow().shift(days=-20), enddate=arrow.utcnow(), lastupdate = None)
+		#print('From scale', self.meas2)
+
+
 
 
 		#if type_activity == 'HR':
@@ -177,29 +220,48 @@ class Devices_OAuth2flow(object):
 
 	def intra_activitydata(self):
 		
-		self.meas_intraactivity = api.measure_get_intraactivity(startdate = arrow.utcnow().shift(hours=-24), enddate  = arrow.utcnow())
-		print('Meas Intraactivity', meas_intraactivity)
-		print(type(meas_intraactivity))
+		self.meas_intraactivity = self.api.measure_get_intraactivity(startdate = arrow.utcnow().shift(hours=-24), enddate  = arrow.utcnow())
+		print('Meas Intraactivity', self.meas_intraactivity)
+		print(type(self.meas_intraactivity))
 		#self.meas_intraactivity.
 
 
 	def sleep(self):
 
-		get_sleep = self.api.sleep_get(data_fields=GetSleepField,startdate=arrow.utcnow().shift(days=-2), enddate=arrow.utcnow(),)
+		get_sleep = self.api.sleep_get(data_fields=GetSleepField,startdate=arrow.utcnow().shift(days=-2), enddate=arrow.utcnow().shift(days=-1),)
 		print('from sleep', get_sleep)
 
+		sleep_summary = self.api.sleep_get_summary(data_fields=GetSleepSummaryField, startdateymd=arrow.utcnow().shift(days=-2),enddateymd=arrow.utcnow().shift(days=-1), lastupdate = None)
 
-	def raw_data_acquisition(self):
+		print('Sleep Summary', sleep_summary)
+		return(get_sleep)
 
+
+
+	#The following functions will be used to get the users' raw data. Please keep in mind that you need to activate and deactivate
+	#the device you want to acquiere the raw data from
+
+	def activate_raw_data(self, data_type = None):
+
+		#This function allows the user to activate the raw data acquisition, data_type: type of data that needs to be 
+		#activated (1: accelerometer, 2: optical sensor)
+
+		self.api.activate_raw_data(hash_deviceid = self.hash_deviceid, rawdata_type = 1, enddate = arrow.utcnow().shift(days = 2))
+
+
+	def deactivate_raw_data(self, data_type = None):
+
+		#This function allows the user to deactivate the raw data acquisition, data_type: type of data that needs to be 
+		#activated (1: accelerometer, 2: optical sensor)
+		self.api.deactivate_raw_data(hash_deviceid = self.hash_deviceid, rawdata_type = 1)
+		
+
+
+	def get_raw_data(self):
+
+		#This function allows to get the data collected during the times used in the activate_raw_data function.
 		get_raw = self.api.get_raw_data(hash_deviceid = self.hash_deviceid, rawdata_type = 1, startdate = arrow.utcnow().shift(days=-20), enddate = arrow.utcnow().shift(days=-1))
-		#print(get_raw)
-
-
-
-
-
-
-
+		return(get_raw)
 
 
 
@@ -230,7 +292,8 @@ M = Devices_OAuth2flow(client_id = 'e64cb563bf44122144cd0702b02f69ad50d21aba0eb5
 		       callback_uri = 'http://localhost:5000')
 M.get_user_credentials()
 M.devices_info()
-hr = M.activity_data(type_activity = 'HR' )
-print(hr)
+#M.intra_activitydata()
+M.activity_data(type_activity = 'HR' )
 #M.sleep()
-#M.raw_data_acquisition()
+#M.deactivate_raw_data()
+#M.activate_raw_data()
