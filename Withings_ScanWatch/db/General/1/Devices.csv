@@ -1,1 +1,4 @@
-Device; Hash_deviceid; MAC_address{'Scale': 'de33b9a2f384735d43c5f01792a9ca28f98a67d1', 'Sleep Monitor': 'ec62a1ee408cb1e4f895b3912e891f8d0b2faf26', 'Activity Tracker': '4ef7d9920a4e9c93484d46eb9ded6f1a2af74bab'};None;None
+Device,Hash_deviceid,MAC_address
+Scale,de33b9a2f384735d43c5f01792a9ca28f98a67d1,00:24:e4:f0:40:b8
+Sleep Monitor,ec62a1ee408cb1e4f895b3912e891f8d0b2faf26,00:24:e4:f1:54:ec
+Activity Tracker,4ef7d9920a4e9c93484d46eb9ded6f1a2af74bab,a4:7e:fa:0e:61:36

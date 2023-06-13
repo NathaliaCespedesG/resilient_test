@@ -1,6 +1,7 @@
 import time
 import os
 import datetime
+import pandas as pd
 
 #Object to manage all the user's data
 
@@ -19,36 +20,51 @@ class DatabaseManager(object):
 
 
 
-	def load_Scale(self, data = None, time = None):
+	def load_Scale(self, time = None, weight = None, muscle_mass = None, bone_mass = None, fat_mass = None):
+
 
 		#Loading data
 		self.ScaleFile = open(self.scale_name, 'a')
-		data = str(data) + ";" + str(time) + "\n"
-		self.ScaleFile.write(data)
+		for i in range (len(time)):
+			self.df_scale  = self.df_scale.append({'date':time[i],'Weight': weight[i], 'Muscle mass': muscle_mass[i], 'Bone mass': bone_mass[i] , 'Fat mass Weight': fat_mass[i]}, ignore_index=True)
+		self.df_scale.to_csv(self.scale_name, index = False )
+
 		self.ScaleFile.close()
 
-	def load_ScanWatch(self, data = None, time = None):
+	def load_ScanWatch(self, time = None, hr = None, calories = None, steps = None):
 
 		#Loading data
 		self.ScanWatchfile = open(self.scanwatch_name, 'a')
-		data = str(data) + ";" + str(time) + "\n"
-		self.ScanWatchfile.write(data)
+		for i in range (len(time)):
+			self.df_scanwatch = self.df_scanwatch.append({'date': time[i], 'HR_Average':hr[i],'Calories': calories[i], 'Steps': steps[i]}, ignore_index=True)
+		self.df_scanwatch.to_csv(self.scanwatch_name, index = False )
+
 		self.ScanWatchfile.close()
 
-	def load_SleepMat(self, data = None, time = None):
+	def load_SleepMat(self, time = None, bd = None, dsd = None, dts = None, dtw = None, hr = None, lsd = None, rsd = None, rr = None, ss = None,wpc = None, wpd = None):
 
 		#Loading data
 		self.SleepMatFile = open(self.sleepmat_name, 'a')
-		data = str(data) + ";" + str(time) + "\n"
-		self.SleepMatFile.write(data)
+
+		for i in range (len(time)):
+			self.df_sleepsummary = self.df_sleepsummary.append({'date': time[i], 'Breathing disturbances': bd[i], 'Deep sleep duration': dsd[i], 'Duration to sleep': dts[i] , 'Duration to wakeup': dtw[i],
+								'HR average': hr[i], 'Light sleep duration': lsd[i], 'Rem sleep duration': rsd[i], 'RR average': rr[i], 'Sleep score': ss[i], 'Wake up count': wpc[i],
+								'Wake up duration': wpd[i]}, ignore_index=True)
+		self.df_sleepsummary.to_csv(self.sleepmat_name, index = False )
+
+	
 		self.SleepMatFile.close()
 
 
 	def load_SensorInfo(self, sensor = None, hash_deviceid = None, MAC_address = None):
 		
 		self.DevicesFile = open(self.devices_info, 'a')
-		data = str(sensor)+ ";" + str(hash_deviceid) + ";" + str(MAC_address) + "\n"
-		self.DevicesFile.write(data)
+		for i in range (len(sensor)):
+
+			self.df_devices = self.df_devices.append({'Device': sensor[i], 'Hash_deviceid': hash_deviceid[i], 'MAC_address': MAC_address[i]}, ignore_index = True)
+		
+		self.df_devices.to_csv(self.devices_info, index = False )
+
 		self.DevicesFile.close()
 
 
@@ -84,13 +100,25 @@ class DatabaseManager(object):
 		self.DevicesFile = open(self.devices_info, "w+")
 
 		#Headers on devices files
-		self.DevicesFile.write("Device; Hash_deviceid; MAC_address")
+
+		self.df_devices = pd.DataFrame({'Device': [], 'Hash_deviceid': [], 'MAC_address': []} )
+		self.df_devices.to_csv(self.devices_info, index = False )
 
 		#Headers on each files
 
-		self.ScaleFile.write("ID;Date ;Weight ;Muscle mass ;Bone mass ; Fat mass; Fat free mass; Fat ratio\n")
-		self.ScanWatchfile.write("ID;Date ;HR ;Steps ;Distance ;Calories ; Intensity\n")
-		self.SleepMatFile.write("ID; Date ;HR; Sleep Duration; Sleep State Duration; Awake; Light; Deep ;REM ;Sleep wakeup")
+		self.df_scanwatch = pd.DataFrame({'date': [], 'HR_Average': [], 'Calories': [], 'Steps': []} )
+		self.df_scanwatch.to_csv(self.scanwatch_name, index = False )
+
+
+		self.df_scale = pd.DataFrame({'date': [], 'Weight': [], 'Muscle mass': [], 'Bone mass': [] , 'Fat mass Weight': [] } )
+		self.df_scale.to_csv(self.scale_name, index = False )
+
+		self.df_sleepsummary = pd.DataFrame({'date': [], 'Breathing disturbances': [], 'Deep sleep duration': [], 'Duration to sleep': [] , 'Duration to wakeup': [],
+								'HR average': [], 'Light sleep duration': [], 'Rem sleep duration': [], 'RR average': [], 'Sleep score': [], 'Wake up count': [],
+								 'Wake up duration': []} )
+		self.df_sleepsummary.to_csv(self.sleepmat_name, index = False )
+
+
 
 		#Closing files
 
@@ -105,6 +133,7 @@ class DatabaseManager(object):
 		self.ScaleFile.close()
 		self.ScanWatchfile.close()
 		self.SleepMatFile.close()
+		self.TestFile.close()
 
 	def set_user(self, p):
 

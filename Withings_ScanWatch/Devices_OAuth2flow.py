@@ -4,6 +4,8 @@ from withings_api import WithingsAuth, WithingsApi, AuthScope
 from withings_api.common import GetSleepField, GetSleepSummaryField, get_measure_value, MeasureType, CredentialsType, MeasureGetActivityResponse, AuthFailedException
 import arrow
 import time
+import numpy as np
+
 
 
 #To save users credential and update refresh the token
@@ -18,7 +20,16 @@ from typing_extensions import Final
 
 # Database libraries to save Users' data 
 
+
+import pandas as pd 
 import db.database as database
+
+
+# Graphics
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+import matplotlib.dates as mdates
+from datetime import timedelta, datetime
 
 
 
@@ -162,14 +173,13 @@ class Devices_OAuth2flow(object):
 
 		devices = self.api.user_get_device()
 		devices = devices['devices']
+		#print(devices)
 		type_d = [i['type'] for i in devices]
 		hash_deviceid = [i['hash_deviceid'] for i in devices]
+		MAC_address = [i['mac_address'] for i in devices]
 
-		devices_id = dict(zip(type_d, hash_deviceid)) 
 
-		self.database.SM.load_SensorInfo(sensor = devices_id)
-
-		print('Devices', devices_id)
+		self.database.SM.load_SensorInfo(sensor = type_d, hash_deviceid = hash_deviceid, MAC_address = MAC_address)
 
 
 	def create_nonce(self):
@@ -181,42 +191,101 @@ class Devices_OAuth2flow(object):
 		self.nonce = signature['body']['nonce']
 		print('nonce', self.nonce)
 
-	def activity_data(self, type_activity = None): 
+	def activity_data(self): 
 
 		# This function returns the activity data. Please refer
 		# to the withings API documentation to see what type of data
 		# you can get from this service.
 
 		activity_data = {}
+		scale_data = {}
 
-		self.meas_activity  =  self.api.measure_get_activity(startdateymd = arrow.utcnow().shift(days=-25), enddateymd = arrow.utcnow())
-		print('ACTIVITY', self.meas_activity)
-		#print('Meas activity', self.meas_activity.activities[0].hr_average)
-		activity_data['heart_rate'] = [x.hr_average for x in self.meas_activity.activities]
+		weight = []
+		muscle_mass = []
+		bone_mass = []
+		fat_mass = []
+
+		self.meas_activity  =  self.api.measure_get_activity(startdateymd = arrow.utcnow().shift(days=-30), enddateymd = arrow.utcnow())
+		print('From activity service', self.meas_activity)
 		activity_data['date'] = [arrow.get(x.date) for x in self.meas_activity.activities]
+		activity_data['heart_rate'] = [x.hr_average for x in self.meas_activity.activities]
+		activity_data['calories'] = [x.totalcalories for x in self.meas_activity.activities]
+		activity_data['steps'] = [x.steps for x in self.meas_activity.activities]
+		activity_data['hr_min'] = [x.hr_min for x in self.meas_activity.activities]
+		activity_data['hr_max'] = [x.hr_max for x in self.meas_activity.activities]
 
-		heart_rate = dict(zip(activity_data['date'], activity_data['heart_rate'])) 
-		ordered_data = dict(sorted(heart_rate.items(), reverse=True))
-		#print(ordered_data)
-		HR = ordered_data.values()
-		print('HOLAAAAAAAAAAAAAA',HR)
 
-		self.database.SM.load_ScanWatch(data = HR)
+		print('average', activity_data['heart_rate'])
+		print('minimums', activity_data['hr_min'])
+		print('maximums', activity_data['hr_max'])
 
-		print(heart_rate)
-		print(ordered_data)
-
-		#print('This is the HR', activity_data)
-		#print(type(self.meas_activity.activities[:]))
-
-		self.meas2 = self.api.measure_get_meas(startdate=arrow.utcnow().shift(days=-20), enddate=arrow.utcnow(), lastupdate = None)
-		#print('From scale', self.meas2)
+		self.plot_continous(activity_data['date'],activity_data['calories'],activity_data['steps'],[],[], "ScanWatch")
+		self.plot_min_max_av(activity_data['date'],activity_data['heart_rate'],activity_data['hr_min'],activity_data['hr_max'], "ScanWatch", "HR")
 
 
 
+		self.database.SM.load_ScanWatch(hr = activity_data['heart_rate'], calories = activity_data['calories'], steps = activity_data['steps'],  time = activity_data['date'] )
 
-		#if type_activity == 'HR':
-			#return('Heart_rate', self.meas_activity.activities[:].hr_average)
+		self.meas2 = self.api.measure_get_meas(startdate=arrow.utcnow().shift(days=-35), enddate=arrow.utcnow(), lastupdate = None)
+
+		scale_data['date'] = [arrow.get(x.date) for x in self.meas2.measuregrps]
+		scale_data['measures'] = [x.measures for x in self.meas2.measuregrps]
+
+
+
+
+		#To extract the data from the scale
+		for x in range (len(scale_data['measures'])):
+
+			#print(scale_data['measures'][x])
+			#print('-------------------------')
+			for y in range (len(scale_data['measures'][x])):
+				if len(scale_data['measures'][x]) == 7:
+
+					if y == 0:
+						if(scale_data['measures'][x][y].type == MeasureType.WEIGHT):
+							n = self.str_to_float(number = scale_data['measures'][x][y].value, unit = scale_data['measures'][x][y].unit)
+							weight.append(n)
+					if y == 2:
+						if(scale_data['measures'][x][y].type == MeasureType.MUSCLE_MASS):
+							mm = self.str_to_float(number = scale_data['measures'][x][y].value, unit = scale_data['measures'][x][y].unit)
+							muscle_mass.append(mm)
+
+					if y == 4:
+						if(scale_data['measures'][x][y].type == MeasureType.BONE_MASS):
+							bm = self.str_to_float(number = scale_data['measures'][x][y].value, unit = scale_data['measures'][x][y].unit)
+							bone_mass.append(bm)
+
+					if y == 1:
+						if(scale_data['measures'][x][y].type == MeasureType.FAT_MASS_WEIGHT):
+							fm = self.str_to_float(number = scale_data['measures'][x][y].value, unit = scale_data['measures'][x][y].unit)
+							fat_mass.append(fm)
+				
+				else:
+					weight.append(0)
+					muscle_mass.append(0)
+					bone_mass.append(0)
+					fat_mass.append(0)
+
+
+		self.database.SM.load_Scale(time = scale_data['date'], weight = weight, muscle_mass = muscle_mass, bone_mass = bone_mass, fat_mass = fat_mass)
+
+		self.plot_continous(scale_data['date'],weight, muscle_mass, bone_mass, fat_mass, "Scale")
+
+
+	def str_to_float(self, number, unit):
+
+		number = str(number)
+		number = number[:unit] + "." + number[unit:] 
+		number = float(number)
+
+		return(number)
+
+
+	
+
+
+		
 
 	def intra_activitydata(self):
 		
@@ -228,13 +297,64 @@ class Devices_OAuth2flow(object):
 
 	def sleep(self):
 
-		get_sleep = self.api.sleep_get(data_fields=GetSleepField,startdate=arrow.utcnow().shift(days=-2), enddate=arrow.utcnow().shift(days=-1),)
-		print('from sleep', get_sleep)
+		sleephf_data = {}
 
-		sleep_summary = self.api.sleep_get_summary(data_fields=GetSleepSummaryField, startdateymd=arrow.utcnow().shift(days=-2),enddateymd=arrow.utcnow().shift(days=-1), lastupdate = None)
+		sleeps_data = {}
 
-		print('Sleep Summary', sleep_summary)
-		return(get_sleep)
+		self.get_sleep = self.api.sleep_get(data_fields=GetSleepField,startdate=arrow.utcnow().shift(days=-25), enddate=arrow.utcnow().shift(days=-24),)
+		#print('from sleep', self.get_sleep['series'])
+		#print(self.get_sleep['series'])
+		sleephf_data['start_date'] = [arrow.get(x['startdate']) for x in self.get_sleep['series']]
+		sleephf_data['end_date'] = [arrow.get(x['enddate']) for x in self.get_sleep['series']]
+		sleephf_data['state'] = [x['state'] for x in self.get_sleep['series']]
+		print(sleephf_data['start_date'])
+		#print(sleephf_data['end_date'])
+		#print(sleephf_data['state'])
+
+
+		print(len(sleephf_data['start_date']))
+		self.plot_events(sleephf_data['start_date'], sleephf_data['end_date'], sleephf_data['state'])
+
+		
+
+
+		self.sleep_summary = self.api.sleep_get_summary(data_fields=GetSleepSummaryField, startdateymd=arrow.utcnow().shift(days=-25),enddateymd=arrow.utcnow().shift(days=-1), lastupdate = None)
+
+		#print('Sleep Summary', self.sleep_summary)
+
+		sleeps_data['date'] = [arrow.get(x.date) for x in self.sleep_summary.series]
+		sleeps_data['data'] = [x.data for x in self.sleep_summary.series]
+
+		#print(sleeps_data['data'][0])
+
+		sleeps_data['breathing disturbances'] = [x.breathing_disturbances_intensity for x in sleeps_data['data']]
+		sleeps_data['deep sleep duration'] = [x.deepsleepduration for x in sleeps_data['data']]
+		sleeps_data['duration to sleep'] = [x.durationtosleep for x in sleeps_data['data']]
+		sleeps_data['duration to wakeup'] = [x.durationtowakeup for x in sleeps_data['data']]
+		sleeps_data['hr average'] = [x.hr_average for x in sleeps_data['data']]
+		sleeps_data['hr_min'] = [x.hr_min for x in sleeps_data['data']]
+		sleeps_data['hr_max'] = [x.hr_max for x in sleeps_data['data']]
+		sleeps_data['light sleep duration'] = [x.lightsleepduration for x in sleeps_data['data']]
+		sleeps_data['rem sleep duration'] = [x.remsleepduration for x in sleeps_data['data']]
+		sleeps_data['rr average'] = [x.rr_average for x in sleeps_data['data']]
+		sleeps_data['sleep score'] = [x.sleep_score for x in sleeps_data['data']]
+		sleeps_data['wake up count'] = [x.wakeupcount for x in sleeps_data['data']]
+		sleeps_data['wake up duration'] = [x.wakeupduration for x in sleeps_data['data']]
+
+
+		self.database.SM.load_SleepMat(time = sleeps_data['date'], bd = sleeps_data['breathing disturbances'], dsd = sleeps_data['deep sleep duration'], dts = sleeps_data['duration to sleep'],
+									dtw = sleeps_data['duration to wakeup'], hr = sleeps_data['hr average'], lsd = sleeps_data['light sleep duration'], rsd = sleeps_data['rem sleep duration'], 
+									rr = sleeps_data['rr average'], ss = sleeps_data['sleep score'], wpc = sleeps_data['wake up count'], wpd = sleeps_data['wake up duration'])
+
+		self.plot_min_max_av(sleeps_data['date'], sleeps_data['hr average'],sleeps_data['hr_min'],sleeps_data['hr_max'], "SleepMat", "HR")
+
+		self.plot_bar(sleeps_data['date'],sleeps_data['sleep score'])
+
+
+
+
+
+		
 
 
 
@@ -283,7 +403,270 @@ class Devices_OAuth2flow(object):
 
 
 
-	
+	def plot_scatter(self, x, y):
+
+		x = [datetime.fromtimestamp(a.timestamp()) for a in x]
+
+		# Create a scatter plot
+		plt.scatter(x, y, marker='o', color='green')
+
+		# Set the x-axis format as dates
+		plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M'))
+
+		# Rotate the x-axis tick labels for better readability (optional)
+		plt.gcf().autofmt_xdate()
+
+		# Label the axes and add a title
+		plt.xlabel('Date')
+		plt.ylabel('HR')
+		plt.title('Sleep Mat')
+
+		# Display the plot
+		plt.show()
+
+
+	def plot_min_max_av(self,x_values,y_average,y_min,y_max,device,type_d):
+
+		x_values = [datetime.fromtimestamp(a.timestamp()) for a in x_values]
+
+		# Calculate the range (difference between min and max)
+
+		print(type(y_average[1]))
+
+
+		y_average = [float('nan') if x == 0 else x for x in y_average]
+		y_min = [float('nan') if x == 0 else x for x in y_min]
+		y_max = [float('nan') if x == 0 else x for x in y_max]
+
+		y_range = np.array(y_max) - np.array(y_min)
+
+		# Create the figure and axis
+
+		fig, ax = plt.subplots()
+
+		# Plot the average line
+		ax.scatter(x_values, y_average, color='blue', label='Average')
+
+		# Plot the error bars (range)
+		ax.errorbar(x_values, y_average, yerr=y_range/2, fmt='o', color='blue', ecolor='lightblue', capsize=5, label='Range')
+
+		# Set the x-axis limits
+
+		ax.set_xlim(min(x_values), max(x_values))
+
+
+		# Add labels and title
+
+		ax.set_xlabel('Date')
+
+		if device == "ScanWatch":
+
+			ax.set_ylabel(type_d)
+			ax.set_title('ScanWatch')
+
+		elif device == "SleepMat":
+			ax.set_ylabel(type_d)
+			ax.set_title('SleepMat')
+
+		# Add legend
+		ax.legend()
+
+		# Add average value as text
+		for x, y in zip(x_values, y_average):
+			ax.text(x, y, f'{y:.2f}', ha='center', va='bottom')
+
+		# Show the plot
+		plt.show()
+
+
+	def plot_continous(self,x,y,z,w,t, device):
+
+
+		fig, ax = plt.subplots(figsize=(12,8))
+
+
+		index_0 = [index for index, value in enumerate(y) if value == 0]
+
+
+		if device == "ScanWatch":
+
+
+
+			y = [value for value in y if value != 0]
+			z = [value for value in z if value != 0]
+
+			x = [datetime.fromtimestamp(a.timestamp()) for a in x]
+			x = [value for index, value in enumerate(x) if index not in index_0]
+
+			# Create a scatter plot
+			plt.plot(x, y, '-ok', color='purple', label = 'Calories')
+			plt.plot(x, z, '-ok', color='blue', label = 'Steps')
+
+			# Set the x-axis format as dates
+			plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M'))
+
+			# Rotate the x-axis tick labels for better readability (optional)
+			plt.gcf().autofmt_xdate()
+
+			for index in range(len(x)):
+				ax.text(x[index], y[index], y[index], size=8)
+				ax.text(x[index], z[index], z[index], size=8)
+
+			plt.title('ScanWatch')
+
+		elif device == "Scale":
+
+
+			y = [value for value in y if value != 0]
+			z = [value for value in z if value != 0]
+			w = [value for value in w if value != 0]
+			t = [value for value in t if value != 0]
+
+			x = [datetime.fromtimestamp(a.timestamp()) for a in x]
+			x = [value for index, value in enumerate(x) if index not in index_0]
+
+			# Create a scatter plot
+			plt.plot(x, y, '-ok', color='purple', label = 'Calories')
+			plt.plot(x, z, '-ok', color='blue', label = 'Muscle mass')
+			plt.plot(x, w, '-ok', color='green', label = 'Bone mass')
+			plt.plot(x, t, '-ok', color='orange', label = 'Fat mass')
+
+			# Set the x-axis format as dates
+			plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M'))
+
+			# Rotate the x-axis tick labels for better readability (optional)
+			plt.gcf().autofmt_xdate()
+
+			for index in range(len(x)):
+				ax.text(x[index], y[index], y[index], size=8)
+				ax.text(x[index], z[index], z[index], size=8)
+				ax.text(x[index], w[index], z[index], size=8)
+				ax.text(x[index], t[index], z[index], size=8)
+
+			plt.title('Scale')
+
+
+		# Label the axes and add a title
+		plt.xlabel('Date')
+		plt.ylabel('Data')
+		
+
+		# Display the plot
+		plt.legend()
+		plt.show()
+
+
+	def plot_bar(self,x,y):
+
+		# Convert Arrow datetime objects to strings
+
+		x_labels = [a.format('YYYY-MM-DD') for a in x]
+
+		colors = ["red" if i < 60 else "green" for i in y]
+
+		# Create a bar plot
+
+		plt.bar(x_labels, y, color = colors)
+
+		# Label the axes and add a title
+
+		plt.xlabel('Date')
+		plt.ylabel('Sleep Score')
+		plt.title('Sleep Mat')
+
+		# Display the plot
+		plt.show()
+
+
+	def plot_events(self,start_times, end_times, amplitudes):
+
+		# Create a figure and axis
+		fig, ax = plt.subplots()
+
+		rect2 = []
+
+		print(start_times)
+
+
+		# x_limit calculation
+		x_lim_min = min(start_times)
+		print('Min date', x_lim_min)
+		x_lim_max = max(end_times)
+		print('Min date', x_lim_max)
+
+		
+		legend_handles = {}
+
+		# Loop through each event and plot the colored rectangle
+
+		for start_time, end_time, amplitude in zip(start_times, end_times, amplitudes):
+
+			# Convert start and end times to datetime objects
+			start_datetime = start_time.datetime
+			start_datetime = mdates.date2num(start_datetime)
+
+			print(start_datetime)
+
+			end_datetime = end_time.datetime
+			end_datetime = mdates.date2num(end_datetime)
+			print(end_datetime)
+
+			# Calculate the duration of the event in minutes (as an integer)
+			width = end_datetime - start_datetime
+
+			
+			# Create a rectangle patch for the event
+			print(amplitude)
+			if amplitude == 1:
+
+				color = 'blue'
+				label = 'Light Sleep'
+
+			elif amplitude == 2:
+				color = 'cyan'
+				label = 'Deep Sleep'
+			elif amplitude == 3:
+				color = 'gray'
+				label = 'REM Sleep'
+			else:
+				color = 'white'
+				label = 'Awake'
+
+
+
+			rect = Rectangle((start_datetime, 0), width, amplitude, color = color)
+
+			if label not in legend_handles:
+				legend_handles[label] = rect
+
+			# Add the rectangle to the plot
+			ax.add_patch(rect)
+
+
+
+		locator = mdates.AutoDateLocator(minticks = 3)
+		formatter = mdates.DateFormatter(fmt = "%m-%d %H:%M" )
+
+		ax.xaxis.set_major_locator(locator)
+		ax.xaxis.set_major_formatter(formatter)
+
+		ax.set_xlim(mdates.date2num(x_lim_min.datetime), mdates.date2num(x_lim_max.datetime))
+		ax.set_ylim(0, 4)
+
+
+
+		ax.set_xlabel('Datetime')
+		ax.set_ylabel('State')
+		ax.set_title('Sleep states')
+		
+		handles = list(legend_handles.values())
+		labels = list(legend_handles.keys())
+
+		# Display the plot
+		plt.legend(handles= handles, labels = labels, loc = "upper right")
+		plt.show()
+		
+
 
 
 
@@ -293,7 +676,7 @@ M = Devices_OAuth2flow(client_id = 'e64cb563bf44122144cd0702b02f69ad50d21aba0eb5
 M.get_user_credentials()
 M.devices_info()
 #M.intra_activitydata()
-M.activity_data(type_activity = 'HR' )
-#M.sleep()
+M.activity_data()
+M.sleep()
 #M.deactivate_raw_data()
 #M.activate_raw_data()

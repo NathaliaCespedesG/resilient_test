@@ -1,4 +1,5 @@
 import os, sys
+
 ab_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../db'))
 sys.path.append(ab_path)
 
