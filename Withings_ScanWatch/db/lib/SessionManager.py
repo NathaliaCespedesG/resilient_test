@@ -68,6 +68,10 @@ class DatabaseManager(object):
 		self.DevicesFile.close()
 
 
+	def load_Dailydata(self):
+		pass
+
+
 	def set_User(self, US):
 
 		#User status
