@@ -255,14 +255,14 @@ class AbstractWithingsApi:
         offset: Optional[int] = None
         ):
 
-        #This function allows to fetch Raw of an specific type.
+        #This function allows to fetch Raw of an specific type. 
 
         params: Final[ParamsType] = {}
 
         update_params(params,"hash_deviceid", hash_deviceid)
         update_params(params,"rawdata_type",rawdata_type)
         update_params(params,"startdate",startdate,lambda val: arrow.get(val).int_timestamp)
-
+        
 
         update_params(params,"enddate",enddate,lambda val: arrow.get(val).int_timestamp)
         update_params(params, "offset", offset)
@@ -272,7 +272,7 @@ class AbstractWithingsApi:
 
         return(self.request_post(path=self.PATH_V2_RAWDATA, params=params, method = "POST")
         )
-
+    
 
 
     def measure_get_meas(
@@ -302,6 +302,7 @@ class AbstractWithingsApi:
         update_params(params, "action", "getmeas")
 
         print('Im getting measures from here', params)
+        
         return MeasureGetMeasResponse(
             **self.request(path=self.PATH_MEASURE, params=params)
         )
@@ -312,7 +313,7 @@ class AbstractWithingsApi:
         data_fields: Iterable[GetSleepField],
         startdate: Optional[DateType] = arrow.utcnow(),
         enddate: Optional[DateType] = arrow.utcnow(),
-    ) -> SleepGetResponse:
+    ):
         """Get sleep data."""
         params: Final[ParamsType] = {}
 
@@ -331,7 +332,7 @@ class AbstractWithingsApi:
         )
         update_params(params, "action", "get")
 
-        return SleepGetResponse(**self.request(path=self.PATH_V2_SLEEP, params=params))
+        return (self.request(path=self.PATH_V2_SLEEP, params=params))
 
     def sleep_get_summary(
         self,
@@ -643,7 +644,7 @@ class WithingsApi(AbstractWithingsApi):
         self._refresh_cb(self._credentials)
 
 
-    def get_signature(
+    def get_signature(    
         self,
         timestamp: Optional[DateType] = arrow.utcnow()
     ):
@@ -688,5 +689,3 @@ class WithingsApi(AbstractWithingsApi):
                 params=params,
             ).json(),
         )
-
-

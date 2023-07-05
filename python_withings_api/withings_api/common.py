@@ -210,11 +210,14 @@ class GetSleepField(Enum):
     HR = "hr"
     RR = "rr"
     SNORING = "snoring"
+    HR_VARIABILITY = "sdnn_1"
 
 
 class GetSleepSummaryField(Enum):
     """Fields for get sleep summary api call."""
 
+
+    APNEA_HYPOPNEA = "apnea_hypopnea_index"
     BREATHING_DISTURBANCES_INTENSITY = "breathing_disturbances_intensity"
     DEEP_SLEEP_DURATION = "deepsleepduration"
     DURATION_TO_SLEEP = "durationtosleep"
@@ -232,6 +235,10 @@ class GetSleepSummaryField(Enum):
     SNORING_EPISODE_COUNT = "snoringepisodecount"
     WAKEUP_COUNT = "wakeupcount"
     WAKEUP_DURATION = "wakeupduration"
+    TIME_ASLEEP = "total_sleep_time"
+    TIME_INBED = "total_timeinbed"
+    TIME_AWAKE_INBED = "waso"
+    OUT_OF_BED_COUNT = "out_of_bed_count"
 
 
 class AuthScope(Enum):
@@ -331,6 +338,8 @@ class GetSleepSummaryData(
 ):  # pylint: disable=too-many-instance-attributes
     """GetSleepSummaryData."""
 
+
+    apnea_hypopnea_index: Optional[int]
     breathing_disturbances_intensity: Optional[int]
     deepsleepduration: Optional[int]
     durationtosleep: Optional[int]
@@ -348,6 +357,10 @@ class GetSleepSummaryData(
     snoringepisodecount: Optional[int]
     wakeupcount: Optional[int]
     wakeupduration: Optional[int]
+    total_sleep_time: Optional[int]
+    total_timeinbed: Optional[int]
+    waso:Optional[int]
+    out_of_bed_count: Optional[int]
 
 
 class GetSleepSummarySerie(ConfiguredBaseModel):
@@ -872,4 +885,3 @@ def response_body_or_raise(data: Any) -> Dict[str, Any]:
     if status in STATUS_TOO_MANY_REQUESTS:
         raise TooManyRequestsException(status=status)
     raise UnknownStatusException(status=status)
-
