@@ -13,8 +13,6 @@ class General(object):
 		self.dir = os.getcwd()
 
 		self.database_path = self.dir + '/'+'db'
-
-		print(self.database_path)
 		
 		#self.PH = ProjectHandler
 		# Update user status

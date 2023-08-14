@@ -15,9 +15,7 @@ class DatabaseManager(object):
 
 		self.PH = ProjectHandler
 
-
-		
-
+		self.date = datetime.datetime.now()
 
 
 	def load_Scale(self, time = None, weight = None, muscle_mass = None, bone_mass = None, fat_mass = None):
@@ -68,6 +66,7 @@ class DatabaseManager(object):
 		self.DevicesFile.close()
 
 
+
 	def load_Dailydata(self):
 		pass
 
@@ -78,24 +77,28 @@ class DatabaseManager(object):
 		self.UserStatus = US
 
 
+	def get_path(self):
+
+		return(self.user_folder)
 
 
 	def create_session(self):
 
 		#Create folders for each user
 
-		user_folder = self.PH + "/" +"General" + "/" + str(self.UserStatus['id'])
+		self.user_folder = self.PH + "/" +"General" + "/" + str(self.UserStatus['id']) +"/"+ str(self.date.year) +"-"+ str(self.date.month)+"-"+ str(self.date.day)
+	
 
-		if not os.path.exists(user_folder):
-			os.makedirs(user_folder)
+		if not os.path.exists(self.user_folder):
+			os.makedirs(self.user_folder)
 
 
 		#Create sensors file
 
-		self.scale_name = user_folder + "/Scale.csv"
-		self.scanwatch_name = user_folder + "/ScanWatch.csv"
-		self.sleepmat_name = user_folder + "/SleepMat.csv"
-		self.devices_info = user_folder + "/Devices.csv"
+		self.scale_name = self.user_folder + "/Scale.csv"
+		self.scanwatch_name = self.user_folder + "/ScanWatch.csv"
+		self.sleepmat_name = self.user_folder + "/SleepMat.csv"
+		self.devices_info = self.user_folder + "/Devices.csv"
 
 		#Open the files to save the data
 		self.ScaleFile = open(self.scale_name, 'w+')
