@@ -2,6 +2,7 @@ import time
 import os
 import datetime
 import pandas as pd
+import numpy as np
 
 #Object to manage all the user's data
 
@@ -67,8 +68,61 @@ class DatabaseManager(object):
 
 
 
-	def load_Dailydata(self):
-		pass
+	def load_intra_activity(self, time = None, hr = None, time_steps = None, steps = None,  time_calories = None, calories = None):
+
+		self.ScanIntraFile = open(self.scanwatch_intraday, 'a')
+
+		max_size = max(len(time), len(time_steps), len(time_calories))
+
+		if len(time) < max_size:
+
+			time = np.append(time, [np.nan] * (max_size - len(time)))
+			hr = np.append(hr, [np.nan] * (max_size - len(hr)))
+
+		# Fill time_steps and steps with NaN until they reach max_size
+
+		if len(time_steps) < max_size:
+
+			time_steps = np.append(time_steps, [np.nan] * (max_size - len(time_steps)))
+			steps = np.append(steps, [np.nan] * (max_size - len(steps)))
+
+		# Fill time_calories and calories with NaN until they reach max_size
+
+		if len(time_calories) < max_size:
+			time_calories = np.append(time_calories, [np.nan] * (max_size - len(time_calories)))
+			calories = np.append(calories, [np.nan] * (max_size - len(calories)))
+
+
+		for i in range(max_size):
+
+			self.df_scawatch_intra = self.df_scawatch_intra.append({'date HR': time[i], 'Heart Rate': hr[i], 'date Steps': time_steps[i], 'Steps': steps[i], 'date Calories': time_calories[i] , 'Calories': calories[i]},ignore_index = True)
+
+		self.df_scawatch_intra.to_csv(self.scanwatch_intraday, index = False)
+		self.ScanIntraFile.close()
+
+	def load_intra_sleep(self, start_date = None, end_date = None, ss = None, hr = None, hr_date = None, rr = None, rr_date = None, snoring = None, snoring_date = None, sdnn_1 = None, sdnn_1_date = None):
+
+		max_size = max(len(start_date), len(hr_date))
+		self.SleepIntraFile = open(self.sleepmat_intraday, 'a')
+		#print(hr)
+
+		if len(start_date) < max_size:
+
+			start_date = np.append(start_date, [np.nan] * (max_size - len(start_date)))
+			end_date = np.append(end_date, [np.nan] * (max_size - len(end_date)))
+			ss = np.append(ss, [np.nan] * (max_size - len(ss)))
+
+		for i in range(max_size):
+			#print('Here intra')
+
+			self.df_sleep_intra  = self.df_sleep_intra.append({'startdate': start_date[i], 'enddate': end_date[i], 'Sleep state':ss[i], 'Heart Rate date': hr_date[i], 'Heart Rate': hr[i] ,  'Respiration rate date': rr_date[i],
+			 													'Respiration rate': rr[i] , 'Snoring date': snoring_date[i], 'Snoring': snoring[i], 'sdnn_1 date': sdnn_1_date[i], 'sdnn_1': sdnn_1[i]} ,ignore_index = True)
+
+
+		self.df_sleep_intra.to_csv(self.sleepmat_intraday, index = False)
+		self.SleepIntraFile.close()
+
+
 
 
 	def set_User(self, US):
@@ -86,6 +140,8 @@ class DatabaseManager(object):
 
 		#Create folders for each user
 
+		self.user_folder_wd = self.PH + "/" +"General" + "/" + str(self.UserStatus['id'])
+
 		self.user_folder = self.PH + "/" +"General" + "/" + str(self.UserStatus['id']) +"/"+ str(self.date.year) +"-"+ str(self.date.month)+"-"+ str(self.date.day)
 	
 
@@ -96,15 +152,23 @@ class DatabaseManager(object):
 		#Create sensors file
 
 		self.scale_name = self.user_folder + "/Scale.csv"
-		self.scanwatch_name = self.user_folder + "/ScanWatch.csv"
-		self.sleepmat_name = self.user_folder + "/SleepMat.csv"
-		self.devices_info = self.user_folder + "/Devices.csv"
+		self.scanwatch_name = self.user_folder + "/ScanWatch_summary.csv"
+		self.sleepmat_name = self.user_folder + "/SleepMat_summary.csv"
+		self.devices_info = self.user_folder_wd+ "/Devices.csv"
+
+		#Create sensors file for higher granularity
+
+		self.scanwatch_intraday = self.user_folder + "/ScanWatch_intra_activity.csv"
+		self.sleepmat_intraday = self.user_folder + "/Sleepmat_intra_activity.csv"
+		
 
 		#Open the files to save the data
 		self.ScaleFile = open(self.scale_name, 'w+')
 		self.ScanWatchfile = open(self.scanwatch_name, 'w+')
 		self.SleepMatFile = open(self.sleepmat_name, "w+")
 		self.DevicesFile = open(self.devices_info, "w+")
+		self.ScanIntraFile = open(self.scanwatch_intraday, "w+")
+		self.SleepIntraFile = open(self.sleepmat_intraday, "w+")
 
 		#Headers on devices files
 
@@ -126,12 +190,26 @@ class DatabaseManager(object):
 		self.df_sleepsummary.to_csv(self.sleepmat_name, index = False )
 
 
+		self.df_scawatch_intra = pd.DataFrame({'date HR': [], 'Heart Rate': [], 'date Steps':[], 'Steps': [], 'date Calories': [] , 'Calories': []})
+		self.df_scawatch_intra.to_csv(self.scanwatch_intraday, index = False)
+
+		self.df_hr = pd.DataFrame({'date HR': [], 'Heart Rate': []})
+		self.df_steps = pd.DataFrame({'date Steps': [], 'Steps': []})
+		self.df_calories = pd.DataFrame({'date Calories': [], 'Calories': []})
+		#self.df_scanwatch_intra.to_csv(self.scanwatch_intraday, index = False )
+
+		self.df_sleep_intra =  pd.DataFrame({'startdate':[], 'enddate': [], 'Sleep state':[], 'Heart Rate date': [], 'Heart Rate': [] ,  'Respiration rate date': [],
+			 												'Respiration rate': [] , 'Snoring date': [], 'Snoring': [], 'sdnn_1 date': [], 'sdnn_1': []})
+		self.df_sleep_intra.to_csv(self.sleepmat_intraday, index = False)
 
 		#Closing files
 
 		self.ScaleFile.close()
 		self.ScanWatchfile.close()
 		self.SleepMatFile.close()
+		self.ScanIntraFile.close()
+		self.SleepIntraFile.close()
+
 
 	def finish_datastorage(self):
 
@@ -141,6 +219,8 @@ class DatabaseManager(object):
 		self.ScanWatchfile.close()
 		self.SleepMatFile.close()
 		self.TestFile.close()
+		self.ScanIntraFile.close()
+		self.SleepIntraFile.close()
 
 	def set_user(self, p):
 
@@ -179,14 +259,14 @@ class DatabaseManager(object):
 
 				#save new user information
 
-				f.write(self.user['id']+";"+'\n'
+				f.write(self.user['id']+";"+(str(self.UserStatus['id']) +"/"+ str(self.date.year) +"-"+ str(self.date.month)+"-"+ str(self.date.day))+'\n'
                     )
 
 		else:
 			print('registered')
 
 			f = open(path + "/Users.csv", 'w+')
-			f.write("Id;\n")
+			f.write("Id; Date of Registration\n")
 			f.close()
 
 			f = open(path + "/Users.csv", 'a')
@@ -195,8 +275,6 @@ class DatabaseManager(object):
 					)
 			#close the file
 			f.close()
-		
-		
 
 
 	def check_user(self):

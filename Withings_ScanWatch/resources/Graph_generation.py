@@ -20,9 +20,15 @@ from scipy.interpolate import make_interp_spline
 
 class Graph_generator(object):
 
-	def __init__(self):
+	def __init__(self,start_date : None,
+					  end_date: None):
 
-		pass
+		self.start_date = start_date
+		self.end_date = end_date
+		self.complete_dates = [self.start_date.shift(days=i) for i in range((self.end_date - self.start_date).days + 1)]
+		self.complete_dates = [a.format('DD-MM') for a in self.complete_dates]
+		self.font = {'family': 'Arial'}
+
 
 	def unique_values(self, dates, values):
 
@@ -49,13 +55,13 @@ class Graph_generator(object):
 		return(x_unique, y_avg)
 
 
+
+
 	def smooth_lines(self,x,y):
 
 		# Convert datetime objects to matplotlib date numbers
 		x = mdates.date2num(x)
 		y = y
-
-		
 
 		# Interpolate y values using the new x values
 
@@ -75,9 +81,7 @@ class Graph_generator(object):
 		except:
 			return(x,y)
 
-
-
-	def plot_scatter(self, x, y, k,j, name):
+	def plot_scatter(self, x, y, k, j, name):
 
 		fig, ax = plt.subplots()
 
@@ -88,93 +92,114 @@ class Graph_generator(object):
 		y = [value for value in y if value is not None and value != 0]
 		j = [value for value in j if value is not None and value != 0]
 
+		# X is a character to represent the timestamp ( e.g., '16782892902')
 		x = [datetime.fromtimestamp(timestamp) for timestamp in x]
 		x = [value for index, value in enumerate(x) if index not in index_0]
-		k = [value for index, value in enumerate(k) if index not in index_1]
-		k = [arrow_datetime.datetime for arrow_datetime in k]
 
-		#Avoid double values
-		k,j = self.unique_values(k,j)
-		# Smooth lines
-		k_s,j_s = self.smooth_lines(k,j)
-
-
+		#print(k)
 		
+		# k, start_date and end_date are arroe types (e.g.,  <Arrow [2023-08-27T01:00:00+01:00]>)
+		k = [value for index, value in enumerate(k) if index not in index_1]
 
 
 		plt.clf()
 
 		# Create a scatter plot
-		sns.color_palette("Set2")
 		sns.set_style("whitegrid",{ "grid.linewidth":0.5, "grid.color": ".8", "grid.linestyle": ":", "ytick.left": True})
 		
 		
 		if name == 'RR':
-			plt.gca().set_title('Sleep Respiration Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600)
-			plt.ylabel("Breaths per minute", fontsize = 11)
+			# Smooth lines
+			k_s,j_s = self.smooth_lines(k,j)
+
+			plt.gca().set_title('Sleep Respiration Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
+			plt.ylabel("Breaths per minute", fontsize = 11, fontdict = self.font)
 			sns.scatterplot( x= x, y = y, color = "cornflowerblue", label = 'Respiration Rate')
 			sns.lineplot(x = k_s, y = j_s, color = "darkblue",label = 'Respiration Rate Average')
 
 			fig_size = fig.get_size_inches()
-			print('FIG SIZE', fig_size)
+			#print('FIG SIZE', fig_size)
 
 			for t, t1 in zip(k, j):
 				if math.isnan(t1):
 					plt.text(t, t1-(0.1* fig_size[1]), math.floor(t1), ha='center', va='center', size = 11.2, color = "black")
+					plt.gca().set_xticks([])
 				else:
 					circle = patches.Ellipse((t, t1), width= 0.045 * fig_size[0], height= 0.3* fig_size[1], facecolor= "white")
 					circle.set_zorder(5)
 					plt.gca().add_patch(circle)
-					plt.text(t, t1-(0.1* fig_size[1]), math.floor(t1), ha='center', va='bottom', size = 11.5, color ="black", zorder=6)
+					plt.text(t, t1-(0.1* fig_size[1]), math.floor(t1), ha='center', va='bottom', size = 11.5, color ="black", zorder=6, fontdict = self.font)				
+			plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date)
+			plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+			# Set the locator for x-axis labels
+			plt.gca().xaxis.set_major_locator(mdates.DayLocator())	
+			plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
 
 		elif name == 'HR':
-		
-			plt.gca().set_title('Sleep Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600)
-			plt.ylabel("Heart Rate (bpm)", fontsize = 11)
+			# Smooth lines
+			k_s,j_s = self.smooth_lines(k,j)
+
+			plt.gca().set_title('Sleep Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
+			plt.ylabel("Heart Rate (bpm)", fontsize = 11, fontdict = self.font)
 			sns.scatterplot( x= x, y = y, color = "cornflowerblue", label = 'Sleep Heart Rate')
 			sns.lineplot(x = k_s, y = j_s, color = "darkblue",label = 'Sleep Heart Rate Average')
 
 			fig_size = fig.get_size_inches()
-			print('FIG SIZE', fig_size)
+			#print('FIG SIZE', fig_size)
 
 			for t, t1 in zip(k, j):
 				if math.isnan(t1):
 					plt.text(t, t1-(0.32* fig_size[1]), math.floor(t1), ha='center', va='center', size = 11.2, color = "black")
+					plt.gca().set_xticks([])
 				else:
 					circle = patches.Ellipse((t, t1), width= 0.06 * fig_size[0], height= 0.6* fig_size[1], facecolor= "white")
 					circle.set_zorder(5)
 					plt.gca().add_patch(circle)
-					plt.text(t, t1-(0.32* fig_size[1]), math.floor(t1), ha='center', va='bottom', size = 11.2, color ="black",zorder=6)
+					plt.text(t, t1-(0.32* fig_size[1]), math.floor(t1), ha='center', va='bottom', size = 11.2, color ="black",zorder=6, fontdict = self.font)
+			plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+			# Set the locator for x-axis labels
+			plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+			plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date)
+			plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
 
 		elif name == 'HR_ScanWatch':
+
+			#k,j = self.unique_values(k,j)
+			# Smooth lines
+			#print('K from graph')
+			k_s,j_s = self.smooth_lines(k,j)
+			
 			
 
-			plt.gca().set_title('Daily Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600)
-			plt.ylabel("Heart Rate (bpm)", fontsize = 11)
+			plt.gca().set_title('Daily Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
+			plt.ylabel("Heart Rate (bpm)", fontsize = 11, fontdict = self.font)
 			sns.scatterplot( x= x, y = y, color = "cornflowerblue", label = 'Daily Heart Rate')
 			sns.lineplot(x = k_s, y = j_s, color = "darkblue",label = 'Daily Heart Rate Average')
 
 			fig_size = fig.get_size_inches()
-			print('FIG SIZE', fig_size)
+			#print('FIG SIZE', fig_size)
 
 			for t, t1 in zip(k, j):
 				if math.isnan(t1):
 					plt.text(t, t1, t1, ha='center', va='center', size = 11.2, color = "black")
+					plt.gca().set_xticks([])
 				else:
 					circle = patches.Ellipse((t, t1), width= 0.05 * fig_size[0], height= 1.5* fig_size[1], facecolor= "white")
 					circle.set_zorder(5)
 					plt.gca().add_patch(circle)
-					plt.text(t, t1-(0.75* fig_size[1]), math.floor(t1), ha='center', va='bottom', size = 11.2, color ="black", zorder=6)
+					plt.text(t, t1-(0.75* fig_size[1]), math.floor(t1), ha='center', va='bottom', size = 11.2, color ="black", zorder=6, fontdict = self.font)
+			plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+			# Set the locator for x-axis labels
+			plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+			plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date)
+			plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
 
 
 		try:
 			plt.ylim(min(y), max(y))
 		except:
 			print('Empty data')
-		plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
-		# Set the locator for x-axis labels
-		plt.gca().xaxis.set_major_locator(mdates.DayLocator())
-		plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
+	
 		plt.grid(axis = "x")
 
 		plt.gca().spines['top'].set_visible(False)
@@ -209,8 +234,8 @@ class Graph_generator(object):
 		y_min = [float('nan') if x == 0 else x for x in y_min]
 		y_max = [float('nan') if x == 0 else x for x in y_max]
 
-		print('x_values', x_values)
-		print('y_values', y_average)
+		#print('x_values', x_values)
+		#print('y_values', y_average)
 
 
 		x_values1, y_average = self.unique_values(x_values, y_average)
@@ -243,11 +268,11 @@ class Graph_generator(object):
 
 		elif device == "SleepMat" and type_d == "HR":
 			
-			plt.gca().set_title('SleepMat: Heart Rate',fontsize = 14, loc = 'left',pad = 30, fontweight = 600)
+			plt.gca().set_title('SleepMat: Heart Rate',fontsize = 14, loc = 'left',pad = 30, fontweight = 600, fontdict = self.font)
 
 		elif device == "SleepMat" and type_d == "RR":
 			
-			plt.gca().set_title('SleepMat: Respiration Rate',fontsize = 14, loc = 'left',pad = 30, fontweight = 600)
+			plt.gca().set_title('SleepMat: Respiration Rate',fontsize = 14, loc = 'left',pad = 30, fontweight = 600, fontdict = self.font)
 
 		# Add legend
 		plt.legend(loc= 'upper center', bbox_to_anchor = (0.5,1.09), ncol =2)
@@ -263,9 +288,9 @@ class Graph_generator(object):
 		# Add average value as text
 		for x, y in zip(x_values1, y_average):
 			if math.isnan(y):
-				plt.text(x, y, y, ha='center', va='bottom', size = 11.5)
+				plt.text(x, y, y, ha='center', va='bottom', size = 11.5, fontdict = self.font)
 			else:
-				plt.text(x, y, math.floor(y), ha='center', va='bottom', size = 11.5)
+				plt.text(x, y, math.floor(y), ha='center', va='bottom', size = 11.5, fontdict = self.font)
 
 
 		# Show the plot
@@ -283,26 +308,30 @@ class Graph_generator(object):
 
 	def plot_continous(self,x,y,z,w,t,l,st_date, ed_date, device):
 
+		# Create a scatter plot
+		sns.set_style("whitegrid",{ "grid.linewidth":0.5, "grid.color": ".8", "grid.linestyle": ":", "ytick.left": True})
+
+
 		st_date = st_date.format("D - MMM")
 		ed_date = ed_date.format("D - MMM")
 
 		index_0 = [index for index, value in enumerate(z) if value is None or value == 0 or math.isnan(value)]
 
-		plt.clf()
+
+
 
 
 		t = [value for value in t if value is not None and value != 0 and not math.isnan(value)]
 		l = [value for value in l if value is not None and value != 0 and not math.isnan(value)]
 
-		x = [datetime.fromtimestamp(a.timestamp()) for a in x]
-		print(x)
+		#x = [datetime.fromtimestamp(a.timestamp()) for a in x]
+		#print(x)
 		y = [value for value in y if value is not None and value != 0 and not math.isnan(value)]
 		z = [value for value in z if value is not None and value != 0 and not math.isnan(value)]
 		w = [value for value in w if value is not None and value != 0 and not math.isnan(value)]
 		x = [value for index, value in enumerate(x) if index not in index_0]
 
-		print('Scale', x)
-		print(y)
+
 
 
 		#Avoid double values
@@ -312,8 +341,10 @@ class Graph_generator(object):
 		x1,t1 = self.unique_values(x,t)
 		x1,l1 = self.unique_values(x,l)
 
-		print('ACA', x1)
-		print(y1)
+		
+
+		#print('ACA', x1)
+		#print(y1)
 
 		# Smooth lines
 		x_s,y_s = self.smooth_lines(x1,y1)
@@ -321,6 +352,9 @@ class Graph_generator(object):
 		x_s,w_s = self.smooth_lines(x1,w1)
 		x_s,t_s = self.smooth_lines(x1,t1)
 		x_s,l_s = self.smooth_lines(x1,l1)
+
+
+		plt.clf()
 
 		plt.gca().set_xticks(x)
 
@@ -340,17 +374,21 @@ class Graph_generator(object):
 			plt.gca().set_xticks([])
 
 			for index in range(len(x)):
-				plt.text(x[index], y[index], math.floor(y[index]), size = 11.5,  rotation = 45)
-				plt.text(x[index], z[index], math.floor(z[index]), size = 11.5,  rotation = 45)
-				plt.text(x[index], w[index], math.floor(w[index]), size = 11.5,  rotation = 45)
-				plt.text(x[index], t[index], math.floor(t[index]), size = 11.5,  rotation = 45)
-				plt.text(x[index], l[index], math.floor(l[index]), size = 11.5,  rotation = 45)
+				plt.text(x[index], y[index], math.floor(y[index]), size = 11.5,  rotation = 45, fontdict = self.font)
+				plt.text(x[index], z[index], math.floor(z[index]), size = 11.5,  rotation = 45, fontdict = self.font)
+				plt.text(x[index], w[index], math.floor(w[index]), size = 11.5,  rotation = 45, fontdict = self.font)
+				plt.text(x[index], t[index], math.floor(t[index]), size = 11.5,  rotation = 45, fontdict = self.font)
+				plt.text(x[index], l[index], math.floor(l[index]), size = 11.5,  rotation = 45, fontdict = self.font)
 
-			plt.ylim(min(w_s) - 5, max(y_s)+15)
+
+			try:
+				plt.ylim(min(w_s) - 5, max(y_s)+15)
+			except:
+				print('No data for the scale')
 			#plt.xlabel("From" + x[0] + "to" + x[end]))
 
-			plt.gca().set_title('Weight Trends',fontsize = 14, loc = 'left',pad = 30, fontweight= 600)
-			plt.ylabel("Mass (kg)")
+			plt.gca().set_title('Weight',fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
+			plt.ylabel("Mass (kg)", fontdict = self.font)
 			plt.xlabel(st_date +" to "+ ed_date)
 			plt.legend(loc= 'upper center', bbox_to_anchor = (0.5,1.09), ncol = 4, fontsize = 8.5,frameon=False)
 
@@ -365,29 +403,6 @@ class Graph_generator(object):
 			# Display the plot
 		
 			plt.grid(axis = "x")
-		
-
-
-		elif device == "Scale_sub":
-
-
-			fig, axes = plt.subplots(nrows=5, ncols=1, figsize=(8, 12))  # Adjust figsize as needed
-			# For example, plot data on the first subplot (axes[0])
-			axes[0].plot(x_s, y_s, label = "Weight", color = "darkblue", linewidth = 2)
-			axes[1].plot(x_s, z_s, label = "Muscle mass", linestyle='--',  color = "mediumseagreen", linewidth = 2)
-			axes[2].plot(x_s, w_s, label = "Bone mass",linestyle='--',  color = "yellow", linewidth = 2)
-			axes[3].plot(x_s, t_s, label = "Fat mass", linestyle='--', color = "mediumpurple", linewidth = 2)
-			axes[4].plot(x_s, l_s, label = "Hydration", linestyle='--', color = "cornflowerblue", linewidth = 2)
-
-			# Adjust spacing between subplots
-			plt.tight_layout()
-
-			for index in range(len(x)):
-				axes[0].text(x[index], y[index], math.floor(y[index]), size = 11.5,  rotation = 45)
-				axes[1].text(x[index], z[index], math.floor(z[index]), size = 11.5,  rotation = 45)
-				axes[2].text(x[index], w[index], math.floor(w[index]), size = 11.5,  rotation = 45)
-				axes[3].text(x[index], t[index], math.floor(t[index]), size = 11.5,  rotation = 45)
-				axes[4].text(x[index], l[index], math.floor(l[index]), size = 11.5,  rotation = 45)
 
 
 		plt.savefig(device, dpi = 500)
@@ -396,10 +411,6 @@ class Graph_generator(object):
 
 	def plot_curved_bars(self,x,y):
 
-		#x = [datetime.fromtimestamp(a.timestamp()) for a in x]
-
-		# Create a figure and axes
-
 		check = np.array(y)
 
 		if y == [] or (np.all(check == 0)):
@@ -407,31 +418,27 @@ class Graph_generator(object):
 			fig, ax = plt.subplots()
 
 			# Step 3 (Optional): Add labels and titles to the plot
-			ax.set_xlabel('X-axis label')
-			ax.set_ylabel('Y-axis label')
-			ax.set_title('Empty Plot')
+			ax.set_xlabel('Date', fontdict = self.font)
+			ax.set_ylabel('Steps', fontdict = self.font)
+
 
 
 		else:
 
 			fig, ax = plt.subplots()
 
-			x = [a.format('DD-MM') for a in x]
+			#x = [a.format('DD-MM') for a in x]
 
-			converted_dates = []
+			x = [dt.strftime('%d-%b') for dt in x]
+			#print('Frommm steps', x)
 
-			for date in x:
-				dt = datetime.strptime(date, '%d-%m')
-				converted_date = dt.strftime('%d-%b')
-				converted_dates.append(converted_date)
-
-			print(converted_dates)
 			# Calculate the width of each rectangle
 			width = 0.2
 
 			legend_handles = {}
 			# Create rounded rectangles for each date
 			for i, date in enumerate(x):
+
 
 				label = "Steps"
 
@@ -447,13 +454,10 @@ class Graph_generator(object):
 
 			# Set x-axis labels
 
-			ax.set_xticks(range(len(converted_dates)))
-			ax.set_xticklabels(converted_dates)
+			ax.set_xticks(range(len(x)))
+			ax.set_xticklabels(x)
 
-
-	
-
-			ax.set_ylim(0, max(y) * 1.1)
+			ax.set_ylim(0, max(y[~np.isnan(y)]) * 1.1)
 
 			plt.grid(axis = "x")
 
@@ -462,11 +466,14 @@ class Graph_generator(object):
 
 			# Display the plot
 			plt.legend(handles= handles, labels = labels, loc= 'upper center', bbox_to_anchor = (0.5,1.09), ncol =1, frameon=False)
-			plt.gca().set_title('Daily Steps Count',fontsize = 14, loc = 'left',pad = 30, fontweight= 600)
+			#plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date)
+			plt.gca().set_title('Daily Steps Count',fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
 			plt.gca().spines['top'].set_visible(False)
 			plt.gca().spines['right'].set_visible(False)
+
+
 		
-			plt.savefig('Steps_curvedbar', dpi = 500)
+		plt.savefig('Steps_curvedbar', dpi = 500)
 
 
 
@@ -475,105 +482,135 @@ class Graph_generator(object):
 
 	def plot_bar(self,x,y):
 
-		# Convert Arrow datetime objects to strings
+		# Create a scatter plot
+		sns.set_style("whitegrid",{ "grid.linewidth":0.5, "grid.color": ".8", "grid.linestyle": ":", "ytick.left": True})
 
-		#x_labels = [a.format('MM-DD') for a in x]
-		x = [datetime.fromtimestamp(a.timestamp()) for a in x]
-
-		y = [ 0 if element is None else element for element in y]
-
-		x, y = self.unique_values(x,y) 
-
-		colors = ["mediumseagreen" if i < 16 else "gold" if 16 <= i < 30 else "firebrick" for i in y]
-
-		plt.clf()
-
-		# Create a bar plot
-
-		plt.bar(x, y, color = colors)
+		check = np.array(y)
+		if (y == [] or (np.all(check == 0))):
 
 
-		# Create legend patches
-		red_patch = patches.Patch(color='mediumseagreen', label='Normal/Mild(<15)')
-		orange_patch = patches.Patch(color='gold', label='Moderate(16-30)')
-		green_patch = patches.Patch(color='firebrick', label='Severe(>30)')
+			# Step 3 (Optional): Add labels and titles to the plot
+			plt.ylabel('Hours', fontsize = 11, fontdict = self.font)
+			plt.xlabel('Dates', fontsize = 11, fontdict = self.font)
+			plt.grid(axis = "x")
+			plt.gca().set_xticks([])
+			plt.gca().set_title('Steps', fontsize = 14, loc = 'left',pad = 30, fontweight=600, fontdict = self.font)
 
+		else:
+			x = [datetime.fromtimestamp(a.timestamp()) for a in x]
 
+			y = [0 if element is None else element for element in y]
 
-		# Label the axes and add a title
+			x, y = self.unique_values(x,y) 
 
+			plt.clf()
 
-		plt.gca().set_title('Sleep Apnoea Score', fontsize = 14, loc = 'left',pad = 30, fontweight= 600)
-		plt.gca().yaxis.set_label_coords(-0.1,0.5)
-		plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
-		plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
-		# Set the locator for x-axis labels
-		plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+			# Create a bar plot
 
-		plt.grid(axis = "x")
+			plt.bar(x, y, color = 'lightgreen', label = "Steps", width = 0.4)
 
-		# Create legend slide
-		plt.ylabel("Breathing disturbances per hour", fontsize = 11)
-		plt.legend(handles=[red_patch, orange_patch, green_patch], loc='upper center', bbox_to_anchor=(0.5,1.09), ncol = 3, frameon=False)
-		plt.savefig('Sleep_Apnea', dpi = 500)
+			plt.gca().set_title('Daily Steps Count',fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
+			plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
+
+			plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+			# Set the locator for x-axis labels
+			plt.gca().set_ylim(0, max(y[~np.isnan(y)])+250)
+			plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+			plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date)
+
+			plt.grid(axis = "x")
+			plt.gca().spines['top'].set_visible(False)
+			plt.gca().spines['right'].set_visible(False)
+			plt.legend( loc='upper center', bbox_to_anchor=(0.5,1.09), ncol = 3, frameon=False)
+
+		#plt.grid(axis = "x")
+		
+		plt.savefig('Steps_curvedbar', dpi = 500)
 
 		# Display the plot
 		#plt.show()
 
-	def plot_stacked_bar(self,x,y,z,o,l):
+	def plot_stacked_bar(self,x,y,z,o):
 
-		x = [datetime.fromtimestamp(a.timestamp()) for a in x]
+		# Create a scatter plot
+		sns.set_style("whitegrid",{ "grid.linewidth":0.5, "grid.color": ".8", "grid.linestyle": ":", "ytick.left": True})
 
-		#print('x from this', x)
+		# Create a figure and axes
 
-		#y = [x/3600 for x in y]
-		#z = [x/3600 for x in z]
-
-		x1, y = self.unique_values(x,y)
-		x1, z = self.unique_values(x,z)
-
-		x_u, o_u = self.unique_values(x,o)
-		x_u, l_u = self.unique_values(x,l)
+		check = np.array(y)
+		check1 = np.array(z)
+		check2 = np.array(o)
 
 
-		x_soft, o_soft= self.smooth_lines(x_u,o_u)
-		x_soft, l_soft = self.smooth_lines(x_u,l_u)
-
-		plt.clf()
-
-		plt.bar(x1, y, label='Hours Asleep', color = "cornflowerblue")
-		plt.bar(x1, z, label='Hours Awake in bed', bottom = y, color = "lightgreen")
+		if (y == [] or (np.all(check == 0))) and (z == [] or (np.all(check1 == 0))) and (o == [] or (np.all(check2 == 0))):
 
 
-		sns.lineplot(x = x_soft, y = o_soft, color = "darkblue", markersize = 14, label = "Times out of bed", zorder = 9, linewidth = 2 )
-		sns.lineplot(x = x_soft, y = l_soft, color = "darkgreen", markersize = 14, label = "Times woken up in bed" , zorder = 9, linewidth = 2)
+			# Step 3 (Optional): Add labels and titles to the plot
+			plt.ylabel('Hours', fontsize = 11, fontdict = self.font)
+			plt.xlabel('Dates', fontsize = 11, fontdict = self.font)
+			plt.grid(axis = "x")
+			plt.gca().set_xticks([])
+			plt.gca().set_title('Sleep Summary', fontsize = 14, loc = 'left',pad = 30, fontweight=600, fontdict = self.font)
+
+		else:
+
+			x1 = x
+			#start_date = [arrow_datetime.datetime for arrow_datetime in start_date]
+			#end_date = [arrow_datetime.datetime for arrow_datetime in end_date]
 
 
-		for index in range(len(x_u)):
-			# Draw the circle patch
-			circle = patches.Ellipse((x_u[index], o_u[index]), width= 0.35, height= 0.65, facecolor= "lavender")
-			plt.gca().add_patch(circle)
-			circle1 = patches.Ellipse((x_u[index], l_u[index]), width= 0.35, height= 0.65, facecolor= "honeydew")
-			circle.set_zorder(10)
-			circle1.set_zorder(10)
-			plt.gca().add_patch(circle1)
-			plt.text(x_u[index], o_u[index], math.floor(o_u[index]), size = 11.5, color = "black", ha = 'center', va = 'center', zorder = 11 )
-			plt.text(x_u[index], l_u[index], math.floor(l_u[index]), size = 11.5, color = "black", ha = 'center', va = 'center', zorder = 11 )
 
-		# Add labels, title, and legend
-		print(max(y+z))
-		plt.grid(axis = "x")
-		plt.ylim(bottom = -1)
-		plt.ylim(top= (max(y+z)+1))
-		plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
-		plt.ylabel('Hours', fontsize = 11)
-		plt.gca().set_title('Sleep Summary', fontsize = 14, loc = 'left',pad = 30, fontweight=600)
-		plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
-		# Set the locator for x-axis labels
-		plt.gca().spines['top'].set_visible(False)
-		plt.gca().spines['right'].set_visible(False)
-		#plt.gca().xaxis.set_major_locator(mdates.DayLocator())
-		plt.legend(loc= 'upper center', bbox_to_anchor = (0.5,1.09), ncol =3, fontsize = 8.5, frameon=False)
+			#print('x from this', x)
+
+			#y = [x/3600 for x in y]
+			#z = [x/3600 for x in z]
+
+			x_u = x1
+			o_u = o
+
+			#x_u, l_u = self.unique_values(x,l)
+
+
+			x_soft, o_soft= self.smooth_lines(x_u,o_u)
+			#x_soft, l_soft = self.smooth_lines(x_u,l_u)
+
+			plt.clf()
+
+			plt.bar(x1, y, label='Hours Asleep', color = "cornflowerblue")
+			plt.bar(x1, z, label='Hours Awake in bed', bottom = y, color = "lightgreen")
+
+
+			sns.lineplot(x = x_soft, y = o_soft, color = "darkblue", markersize = 14, label = "Times out of bed", zorder = 9, linewidth = 2 )
+			#sns.lineplot(x = x_soft, y = l_soft, color = "darkgreen", markersize = 14, label = "Times woken up in bed" , zorder = 9, linewidth = 2)
+
+
+			for index in range(len(x_u)):
+				# Draw the circle patch
+				circle = patches.Ellipse((x_u[index], o_u[index]), width= 0.35, height= 0.65, facecolor= "lavender")
+				plt.gca().add_patch(circle)
+				#circle1 = patches.Ellipse((x_u[index], l_u[index]), width= 0.35, height= 0.65, facecolor= "honeydew")
+				circle.set_zorder(10)
+				#circle1.set_zorder(10)
+				#plt.gca().add_patch(circle1)
+				plt.text(x_u[index], o_u[index], math.floor(o_u[index]), size = 11.5, color = "black", ha = 'center', va = 'center', zorder = 11,fontdict = self.font )
+				#plt.text(x_u[index], l_u[index], math.floor(l_u[index]), size = 11.5, color = "black", ha = 'center', va = 'center', zorder = 11 )
+
+			# Add labels, title, and legend
+			#print(max(y+z))
+			plt.grid(axis = "x")
+			plt.ylim(bottom = -1)
+			plt.ylim(top= (max(y+z)+ 5))
+			plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
+			plt.ylabel('Hours', fontsize = 11, fontdict = self.font)
+			plt.gca().set_title('Sleep Summary', fontsize = 14, loc = 'left',pad = 30, fontweight=600, fontdict = self.font)
+			plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+			plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date)
+			# Set the locator for x-axis labels
+			plt.gca().spines['top'].set_visible(False)
+			plt.gca().spines['right'].set_visible(False)
+			#plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+			plt.legend(loc= 'upper center', bbox_to_anchor = (0.5,1.09), ncol =3, fontsize = 8.5, frameon=False)
+
 		plt.savefig('sleep_summary', dpi = 500)
 
 		# Show the chart
@@ -657,8 +694,8 @@ class Graph_generator(object):
 		ax.set_ylim(0, 4)
 
 
-		ax.set_ylabel('State', rotation = 0)
-		ax.set_title('Sleep states', fontsize = 18)
+		ax.set_ylabel('State', rotation = 0, fontdict = self.font)
+		ax.set_title('Sleep states', fontsize = 18, fontdict = self.font)
 		
 		handles = list(legend_handles.values())
 		labels = list(legend_handles.keys())
@@ -668,4 +705,4 @@ class Graph_generator(object):
 
 		# Display the plot
 		plt.legend(handles= handles, labels = labels, loc = "upper right", frameon=False)
-		#plt.show()
+		plt.show()
