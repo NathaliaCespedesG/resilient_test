@@ -106,104 +106,118 @@ class Graph_generator(object):
 
 		# Create a scatter plot
 		sns.set_style("whitegrid",{ "grid.linewidth":0.5, "grid.color": ".8", "grid.linestyle": ":", "ytick.left": True})
+
+
+		if y == [] and j == []:
+
+			fig, ax = plt.subplots()
+
+			# Step 3 (Optional): Add labels and titles to the plot
+			ax.set_xlabel('Date', fontdict = self.font)
+			ax.set_ylabel('Data', fontdict = self.font)
+
+		else:
 		
 		
-		if name == 'RR':
-			# Smooth lines
-			k_s,j_s = self.smooth_lines(k,j)
+			if name == 'RR':
 
-			plt.gca().set_title('Sleep Respiration Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
-			plt.ylabel("Breaths per minute", fontsize = 11, fontdict = self.font)
-			sns.scatterplot( x= x, y = y, color = "cornflowerblue", label = 'Respiration Rate')
-			sns.lineplot(x = k_s, y = j_s, color = "darkblue",label = 'Respiration Rate Average')
+				# Smooth lines
+				k_s,j_s = self.smooth_lines(k,j)
+				print('From graphs', k)
+				print('From graphs', j)
 
-			fig_size = fig.get_size_inches()
-			#print('FIG SIZE', fig_size)
+				plt.gca().set_title('Sleep Respiration Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
+				plt.ylabel("Breaths per minute", fontsize = 11, fontdict = self.font)
+				sns.scatterplot( x= x, y = y, color = "cornflowerblue", label = 'Respiration Rate')
+				sns.lineplot(x = k_s, y = j_s, color = "darkblue",label = 'Respiration Rate Average')
 
-			for t, t1 in zip(k, j):
-				if math.isnan(t1):
-					plt.text(t, t1-(0.1* fig_size[1]), math.floor(t1), ha='center', va='center', size = 11.2, color = "black")
-					plt.gca().set_xticks([])
-				else:
-					circle = patches.Ellipse((t, t1), width= 0.045 * fig_size[0], height= 0.3* fig_size[1], facecolor= "white")
-					circle.set_zorder(5)
-					plt.gca().add_patch(circle)
-					plt.text(t, t1-(0.1* fig_size[1]), math.floor(t1), ha='center', va='bottom', size = 11.5, color ="black", zorder=6, fontdict = self.font)				
-			plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date)
-			plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
-			# Set the locator for x-axis labels
-			plt.gca().xaxis.set_major_locator(mdates.DayLocator())	
-			plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
+				fig_size = fig.get_size_inches()
+				#print('FIG SIZE', fig_size)
 
-		elif name == 'HR':
-			# Smooth lines
-			k_s,j_s = self.smooth_lines(k,j)
+				for t, t1 in zip(k, j):
+					if math.isnan(t1):
+						plt.text(t, t1-(0.1* fig_size[1]), math.floor(t1), ha='center', va='center', size = 11.2, color = "black")
+						plt.gca().set_xticks([])
+					else:
+						circle = patches.Ellipse((t, t1), width= 0.045 * fig_size[0], height= 0.3* fig_size[1], facecolor= "white")
+						circle.set_zorder(5)
+						plt.gca().add_patch(circle)
+						plt.text(t, t1-(0.1* fig_size[1]), math.floor(t1), ha='center', va='bottom', size = 11.5, color ="black", zorder=6, fontdict = self.font)				
+				plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date)
+				plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+				# Set the locator for x-axis labels
+				plt.gca().xaxis.set_major_locator(mdates.DayLocator())	
+				plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
 
-			plt.gca().set_title('Sleep Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
-			plt.ylabel("Heart Rate (bpm)", fontsize = 11, fontdict = self.font)
-			sns.scatterplot( x= x, y = y, color = "cornflowerblue", label = 'Sleep Heart Rate')
-			sns.lineplot(x = k_s, y = j_s, color = "darkblue",label = 'Sleep Heart Rate Average')
+			elif name == 'HR':
+				# Smooth lines
+				k_s,j_s = self.smooth_lines(k,j)
 
-			fig_size = fig.get_size_inches()
-			#print('FIG SIZE', fig_size)
+				plt.gca().set_title('Sleep Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
+				plt.ylabel("Heart Rate (bpm)", fontsize = 11, fontdict = self.font)
+				sns.scatterplot( x= x, y = y, color = "cornflowerblue", label = 'Sleep Heart Rate')
+				sns.lineplot(x = k_s, y = j_s, color = "darkblue",label = 'Sleep Heart Rate Average')
 
-			for t, t1 in zip(k, j):
-				if math.isnan(t1):
-					plt.text(t, t1-(0.32* fig_size[1]), math.floor(t1), ha='center', va='center', size = 11.2, color = "black")
-					plt.gca().set_xticks([])
-				else:
-					circle = patches.Ellipse((t, t1), width= 0.06 * fig_size[0], height= 0.6* fig_size[1], facecolor= "white")
-					circle.set_zorder(5)
-					plt.gca().add_patch(circle)
-					plt.text(t, t1-(0.32* fig_size[1]), math.floor(t1), ha='center', va='bottom', size = 11.2, color ="black",zorder=6, fontdict = self.font)
-			plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
-			# Set the locator for x-axis labels
-			plt.gca().xaxis.set_major_locator(mdates.DayLocator())
-			plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date)
-			plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
+				fig_size = fig.get_size_inches()
+				#print('FIG SIZE', fig_size)
 
-		elif name == 'HR_ScanWatch':
+				for t, t1 in zip(k, j):
+					if math.isnan(t1):
+						plt.text(t, t1-(0.32* fig_size[1]), math.floor(t1), ha='center', va='center', size = 11.2, color = "black")
+						plt.gca().set_xticks([])
+					else:
+						circle = patches.Ellipse((t, t1), width= 0.06 * fig_size[0], height= 0.6* fig_size[1], facecolor= "white")
+						circle.set_zorder(5)
+						plt.gca().add_patch(circle)
+						plt.text(t, t1-(0.32* fig_size[1]), math.floor(t1), ha='center', va='bottom', size = 11.2, color ="black",zorder=6, fontdict = self.font)
+				plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+				# Set the locator for x-axis labels
+				plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+				plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date)
+				plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
 
-			#k,j = self.unique_values(k,j)
-			# Smooth lines
-			#print('K from graph')
-			k_s,j_s = self.smooth_lines(k,j)
-			
-			
+			elif name == 'HR_ScanWatch':
 
-			plt.gca().set_title('Daily Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
-			plt.ylabel("Heart Rate (bpm)", fontsize = 11, fontdict = self.font)
-			sns.scatterplot( x= x, y = y, color = "cornflowerblue", label = 'Daily Heart Rate')
-			sns.lineplot(x = k_s, y = j_s, color = "darkblue",label = 'Daily Heart Rate Average')
+				#k,j = self.unique_values(k,j)
+				# Smooth lines
+				#print('K from graph')
+				k_s,j_s = self.smooth_lines(k,j)
+				
+				
 
-			fig_size = fig.get_size_inches()
-			#print('FIG SIZE', fig_size)
+				plt.gca().set_title('Daily Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
+				plt.ylabel("Heart Rate (bpm)", fontsize = 11, fontdict = self.font)
+				sns.scatterplot( x= x, y = y, color = "cornflowerblue", label = 'Daily Heart Rate')
+				sns.lineplot(x = k_s, y = j_s, color = "darkblue",label = 'Daily Heart Rate Average')
 
-			for t, t1 in zip(k, j):
-				if math.isnan(t1):
-					plt.text(t, t1, t1, ha='center', va='center', size = 11.2, color = "black")
-					plt.gca().set_xticks([])
-				else:
-					circle = patches.Ellipse((t, t1), width= 0.05 * fig_size[0], height= 1.5* fig_size[1], facecolor= "white")
-					circle.set_zorder(5)
-					plt.gca().add_patch(circle)
-					plt.text(t, t1-(0.75* fig_size[1]), math.floor(t1), ha='center', va='bottom', size = 11.2, color ="black", zorder=6, fontdict = self.font)
-			plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
-			# Set the locator for x-axis labels
-			plt.gca().xaxis.set_major_locator(mdates.DayLocator())
-			plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date)
-			plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
+				fig_size = fig.get_size_inches()
+				#print('FIG SIZE', fig_size)
+
+				for t, t1 in zip(k, j):
+					if math.isnan(t1):
+						plt.text(t, t1, t1, ha='center', va='center', size = 11.2, color = "black")
+						plt.gca().set_xticks([])
+					else:
+						circle = patches.Ellipse((t, t1), width= 0.05 * fig_size[0], height= 1.5* fig_size[1], facecolor= "white")
+						circle.set_zorder(5)
+						plt.gca().add_patch(circle)
+						plt.text(t, t1-(0.75* fig_size[1]), math.floor(t1), ha='center', va='bottom', size = 11.2, color ="black", zorder=6, fontdict = self.font)
+				plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+				# Set the locator for x-axis labels
+				plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+				plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date)
+				plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
 
 
-		try:
-			plt.ylim(min(y), max(y))
-		except:
-			print('Empty data')
-	
-		plt.grid(axis = "x")
+			try:
+				plt.ylim(min(y), max(y))
+			except:
+				print('Empty data')
+		
+			plt.grid(axis = "x")
 
-		plt.gca().spines['top'].set_visible(False)
-		plt.gca().spines['right'].set_visible(False)
+			plt.gca().spines['top'].set_visible(False)
+			plt.gca().spines['right'].set_visible(False)
 
 
 

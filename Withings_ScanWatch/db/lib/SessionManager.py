@@ -258,23 +258,23 @@ class DatabaseManager(object):
 				f = open(path + "/Users.csv", 'a')
 
 				#save new user information
+				#rint()
 
-				f.write(self.user['id']+";"+(str(self.UserStatus['id']) +"/"+ str(self.date.year) +"-"+ str(self.date.month)+"-"+ str(self.date.day))+'\n'
+				f.write(self.user['id']+";"+(str(self.date.year) +"-"+ str(self.date.month)+"-"+ str(self.date.day))+'\n'
                     )
 
 		else:
 			print('registered')
 
-			f = open(path + "/Users.csv", 'w+')
-			f.write("Id; Date of Registration\n")
-			f.close()
+			#f = open(path + "/Users.csv", 'w+')
+			#f.write("Id; Date of Registration\n")
+			#f.close()
 
-			f = open(path + "/Users.csv", 'a')
+			#f = open(path + "/Users.csv", 'a')
 			#save new user information
-			f.write(self.user['id']          +";" +'\n'
-					)
+			#f.write(self.user['id']          +";" +'\n')
 			#close the file
-			f.close()
+			#f.close()
 
 
 	def check_user(self):
@@ -306,7 +306,7 @@ class DatabaseManager(object):
 			print('No Exists')
 
 			f = open(path + "/Users.csv", 'w+')
-			f.write("Id;\n")
+			f.write("Id; Date of Registration\n")
 			f.close()
 			return {"registered" : False, "id" : self.user['id']}
 
