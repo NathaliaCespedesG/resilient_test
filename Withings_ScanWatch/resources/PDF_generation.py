@@ -229,7 +229,7 @@ class PDF_generation(object):
 
 		# Draw NEWS2 text
 
-		text1 = '* indicates a value that would be flagged by the NEWS2  '
+		text1 = '* indicates a value that would be flagged by the NEWS2'
 		canvas.setFont("Arial", 7)
 		canvas.drawString(doc.leftMargin + 10.5 * cm , doc.height - 3.8* cm, text1)
 
@@ -249,23 +249,23 @@ class PDF_generation(object):
 		watermark_image.drawOn(canvas, doc.leftMargin - 2.6*cm , doc.height + 2.2*cm)
 
 		#Add the Surrey logo project watermark
-		surrey_image = Image("surrey_logo.jpg", width = 1.69*cm, height = 1.2*cm)
-		surrey_image.drawOn(canvas, doc.leftMargin + 4.7*cm , 1*cm)
+		surrey_image = Image("surrey_logo.jpg", width = 2.143*cm, height = 1.058*cm)
+		surrey_image.drawOn(canvas, doc.leftMargin - 0.5*cm , 1*cm)
 
 		#Add the Imperial logo project watermark
-		imperial_image = Image("Imperial_logo.jpg", width = 3.4*cm, height = 1*cm)
-		imperial_image.drawOn(canvas, doc.leftMargin + 6.8*cm , 1*cm)
+		imperial_image = Image("Imperial_logo.jpg", width = 4.021*cm, height = 1.058*cm)
+		imperial_image.drawOn(canvas, doc.leftMargin + 1.943*cm , 1*cm)
 
 
 		#Add the NIHR project watermark
-		nihr_image = Image("nihr_logo.jpg", width = 3.5*cm, height = 1*cm)
-		nihr_image.drawOn(canvas, doc.leftMargin + 10.6*cm , 1*cm )
+		nihr_image = Image("nihr_logo.jpg", width = 5.979*cm, height = 1.058*cm)
+		nihr_image.drawOn(canvas, doc.leftMargin + 6.264*cm , 1*cm )
 
 
 
 		#Add the EPSCR project watermark
-		epscr_image = Image("epsrc_logo.jpg", width = 1.27*cm, height = 1.2*cm)
-		epscr_image.drawOn(canvas, doc.leftMargin + 14.4*cm , 1*cm )
+		epscr_image = Image("epsrc_logo.jpg", width = 4.233*cm, height = 1.058*cm)
+		epscr_image.drawOn(canvas, doc.leftMargin + 12.543*cm , 1*cm )
 
 		
 

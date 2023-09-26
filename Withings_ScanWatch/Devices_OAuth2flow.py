@@ -330,10 +330,6 @@ class Devices_OAuth2flow(object):
 
 		self.graph.plot_bar(self.activity_data['date'],self.activity_data['steps'])
 
-
-		
-
-
 	def intra_activitydata(self, type_time = None):
 
 
@@ -420,8 +416,8 @@ class Devices_OAuth2flow(object):
 			end_dates_hr = self.fellasleep_hours_prev
 			self.hr_based_sleep_prev = self.hr_average_basedon_sleep(dates = dates_to_test, HR = hr_to_test, startdates = start_dates_hr, enddates = end_dates_hr )
 			return(self.hr_based_sleep_prev)
-
 	def hr_average_basedon_sleep(self, dates = None, HR = None, startdates = None, enddates = None):
+
 		# Initialize a dictionary to store mean HR values for each key
 		mean_hr_dict = {}
 
