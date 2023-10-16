@@ -114,7 +114,7 @@ class Graph_generator(object):
 
 			# Step 3 (Optional): Add labels and titles to the plot
 			ax.set_xlabel('Date', fontdict = self.font)
-			ax.set_ylabel('Data', fontdict = self.font)
+			ax.set_ylabel('Date', fontdict = self.font)
 
 		else:
 		
@@ -221,7 +221,6 @@ class Graph_generator(object):
 
 
 
-		
 
 		plt.legend(loc= 'upper center', bbox_to_anchor = (0.5,1.09), ncol =2 , frameon=False)
 		# Remove the border around the legend box
@@ -320,40 +319,99 @@ class Graph_generator(object):
 		#plt.show()
 
 
-	def plot_continous(self,x,y,z,w,t,l,st_date, ed_date, device):
+	def weekly_average(self,x, y):
+		#print(x)
+		#print(y)
+
+		x = [datetime.strptime(date.strftime('%Y-%m-%d'), '%Y-%m-%d') for date in x]
+
+		# Create an array of week numbers corresponding to each date
+		week_numbers = [date.isocalendar()[1] for date in x]
+		print(week_numbers)
+
+		# Initialize lists to store the weekly averages
+		week_avg_dates = []
+		week_avg_weights = []
+
+		current_week = week_numbers[0]
+		weekly_weight_sum = 0
+		weekly_weight_count = 0
+
+		for date, weight, week in zip(x, y, week_numbers):
+			if week == current_week:
+				weekly_weight_sum += weight
+				weekly_weight_count += 1
+			else:
+				# Append the average for the previous week
+
+				if weekly_weight_count > 0:
+					week_avg_dates.append(date)
+					week_avg_weights.append(weekly_weight_sum / weekly_weight_count)
+				current_week = week
+				weekly_weight_sum = weight
+				weekly_weight_count = 1
+
+		# Append the last week's average
+		if weekly_weight_count > 0:
+			week_avg_dates.append(x[-1] )
+			week_avg_weights.append(weekly_weight_sum / weekly_weight_count)
+
+
+		#print(week_avg_dates)
+		#print(week_avg_weights)
+
+		return(week_avg_dates, week_avg_weights)
+
+
+
+
+	def plot_continous(self,date_weight, weight, date_muscle_mass, muscle_mass, date_bone_mass,
+							bone_mass, date_fat_mass, fat_mass, date_hydration, hydration, st_date, ed_date, device):
 
 		# Create a scatter plot
 		sns.set_style("whitegrid",{ "grid.linewidth":0.5, "grid.color": ".8", "grid.linestyle": ":", "ytick.left": True})
 
-
+		
 		st_date = st_date.format("D - MMM")
 		ed_date = ed_date.format("D - MMM")
 
-		index_0 = [index for index, value in enumerate(z) if value is None or value == 0 or math.isnan(value)]
-
-
-
-
-
-		t = [value for value in t if value is not None and value != 0 and not math.isnan(value)]
-		l = [value for value in l if value is not None and value != 0 and not math.isnan(value)]
+		index_0 = [index for index, value in enumerate(weight) if value is None or value == 0 or math.isnan(value)]
+		index_1 = [index for index, value in enumerate(muscle_mass) if value is None or value == 0 or math.isnan(value)]
+		index_2 = [index for index, value in enumerate(bone_mass) if value is None or value == 0 or math.isnan(value)]
+		index_3 = [index for index, value in enumerate(fat_mass) if value is None or value == 0 or math.isnan(value)]
+		index_4 = [index for index, value in enumerate(hydration) if value is None or value == 0 or math.isnan(value)]
 
 		#x = [datetime.fromtimestamp(a.timestamp()) for a in x]
 		#print(x)
-		y = [value for value in y if value is not None and value != 0 and not math.isnan(value)]
-		z = [value for value in z if value is not None and value != 0 and not math.isnan(value)]
-		w = [value for value in w if value is not None and value != 0 and not math.isnan(value)]
-		x = [value for index, value in enumerate(x) if index not in index_0]
+		weight = [value for value in weight if value is not None and value != 0 and not math.isnan(value)]
+		muscle_mass = [value for value in muscle_mass if value is not None and value != 0 and not math.isnan(value)]
+		bone_mass = [value for value in bone_mass if value is not None and value != 0 and not math.isnan(value)]
+		fat_mass = [value for value in fat_mass if value is not None and value != 0 and not math.isnan(value)]
+		hydration = [value for value in hydration if value is not None and value != 0 and not math.isnan(value)]
+		
+		date_weight = [value for index, value in enumerate(date_weight) if index not in index_0]
+		date_muscle_mass = [value for index, value in enumerate(date_muscle_mass) if index not in index_1]
+		date_bone_mass = [value for index, value in enumerate(date_bone_mass) if index not in index_2]
+		date_fat_mass = [value for index, value in enumerate(date_fat_mass) if index not in index_3]
+		date_hydration = [value for index, value in enumerate(date_hydration) if index not in index_4]
+
+		weight_date_avg, weight_avg = self.weekly_average(date_weight, weight)
+
+		date_strings = [dt.strftime('%Y-%m-%d') for dt in weight_date_avg]
+
+		print('*********************************************')
+		print(date_strings)
+		print(weight_avg)
 
 
 
 
 		#Avoid double values
-		x1,y1 = self.unique_values(x,y)
-		x1,z1 = self.unique_values(x,z)
-		x1,w1 = self.unique_values(x,w)
-		x1,t1 = self.unique_values(x,t)
-		x1,l1 = self.unique_values(x,l)
+		x1,y1 = self.unique_values(date_weight,weight)
+		x2,z1 = self.unique_values(date_muscle_mass,muscle_mass)
+		x3,w1 = self.unique_values(date_bone_mass,bone_mass)
+		x4,t1 = self.unique_values(date_fat_mass,fat_mass)
+		x5,l1 = self.unique_values(date_hydration,hydration)
 
 		
 
@@ -362,15 +420,15 @@ class Graph_generator(object):
 
 		# Smooth lines
 		x_s,y_s = self.smooth_lines(x1,y1)
-		x_s,z_s = self.smooth_lines(x1,z1)
-		x_s,w_s = self.smooth_lines(x1,w1)
-		x_s,t_s = self.smooth_lines(x1,t1)
-		x_s,l_s = self.smooth_lines(x1,l1)
+		x_s2,z_s = self.smooth_lines(x2,z1)
+		x_s3,w_s = self.smooth_lines(x3,w1)
+		x_s4,t_s = self.smooth_lines(x4,t1)
+		x_s5,l_s = self.smooth_lines(x5,l1)
 
 
 		plt.clf()
 
-		plt.gca().set_xticks(x)
+		plt.gca().set_xticks(weight)
 
 		if device == "Scale":
 
@@ -378,21 +436,24 @@ class Graph_generator(object):
 			sns.set_style("whitegrid",{ "grid.linewidth":0.5, "grid.color": ".8", "grid.linestyle": ":", "ytick.left": True})
 			
 			sns.lineplot(x = x_s, y = y_s, label = "Weight", color = "darkblue", linewidth = 2)
-			sns.lineplot(x = x_s, y = z_s, label = "Muscle mass", linestyle='--',  color = "mediumseagreen", linewidth = 2)
-			sns.lineplot(x = x_s, y = w_s, label = "Bone mass",linestyle='--',  color = "yellow", linewidth = 2)
-			sns.lineplot(x = x_s, y = t_s, label = "Fat mass", linestyle='--', color = "mediumpurple", linewidth = 2)
-			sns.lineplot(x = x_s, y = l_s, label = "Hydration (%)", linestyle='--', color = "cornflowerblue", linewidth = 2)
+			sns.lineplot(x = x_s2, y = z_s, label = "Muscle mass", linestyle='--',  color = "mediumseagreen", linewidth = 2)
+			sns.lineplot(x = x_s3, y = w_s, label = "Bone mass",linestyle='--',  color = "yellow", linewidth = 2)
+			sns.lineplot(x = x_s4, y = t_s, label = "Fat mass", linestyle='--', color = "mediumpurple", linewidth = 2)
+			sns.lineplot(x = x_s5, y = l_s, label = "Hydration (%)", linestyle='--', color = "cornflowerblue", linewidth = 2)
 			# Set x-axis tick locations and labels
 
 			# Make specific ticks transparent or not display them
 			plt.gca().set_xticks([])
 
-			for index in range(len(x)):
-				plt.text(x[index], y[index], math.floor(y[index]), size = 11.5,  rotation = 45, fontdict = self.font)
-				plt.text(x[index], z[index], math.floor(z[index]), size = 11.5,  rotation = 45, fontdict = self.font)
-				plt.text(x[index], w[index], math.floor(w[index]), size = 11.5,  rotation = 45, fontdict = self.font)
-				plt.text(x[index], t[index], math.floor(t[index]), size = 11.5,  rotation = 45, fontdict = self.font)
-				plt.text(x[index], l[index], math.floor(l[index]), size = 11.5,  rotation = 45, fontdict = self.font)
+			for index in range(len(weight_date_avg)):
+
+				plt.text(weight_date_avg[index], weight_avg[index], math.floor(weight_avg[index]), size = 11.5,  rotation = 45, fontdict = self.font)
+
+			for index in range(len(date_muscle_mass)):
+				plt.text(date_muscle_mass[index], muscle_mass[index], math.floor(muscle_mass[index]), size = 11.5,  rotation = 45, fontdict = self.font)
+				plt.text(date_bone_mass[index], bone_mass[index], math.floor(bone_mass[index]), size = 11.5,  rotation = 45, fontdict = self.font)
+				plt.text(date_fat_mass[index], fat_mass[index], math.floor(fat_mass[index]), size = 11.5,  rotation = 45, fontdict = self.font)
+				plt.text(date_hydration[index], hydration[index], math.floor(hydration[index]), size = 11.5,  rotation = 45, fontdict = self.font)
 
 
 			try:

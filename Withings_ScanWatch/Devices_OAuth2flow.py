@@ -203,15 +203,20 @@ class Devices_OAuth2flow(object):
 		# are used in other services to activate functions.
 
 		devices = self.api.user_get_device()
+		
 		devices = devices['devices']
 		#print(devices)
 		type_d = [i['type'] for i in devices]
 		hash_deviceid = [i['hash_deviceid'] for i in devices]
 		MAC_address = [i['mac_address'] for i in devices]
 
+		#Getting battery from devices
+		self.battery = [i['battery'] for i in devices]
+		#print("battery from devices", battery)
+
+
 
 		self.database.SM.load_SensorInfo(sensor = type_d, hash_deviceid = hash_deviceid, MAC_address = MAC_address)
-
 
 	def create_nonce(self):
 
@@ -248,12 +253,17 @@ class Devices_OAuth2flow(object):
 
 	def unique_values_sleep(self, dates, start_date, end_date, values):
 
+		#print(start_date)
+		#print(end_date)
+		#print(dates)
+
 		dates = [datetime.fromtimestamp(a.timestamp()) for a in dates]
 		start_date = [arrow_datetime.datetime for arrow_datetime in start_date]
 		end_date = [arrow_datetime.datetime for arrow_datetime in end_date]
 
 
-
+		
+		
 		# Convert date strings to NumPy datetime64
 		x = np.array(dates, dtype='datetime64')
 		x1 = np.array(start_date, dtype='datetime64')
@@ -263,6 +273,9 @@ class Devices_OAuth2flow(object):
 		y = np.array(values)
 		# Calculate the difference between the startdate and enddate
 		m = (x2 - x1)
+
+		#print(m)
+		#print(values)
 
 		# Leave the values where the difference is the higher one
 		max_m_per_date = {}
@@ -323,10 +336,6 @@ class Devices_OAuth2flow(object):
 		self.month_activity_data['steps'] = [x.steps for x in self.monthly_activity.activities]
 
 		#print(self.activity_data['heart_rate'])
-
-
-		
-
 
 		self.graph.plot_bar(self.activity_data['date'],self.activity_data['steps'])
 
@@ -454,7 +463,7 @@ class Devices_OAuth2flow(object):
 			
 			rounded_values_list = [round(value)  if value is not None else None for value in mean_hr_dict.values()]
 
-		print(rounded_values_list)
+		#print(rounded_values_list)
 		return(rounded_values_list)
 
 
@@ -494,68 +503,98 @@ class Devices_OAuth2flow(object):
 		scale_ending_date = monthly_scale_data['date'][0]
 
 		monthly_scale_data['measures'] = [x.measures for x in self.meas_monthly.measuregrps]
+		#print(monthly_scale_data['measures'])
+		#print(len(monthly_scale_data['measures']))
+		#print(len(monthly_scale_data['date']))
 		self.weight_m, muscle_mass_m, bone_mass_m, fat_mass_m, hydration_m = self.scale_data_extractor(monthly_scale_data['measures'])
-		
+
+		print('*******************************************')
+		#print(muscle_mass_m)
+		#print(bone_mass_m)
+		#print(fat_mass_m)
+		print(len(self.weight_m))
+		print(len(muscle_mass_m))
+		print(len(bone_mass_m))
+		print(len(fat_mass_m))
+		print(len(hydration_m))
+
+		print('*******************************************')
 		#Cleaning data for the table
 		monthly_scale_data['date'], self.weight_m = self.data_cleaning(monthly_scale_data['date'], self.weight_m)
+		monthly_scale_data['date_mm'], muscle_mass_m = self.data_cleaning(monthly_scale_data['date'], muscle_mass_m)
+		monthly_scale_data['date_bm'], bone_mass_m = self.data_cleaning(monthly_scale_data['date'], bone_mass_m)
+		monthly_scale_data['date_fm'], fat_mass_m = self.data_cleaning(monthly_scale_data['date'], fat_mass_m)
+		monthly_scale_data['date_h'], hydration_m = self.data_cleaning(monthly_scale_data['date'], hydration_m)
 
-		self.database.SM.load_Scale(time = scale_data['date'], weight = self.weight, muscle_mass = muscle_mass, bone_mass = bone_mass, fat_mass = fat_mass)
+		#self.database.SM.load_Scale(time = scale_data['date'], weight = self.weight, muscle_mass = muscle_mass, bone_mass = bone_mass, fat_mass = fat_mass)
 
 		
-		self.graph.plot_continous(monthly_scale_data['date'],self.weight_m, muscle_mass_m, bone_mass_m, fat_mass_m, hydration_m, scale_starting_date, scale_ending_date, "Scale")
+		self.graph.plot_continous(monthly_scale_data['date'],self.weight_m, monthly_scale_data['date_mm'], muscle_mass_m, monthly_scale_data['date_bm'],bone_mass_m,
+								  monthly_scale_data['date_fm'], fat_mass_m, monthly_scale_data['date_h'], hydration_m, scale_starting_date, scale_ending_date, "Scale")
 		
 	def scale_data_extractor(self, data):
 
-		weight = []
-		muscle_mass = []
-		bone_mass = []
-		fat_mass = []
-		hydration = []
+		# Initialize dictionaries for each measurement type
+
+		measurement_types = {
+		"weight": [],
+		"fat_mass": [],
+		"muscle_mass": [],
+		"hydration": [],
+		"bone_mass": [],}
+
+		for data_tuple in data:
+			weight_value = None
+			fat_mass_value = None
+			muscle_mass_value = None
+			hydration_value = None
+			bone_mass_value = None
+
+			for measure in data_tuple:
+
+				if measure.type == MeasureType.WEIGHT:
+					weight_value = measure.value * (10 ** measure.unit)
+				elif measure.type == MeasureType.FAT_MASS_WEIGHT:
+					fat_mass_value = measure.value * (10 ** measure.unit)
+				elif measure.type == MeasureType.MUSCLE_MASS:
+					muscle_mass_value = measure.value * (10 ** measure.unit)
+				elif measure.type == MeasureType.HYDRATION:
+					hydration_value = measure.value * (10 ** measure.unit)
+				elif measure.type == MeasureType.BONE_MASS:
+					bone_mass_value = measure.value * (10 ** measure.unit)
+
+			# Append values to their respective lists or np.nan if missing
+			measurement_types["weight"].append(weight_value)
+			measurement_types["fat_mass"].append(fat_mass_value)
+			measurement_types["muscle_mass"].append(muscle_mass_value)
+			measurement_types["hydration"].append(hydration_value)
+			measurement_types["bone_mass"].append(bone_mass_value)
 
 
-		target_measure_type = MeasureType.MUSCLE_MASS
-		
-		#To extract the data from the scale
+		# List for measurements
+		weight = np.array(measurement_types["weight"])
+		fat_mass = np.array(measurement_types["fat_mass"])
+		muscle_mass = np.array(measurement_types["muscle_mass"])
+		hydration = np.array(measurement_types["hydration"])
+		bone_mass = np.array(measurement_types["bone_mass"])
 
-		for x in data:
-			# Check if target_measure_type exists in the sublist
-			muscle_mass_found = False
+				
 
-			for measure in x:
-				if measure.type == target_measure_type:
-					muscle_mass_found = True
-					break
 
-			if muscle_mass_found:
 
-				for measure in x:
 
-					if measure.type == MeasureType.MUSCLE_MASS:
-						n = self.str_to_float(number = measure.value, unit = measure.unit)
-						muscle_mass.append(n)
+		print(weight)
+		print(muscle_mass)
+		print(bone_mass)
+		print(fat_mass)
+		print(hydration)
 
-					elif measure.type == MeasureType.HYDRATION:
-						h = self.str_to_float(number = measure.value, unit = measure.unit)
-						hydration.append(h)
+		print(len(weight))
+		print(len(muscle_mass))
+		print(len(bone_mass))
+		print(len(fat_mass))
+		print(len(hydration))
 
-					elif measure.type == MeasureType.BONE_MASS:
-						bm = self.str_to_float(number = measure.value, unit = measure.unit)
-						bone_mass.append(bm)
-
-					elif measure.type == MeasureType.WEIGHT:
-						w = self.str_to_float(number = measure.value, unit = measure.unit)
-						weight.append(w)
-
-					elif measure.type == MeasureType.FAT_MASS_WEIGHT:
-						fm = self.str_to_float(number = measure.value, unit = measure.unit)
-						fat_mass.append(fm)
-
-			else:
-					weight.append(0)
-					muscle_mass.append(0)
-					bone_mass.append(0)
-					fat_mass.append(0)
-					hydration.append(0)
 
 
 		return(weight, muscle_mass, bone_mass, fat_mass, hydration)
@@ -697,7 +736,9 @@ class Devices_OAuth2flow(object):
 
 		
 		# Unique values Total Sleep Time - Graph and Table
+		print('/////////////////////////////////////////////////////////////////////////////////////////////////////////')
 		self.current_dates_ss, self.current_sleep_time, _ = self.unique_values_sleep(sleeps_data['date'], sleeps_data['start_date'], sleeps_data['end_date'], sleeps_data['total sleep time']) 
+		print('////////////////////////////////////////////////////////')
 		self.previous_dates_ss, self.prev_sleep_time, _ = self.unique_values_sleep(prev_sleeps_data['date'], prev_sleeps_data['start_date'], prev_sleeps_data['end_date'], prev_sleeps_data['total sleep time'])
 		self.monthly_dates_ss, self.monthly_sleep_time, _ = self.unique_values_sleep(month_sleeps_data['date'], month_sleeps_data['start_date'], month_sleeps_data['end_date'], month_sleeps_data['total sleep time'])  
 
@@ -774,6 +815,7 @@ class Devices_OAuth2flow(object):
 		ending_day = self.ending_day_c
 		mean_hr = []
 		mean_rr = []
+		self.usage = {}
 
 		sleeps_data = {}
 
@@ -795,8 +837,10 @@ class Devices_OAuth2flow(object):
 				#Respiration rate
 				sleephf_data = [x['rr'] for x in self.get_sleep_1['series']]
 				all_values = [value for data_dict in sleephf_data for value in data_dict.values()]
+				all_dates = [value for data_dict in sleephf_data for value in data_dict.keys()]
 				count = len(all_values)  # Get the count of values
 				mean = sum(all_values) / count if count > 0 else None
+				self.usage[i] = {'length values': count, 'initial_date': all_dates[0], 'end_date': all_dates[-1]}
 				#Heart rate 
 				sleephf_data_hr = [x['hr'] for x in self.get_sleep_1['series']]
 				all_values_hr = [value for data_dict in sleephf_data_hr for value in data_dict.values()]
@@ -831,6 +875,7 @@ class Devices_OAuth2flow(object):
 				print("Missing sleep data")
 
 		
+		print('usage', self.usage)
 
 		# This data represent Respiration Rate 'rr' in the withings structure
 
@@ -908,6 +953,10 @@ class Devices_OAuth2flow(object):
 		self.prev_hr = self.intra_activitydata(type_time = 'prev')
 		self.HR_table = ([self.hr_based_sleep, self.prev_hr, self.month_activity_data['heart_rate']]) 
 		self.Steps_table = ([self.activity_data['steps'], self.pre_activity_data['steps'], self.month_activity_data['steps']])
+
+	def usage_levels(self, weekly_usage = None, daily_usage = None):
+		pass
+
 
 	#The following functions will be used to get the users' raw data. Please keep in mind that you need to activate and deactivate
 	#the device you want to acquiere the raw data from

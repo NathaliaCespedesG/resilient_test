@@ -311,7 +311,7 @@ class PDF_generation(object):
 
 		# Create a list of data for the table
 		data = [
-    	["Overview", "Day Heart \n  Rate \n [bpm]", "Sleep \n Heart Rate \n [bpm]", "Sleep \n Respiration \n Rate", "Steps",  "Weight \n [kg]", "Sleep \n Duration \n [hours]", " Sleep \n Apnoea Index \n [breathing  \n disturbances] "],
+    	["Overview", "Day Heart \n  Rate \n [bpm]", "Sleep \n Heart Rate \n [bpm]", "Sleep \n Respiration \n Rate", "Steps",  "Weight \n [kg]", "Sleep \n Duration \n [hours]", " Sleep \n Apnoea Index \n [AHI] "],
     	["Current Week \n Average",hr_c , nhr_c , rr_c , steps_c, w_c , sd_c , sa_c],
     	["Last Week \n Average",hr_p , nhr_p  ,rr_p , steps_p , w_p , sd_p  , sa_p],
     	["Monthly values \n (Mean. +/- 1 SD)", hr_m, nhr_m, rr_m , steps_m, w_m , sd_m, sa_m]
