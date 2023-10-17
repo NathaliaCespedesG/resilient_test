@@ -327,7 +327,7 @@ class Graph_generator(object):
 
 		# Create an array of week numbers corresponding to each date
 		week_numbers = [date.isocalendar()[1] for date in x]
-		print(week_numbers)
+		#print(week_numbers)
 
 		# Initialize lists to store the weekly averages
 		week_avg_dates = []
@@ -398,13 +398,6 @@ class Graph_generator(object):
 		weight_date_avg, weight_avg = self.weekly_average(date_weight, weight)
 
 		date_strings = [dt.strftime('%Y-%m-%d') for dt in weight_date_avg]
-
-		print('*********************************************')
-		print(date_strings)
-		print(weight_avg)
-
-
-
 
 		#Avoid double values
 		x1,y1 = self.unique_values(date_weight,weight)

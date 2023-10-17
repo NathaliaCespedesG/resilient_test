@@ -30,6 +30,7 @@ import resources.Graph_generation as graph
 import resources.PDF_generation as pdf_gen
 
 
+
 #This code is an adaptation of the following repository: https://github.com/vangorra/python_withings_api
 #With libraries and methods modified.
 
@@ -53,9 +54,12 @@ class Devices_OAuth2flow(object):
 
 		# Creating the database objective
 
-		self.dates()
+		
 
 		self.database = database.General()
+		self.dates()
+
+		
 
 		self.graph = graph.Graph_generator(start_date =self.initial_dates,
 										   end_date = self.ending_dates)
@@ -90,9 +94,6 @@ class Devices_OAuth2flow(object):
 
 		self.CREDENTIALS_FILE: Final = self.final_path
 		
-
-
-
 
 	def create_auth_url(self):
 
@@ -188,12 +189,16 @@ class Devices_OAuth2flow(object):
 
 		# Dates
 		self.initial_dates = arrow.utcnow().shift(days = self.starting_day_c)
+		self.initial_dates_rep = self.initial_dates.format('D-MMM-YYYY')
 		#print('Initial_Dates from main', self.initial_dates)
 		self.initial_dates_table = self.initial_dates.format('D MMM ')
 
 
 		self.ending_dates = arrow.utcnow().shift(days = self.ending_day_c)
 		self.ending_dates_table = self.ending_dates.format('D MMM ')
+
+
+		self.database.SM.set_date_report(date = self.initial_dates_rep)
 
 
 	def devices_info(self):
@@ -225,7 +230,7 @@ class Devices_OAuth2flow(object):
 
 		signature = self.api.get_signature()
 		self.nonce = signature['body']['nonce']
-		print('nonce', self.nonce)
+		#print('nonce', self.nonce)
 
 
 	def data_cleaning(self, x, y):
@@ -253,16 +258,10 @@ class Devices_OAuth2flow(object):
 
 	def unique_values_sleep(self, dates, start_date, end_date, values):
 
-		#print(start_date)
-		#print(end_date)
-		#print(dates)
 
 		dates = [datetime.fromtimestamp(a.timestamp()) for a in dates]
 		start_date = [arrow_datetime.datetime for arrow_datetime in start_date]
 		end_date = [arrow_datetime.datetime for arrow_datetime in end_date]
-
-
-		
 		
 		# Convert date strings to NumPy datetime64
 		x = np.array(dates, dtype='datetime64')
@@ -503,22 +502,9 @@ class Devices_OAuth2flow(object):
 		scale_ending_date = monthly_scale_data['date'][0]
 
 		monthly_scale_data['measures'] = [x.measures for x in self.meas_monthly.measuregrps]
-		#print(monthly_scale_data['measures'])
-		#print(len(monthly_scale_data['measures']))
-		#print(len(monthly_scale_data['date']))
+	
 		self.weight_m, muscle_mass_m, bone_mass_m, fat_mass_m, hydration_m = self.scale_data_extractor(monthly_scale_data['measures'])
 
-		print('*******************************************')
-		#print(muscle_mass_m)
-		#print(bone_mass_m)
-		#print(fat_mass_m)
-		print(len(self.weight_m))
-		print(len(muscle_mass_m))
-		print(len(bone_mass_m))
-		print(len(fat_mass_m))
-		print(len(hydration_m))
-
-		print('*******************************************')
 		#Cleaning data for the table
 		monthly_scale_data['date'], self.weight_m = self.data_cleaning(monthly_scale_data['date'], self.weight_m)
 		monthly_scale_data['date_mm'], muscle_mass_m = self.data_cleaning(monthly_scale_data['date'], muscle_mass_m)
@@ -526,7 +512,7 @@ class Devices_OAuth2flow(object):
 		monthly_scale_data['date_fm'], fat_mass_m = self.data_cleaning(monthly_scale_data['date'], fat_mass_m)
 		monthly_scale_data['date_h'], hydration_m = self.data_cleaning(monthly_scale_data['date'], hydration_m)
 
-		#self.database.SM.load_Scale(time = scale_data['date'], weight = self.weight, muscle_mass = muscle_mass, bone_mass = bone_mass, fat_mass = fat_mass)
+		self.database.SM.load_Scale(time = scale_data['date'], weight = self.weight, muscle_mass = muscle_mass, bone_mass = bone_mass, fat_mass = fat_mass)
 
 		
 		self.graph.plot_continous(monthly_scale_data['date'],self.weight_m, monthly_scale_data['date_mm'], muscle_mass_m, monthly_scale_data['date_bm'],bone_mass_m,
@@ -577,25 +563,6 @@ class Devices_OAuth2flow(object):
 		muscle_mass = np.array(measurement_types["muscle_mass"])
 		hydration = np.array(measurement_types["hydration"])
 		bone_mass = np.array(measurement_types["bone_mass"])
-
-				
-
-
-
-
-		print(weight)
-		print(muscle_mass)
-		print(bone_mass)
-		print(fat_mass)
-		print(hydration)
-
-		print(len(weight))
-		print(len(muscle_mass))
-		print(len(bone_mass))
-		print(len(fat_mass))
-		print(len(hydration))
-
-
 
 		return(weight, muscle_mass, bone_mass, fat_mass, hydration)
 
@@ -736,9 +703,7 @@ class Devices_OAuth2flow(object):
 
 		
 		# Unique values Total Sleep Time - Graph and Table
-		print('/////////////////////////////////////////////////////////////////////////////////////////////////////////')
 		self.current_dates_ss, self.current_sleep_time, _ = self.unique_values_sleep(sleeps_data['date'], sleeps_data['start_date'], sleeps_data['end_date'], sleeps_data['total sleep time']) 
-		print('////////////////////////////////////////////////////////')
 		self.previous_dates_ss, self.prev_sleep_time, _ = self.unique_values_sleep(prev_sleeps_data['date'], prev_sleeps_data['start_date'], prev_sleeps_data['end_date'], prev_sleeps_data['total sleep time'])
 		self.monthly_dates_ss, self.monthly_sleep_time, _ = self.unique_values_sleep(month_sleeps_data['date'], month_sleeps_data['start_date'], month_sleeps_data['end_date'], month_sleeps_data['total sleep time'])  
 
@@ -833,14 +798,16 @@ class Devices_OAuth2flow(object):
 
 			self.get_sleep_1 = self.api.sleep_get(data_fields=GetSleepField,startdate=arrow.utcnow().shift(days= week_days[i]).replace(hour=0, minute=0, second=0), enddate=arrow.utcnow().shift(days = week_days[i]+1).replace(hour=0, minute=0, second=0),)
 			
+			#print(self.get_sleep_1)
 			try:
 				#Respiration rate
 				sleephf_data = [x['rr'] for x in self.get_sleep_1['series']]
+				print('--------------------------------------------------------')
 				all_values = [value for data_dict in sleephf_data for value in data_dict.values()]
 				all_dates = [value for data_dict in sleephf_data for value in data_dict.keys()]
+				#print(self.get_sleep_1)
 				count = len(all_values)  # Get the count of values
 				mean = sum(all_values) / count if count > 0 else None
-				self.usage[i] = {'length values': count, 'initial_date': all_dates[0], 'end_date': all_dates[-1]}
 				#Heart rate 
 				sleephf_data_hr = [x['hr'] for x in self.get_sleep_1['series']]
 				all_values_hr = [value for data_dict in sleephf_data_hr for value in data_dict.values()]
@@ -875,7 +842,7 @@ class Devices_OAuth2flow(object):
 				print("Missing sleep data")
 
 		
-		print('usage', self.usage)
+		#print('usage', self.usage)
 
 		# This data represent Respiration Rate 'rr' in the withings structure
 

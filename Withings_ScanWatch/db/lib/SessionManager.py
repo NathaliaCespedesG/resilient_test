@@ -130,6 +130,12 @@ class DatabaseManager(object):
 		#User status
 		self.UserStatus = US
 
+	def set_date_report(self, date):
+
+		self.report_date = date
+
+		print(self.report_date)
+
 
 	def get_path(self):
 
@@ -142,7 +148,7 @@ class DatabaseManager(object):
 
 		self.user_folder_wd = self.PH + "/" +"General" + "/" + str(self.UserStatus['id'])
 
-		self.user_folder = self.PH + "/" +"General" + "/" + str(self.UserStatus['id']) +"/"+ str(self.date.year) +"-"+ str(self.date.month)+"-"+ str(self.date.day)
+		self.user_folder = self.PH + "/" +"General" + "/" + str(self.UserStatus['id']) +"/"+ self.report_date
 	
 
 		if not os.path.exists(self.user_folder):
@@ -155,6 +161,7 @@ class DatabaseManager(object):
 		self.scanwatch_name = self.user_folder + "/ScanWatch_summary.csv"
 		self.sleepmat_name = self.user_folder + "/SleepMat_summary.csv"
 		self.devices_info = self.user_folder_wd+ "/Devices.csv"
+		self.usage_info = self.user_folder_wd+ "/Usage.csv"
 
 		#Create sensors file for higher granularity
 
@@ -167,6 +174,7 @@ class DatabaseManager(object):
 		self.ScanWatchfile = open(self.scanwatch_name, 'w+')
 		self.SleepMatFile = open(self.sleepmat_name, "w+")
 		self.DevicesFile = open(self.devices_info, "w+")
+		self.UsageFile = open(self.usage_info, "w+")
 		self.ScanIntraFile = open(self.scanwatch_intraday, "w+")
 		self.SleepIntraFile = open(self.sleepmat_intraday, "w+")
 
@@ -174,6 +182,10 @@ class DatabaseManager(object):
 
 		self.df_devices = pd.DataFrame({'Device': [], 'Hash_deviceid': [], 'MAC_address': []} )
 		self.df_devices.to_csv(self.devices_info, index = False )
+
+		#Headers on usage files
+
+		self.df_usage = pd.DataFrame({'Week': [], 'SleepMat_usage': [], 'SleepMat_battery':[], 'Scale_usage': [], 'Scale_battery': [], 'Watch_usage': [], 'Watch_battery': []} )
 
 		#Headers on each files
 
