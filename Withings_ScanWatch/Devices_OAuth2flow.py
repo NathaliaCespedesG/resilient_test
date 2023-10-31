@@ -28,6 +28,8 @@ import db.database as database
 import resources.Graph_generation as graph
 # Module: PDF generation class to generate the reports 
 import resources.PDF_generation as pdf_gen
+# Module: Usage processing 
+#import resources.
 
 
 
@@ -177,7 +179,7 @@ class Devices_OAuth2flow(object):
 
 	def dates(self):
 
-		self.ending_day_c = -1
+		self.ending_day_c = -2
 		self.starting_day_c = self.ending_day_c - 6
 		self.ending_day_p = self.starting_day_c -1
 		self.starting_day_p = self.ending_day_p -6
@@ -255,6 +257,103 @@ class Devices_OAuth2flow(object):
 
 		return(x,y)
 
+	def hr_filtering(self, x, y):
+
+		# Create a dictionary to aggregate y-values for each unique x-value
+		data_dict = {}
+
+		for i in range(len(x)):
+			if x[i] not in data_dict:
+				data_dict[x[i]] = []
+			data_dict[x[i]].append(y[i])
+
+
+		# Calculate the average y-values for each unique x-value
+		timestamps = list(data_dict.keys())
+		values = [np.mean(data_dict[x_val]) for x_val in timestamps]
+
+		# Convert timestamps to integers
+
+		timestamps = [int(ts_str) for ts_str in timestamps]
+
+		#Deleting HR values at higher frequencies than 9min
+
+
+		try:
+			# Find the minimum timestamp
+			min_timestamp = min(timestamps)
+
+		except ValueError:
+			# Handle the case when the timestamps list is empty
+			min_timestamp = None
+
+
+		# Create new arrays for filtered timestamps and values
+		filtered_timestamps = []
+		filtered_values = []
+
+
+		if min_timestamp is not None:
+			filtered_timestamps = [min_timestamp]
+			filtered_values = [values[0]]
+
+		for i in range(1, len(timestamps)):
+			time_diff = (timestamps[i] - filtered_timestamps[-1])  # Calculate time difference in seconds
+			if time_diff >= 540:  # 9 minutes in seconds
+				filtered_timestamps.append(timestamps[i])
+				filtered_values.append(values[i])
+
+
+		return(filtered_timestamps, filtered_values)
+
+	def unique_values_scale(self, dates, y):
+
+		# Initialize variables to track daily sums and counts
+		daily_sums = {}
+		daily_counts = {}
+
+		new_d = []
+		new_weights = []
+
+		# Iterate through the dates and values
+		for date, weight in zip(dates, y):
+
+			# Extract the date part without the time
+			date_key = date.date()
+
+			if date_key in daily_sums:
+				# Add the weight to the daily sum
+				daily_sums[date_key] += weight
+				daily_counts[date_key] += 1
+			else:
+				# Initialize the daily sum and count for a new date
+				daily_sums[date_key] = weight
+				daily_counts[date_key] = 1
+
+			# Only add the date to the new list if it's the first occurrence of the day
+
+
+			if daily_counts[date_key] == 1:
+				new_d.append(date)
+				try:
+					new_weights.append(daily_sums[date_key] / daily_counts[date_key])
+				except:
+					new_weights.append(float('nan'))
+
+
+		# If you have NaN values, you can replace them in the new_weights list
+		new_weights = [np.nan if np.isnan(x) else round(x, 2) for x in new_weights]
+
+
+		print("New Dates:", new_d)
+		print("New Weights:", new_weights)
+		print("New Dates:", len(new_d))
+		print("New Weights:", len(new_weights))
+
+		return(new_d, new_weights)
+
+
+
 
 	def unique_values_sleep(self, dates, start_date, end_date, values):
 
@@ -323,10 +422,11 @@ class Devices_OAuth2flow(object):
 		self.activity_data['hr_max'] = [x.hr_max for x in self.meas_activity.activities]
 		self.activity_data['date'], self.activity_data['hr_max'] =self.data_cleaning(self.activity_data['date'],self.activity_data['hr_max'])
 
+		#print(self.activity_data['heart_rate'])
+
 		self.intra_activitydata(type_time = "current")
 
-		#print(self.meas_activity)
-
+		
 		#Previous Week
 		self.pre_activity_data['heart_rate'] = [x.hr_average for x in self.prev_meas_activity.activities]
 		self.pre_activity_data['steps'] = [x.steps for x in self.prev_meas_activity.activities]
@@ -384,6 +484,9 @@ class Devices_OAuth2flow(object):
 			step_watch_data = [sub_dict['steps'] for sub_dict in self.meas_intraactivity['series'].values() if 'steps' in sub_dict]
 			dates_c = [key for key, sub_dict in self.meas_intraactivity['series'].items() if 'calories' in sub_dict]
 			calories_watch_data = [sub_dict['calories'] for sub_dict in self.meas_intraactivity['series'].values() if 'calories' in sub_dict]
+			
+			dates, watch_data = self.hr_filtering(dates, watch_data)
+
 			dates_to_test[i] = dates
 			hr_to_test[i] = watch_data
 			dates_hr.append(dates)
@@ -393,6 +496,7 @@ class Devices_OAuth2flow(object):
 			Steps_watch.append(step_watch_data)
 			dates_calories.append(dates_c)
 			Calories_watch.append(calories_watch_data)
+			
 
 
 	
@@ -409,6 +513,11 @@ class Devices_OAuth2flow(object):
 		dates_calories = sum(dates_calories,[])
 		#dates_calories = [int(x) for x in dates_calories]
 
+
+
+		
+
+
 		if type_time == "current":
 			start_dates_hr = self.wakeup_hours
 			end_dates_hr = self.fellasleep_hours
@@ -422,12 +531,49 @@ class Devices_OAuth2flow(object):
 		if type_time == "prev":
 			start_dates_hr = self.wakeup_hours_prev
 			end_dates_hr = self.fellasleep_hours_prev
+			print(hr_to_test)
+			print(dates_to_test)
 			self.hr_based_sleep_prev = self.hr_average_basedon_sleep(dates = dates_to_test, HR = hr_to_test, startdates = start_dates_hr, enddates = end_dates_hr )
+			#self.hr_based_sleep_prev = []
 			return(self.hr_based_sleep_prev)
+
+
+	def testst(self, dates):
+
+		# Create a new dictionary to store the Arrow datetime objects
+		arrow_dict = {}
+
+		for key, timestamps in dates.items():
+			arrow_dates = []
+			for timestamp in timestamps:
+				timestamp = int(timestamp)  # Convert the string timestamp to an integer
+				arrow_date = arrow.get(timestamp)  # Create an Arrow DateTime object
+				arrow_dates.append(arrow_date)
+
+			arrow_dict[key] = arrow_dates
+		#print(arrow_dict)
+	
 	def hr_average_basedon_sleep(self, dates = None, HR = None, startdates = None, enddates = None):
 
 		# Initialize a dictionary to store mean HR values for each key
 		mean_hr_dict = {}
+		print(len(startdates))
+		print(len(dates))
+
+		if len(startdates) < len(dates):
+			# Calculate the previous day's times for the 0th position
+			first1_wakeup = startdates[0].shift(days=-1, hours=0, minutes=0, seconds=0)
+			first1_sleep = enddates[0].shift(days=-1, hours=0, minutes=0, seconds=0)
+
+			first_wakeup = startdates[0].shift(days=-2, hours=0, minutes=0, seconds=0)
+			first_sleep = enddates[0].shift(days=-2, hours=0, minutes=0, seconds=0)
+
+			# Insert the calculated times at the 0th position
+			startdates.insert(0, first_wakeup)
+			enddates.insert(0, first_sleep)
+			startdates.insert(1, first1_wakeup)
+			enddates.insert(1, first1_sleep)
+
 
 		# Iterate through keys in the 'dates' dictionary
 		for key in dates:
@@ -435,8 +581,11 @@ class Devices_OAuth2flow(object):
 			hr_values = HR[key]
 
 			# Get the corresponding start and end dates for this key using the key index
-			startdate = startdates[key].replace(tzinfo='UTC')
-			enddate = enddates[key].replace(tzinfo='UTC')
+			#startdate = startdates[key] #.replace(tzinfo='UTC')
+			#enddate = enddates[key]#.replace(tzinfo='UTC')
+			# Doing calculations between 6 am - 6 pm 
+			startdate = startdates[key].replace(hour=6, minute=0, second=0)
+			enddate = enddates[key].replace(hour=18, minute=0, second=0)
 
 			# Convert startdate and enddate to timestamps
 			startdate_ts = startdate.timestamp()
@@ -444,17 +593,27 @@ class Devices_OAuth2flow(object):
 
 			# Initialize a list to store HR values within the date range for this key
 			hr_values_within_range = []
+			timestamps_within_range = []
 
 			# Iterate through timestamps and HR values for this key
 			for timestamp, hr in zip(timestamps, hr_values):
 				
 				if startdate_ts <= timestamp <= enddate_ts:
 					hr_values_within_range.append(hr)
+					timestamps_within_range.append(timestamp)
+
+			#Calculation of values each 30 min
+
+			#print(timestamps_within_range)
+
+			average = self.halfhour_calculation(timestamps_within_range, hr_values_within_range)
+			#average = self.package_halfhour_calculation(timestamps_within_range, hr_values_within_range)
+
 
 			# Calculate the mean of HR values within the date range for this key
 			if hr_values_within_range:
-				mean_hr = sum(hr_values_within_range) / len(hr_values_within_range)
-				mean_hr_dict[key] = mean_hr
+				#mean_hr = sum(hr_values_within_range) / len(hr_values_within_range)
+				mean_hr_dict[key] = average
 			else:
 				# If no HR values found within the specified date range, set the mean to None
 				mean_hr_dict[key] = None
@@ -465,6 +624,129 @@ class Devices_OAuth2flow(object):
 		#print(rounded_values_list)
 		return(rounded_values_list)
 
+	def package_halfhour_calculation(self, timestamps,values):
+		
+
+		if not timestamps:
+			average = float('nan')
+
+		else:
+			# Convert timestamps to integers
+			timestamps = [int(ts_str) for ts_str in timestamps]
+
+			# Create a dictionary to store values in half-hour intervals
+			half_hour_intervals = {}
+
+			# Define the interval duration (30 minutes) in seconds
+			interval_duration = 30 * 60
+
+			# Initialize the first interval's start time
+			#try:
+			#print('Here')
+			current_interval_start = timestamps[0]
+			#print(current_interval_start)
+			#except:
+			#current_interval_start = None
+
+			# Initialize variables to calculate the sum and count within each interval
+			interval_sum = 0
+			interval_count = 0
+
+			print('----------------------------------------------------------')
+			#print(current_interval_start)
+
+			if current_interval_start is not None:
+
+				for timestamp, value in zip(timestamps, values):
+
+					while timestamp >= current_interval_start + interval_duration:
+						# Calculate the average for the current interval and store it
+						if interval_count > 0:
+							interval_average = interval_sum / interval_count
+							half_hour_intervals[current_interval_start] = interval_average
+
+
+						# Move to the next interval
+						current_interval_start += interval_duration
+						interval_sum = 0
+						interval_count = 0
+
+					interval_sum += value
+					interval_count += 1
+
+
+				# Calculate the average for the last interval
+
+				if interval_count > 0:
+					interval_average = interval_sum / interval_count
+					half_hour_intervals[current_interval_start] = interval_average
+
+
+
+				total_sum = sum(half_hour_intervals.values())
+				num_values = len(half_hour_intervals)
+
+				# Step 3: Calculate the average
+				average = total_sum / num_values
+			
+
+		print(average)
+
+		return(average)
+
+		# Print the results
+		#for timestamp, average_value in half_hour_intervals.items():
+			#print(f"Timestamp: {timestamp}, Average Value: {average_value}")
+
+
+
+	def halfhour_calculation(self, timestamps,values):
+
+
+		if not timestamps:
+			mean_hr = float('nan')
+
+		else:
+
+			# Find the earliest timestamp
+			earliest_timestamp = min(timestamps)
+
+			# Define the 30-minute interval in seconds
+			interval_seconds = 30 * 60  # 30 minutes * 60 seconds/minute
+
+			# Initialize a list to store values at intervals
+			values_at_intervals = []
+			timestamps_at_intervals = []
+
+			# Iterate through timestamps and extract values at 30-minute intervals
+			current_timestamp = earliest_timestamp
+			current_index = 0
+
+			while current_index < len(timestamps):
+				if timestamps[current_index] >= current_timestamp:
+					values_at_intervals.append(values[current_index])
+					timestamps_at_intervals.append(timestamps[current_index])
+					current_timestamp += interval_seconds
+
+				else:
+					current_index += 1
+
+			timestamps_at_intervals, values_at_intervals = self.hr_filtering(timestamps_at_intervals,values_at_intervals)
+
+			#print('val at intervals', values_at_intervals)
+			timestamps_repti = [arrow.get(ts) for ts in timestamps_at_intervals]
+			print('timestamps',timestamps_repti)
+
+			print('------------------------------------')
+
+			if values_at_intervals:
+				mean_hr = sum(values_at_intervals) / len(values_at_intervals)
+				print(mean_hr)
+			else:
+				print('Not available data')
+
+		return(mean_hr)
+			
 
 	def scale_data(self):
 
@@ -506,15 +788,21 @@ class Devices_OAuth2flow(object):
 		self.weight_m, muscle_mass_m, bone_mass_m, fat_mass_m, hydration_m = self.scale_data_extractor(monthly_scale_data['measures'])
 
 		#Cleaning data for the table
+		monthly_scale_data['date'], self.weight_m = self.unique_values_scale(monthly_scale_data['date'], self.weight_m)
 		monthly_scale_data['date'], self.weight_m = self.data_cleaning(monthly_scale_data['date'], self.weight_m)
+		monthly_scale_data['date_mm'], muscle_mass_m = self.unique_values_scale(monthly_scale_data['date'], muscle_mass_m)
 		monthly_scale_data['date_mm'], muscle_mass_m = self.data_cleaning(monthly_scale_data['date'], muscle_mass_m)
+		monthly_scale_data['date_bm'], bone_mass_m = self.unique_values_scale(monthly_scale_data['date'], bone_mass_m)
 		monthly_scale_data['date_bm'], bone_mass_m = self.data_cleaning(monthly_scale_data['date'], bone_mass_m)
+		monthly_scale_data['date_fm'], fat_mass_m = self.unique_values_scale(monthly_scale_data['date'], fat_mass_m)
 		monthly_scale_data['date_fm'], fat_mass_m = self.data_cleaning(monthly_scale_data['date'], fat_mass_m)
+		monthly_scale_data['date_h'], hydration_m = self.unique_values_scale(monthly_scale_data['date'], hydration_m)
 		monthly_scale_data['date_h'], hydration_m = self.data_cleaning(monthly_scale_data['date'], hydration_m)
 
 		self.database.SM.load_Scale(time = scale_data['date'], weight = self.weight, muscle_mass = muscle_mass, bone_mass = bone_mass, fat_mass = fat_mass)
 
-		
+		#print('WEIGHT', self.weight_m)
+		#print('monthly_scale_data', monthly_scale_data['date'])
 		self.graph.plot_continous(monthly_scale_data['date'],self.weight_m, monthly_scale_data['date_mm'], muscle_mass_m, monthly_scale_data['date_bm'],bone_mass_m,
 								  monthly_scale_data['date_fm'], fat_mass_m, monthly_scale_data['date_h'], hydration_m, scale_starting_date, scale_ending_date, "Scale")
 		
@@ -622,7 +910,7 @@ class Devices_OAuth2flow(object):
 		month_sleeps_data['end_date'] = [arrow.get(x.enddate) for x in self.month_sleep_summary.series]
 		month_sleeps_data['data'] = [x.data for x in self.month_sleep_summary.series]
 
-			# Values of HR and RR for the table
+		# Values of HR and RR for the table
 
 		
 		sleeps_data['breathing disturbances'] = [x.breathing_disturbances_intensity for x in sleeps_data['data']]
@@ -647,6 +935,13 @@ class Devices_OAuth2flow(object):
 		sleeps_data['apnea'] =  [x.apnea_hypopnea_index for x in sleeps_data['data']]
 		sleeps_data['out of bed count'] = [x.out_of_bed_count for x in sleeps_data['data']]
 
+		sleeps_data['total sleep time']=[x/3600 for x in sleeps_data['total sleep time']]
+
+		#print('From sleep Analysis:')
+		#print('start_date:', sleeps_data['start_date'])
+		#print('end_date:', sleeps_data['end_date'] )
+		#print('Dates:', sleeps_data['date'] )
+		#print('Total sleep_time', sleeps_data['total sleep time'])
 			
 		# Previous week values
 
@@ -673,7 +968,7 @@ class Devices_OAuth2flow(object):
 
 
 		#Values  of total time in bed, awake in bed conversion to hours /3600 
-		sleeps_data['total sleep time']=[x/3600 for x in sleeps_data['total sleep time']]
+		#sleeps_data['total sleep time']=[x/3600 for x in sleeps_data['total sleep time']]
 		sleeps_data['awake in bed']=[x/3600 for x in sleeps_data['awake in bed']]
 		prev_sleeps_data['total sleep time']=[x/3600 for x in prev_sleeps_data['total sleep time']]
 		month_sleeps_data['total sleep time'] =[x/3600 for x in month_sleeps_data['total sleep time']]
@@ -745,8 +1040,9 @@ class Devices_OAuth2flow(object):
 
 		self.wakeup_hours = end_dates[:-1]
 		self.fellasleep_hours = start_dates[1:]
-		#print(self.wakeup_hours)
-		#print(self.fellasleep_hours)
+		
+		#print('Wakeup dates', end_dates)
+		#print('sleep', start_dates)
 
 	def daily_dates_prev(self, startdate = None, enddate = None, positions = None):
 		start_dates = [startdate[i] for i in positions]
@@ -796,9 +1092,14 @@ class Devices_OAuth2flow(object):
 			count = 0
 			mean = 0
 
-			self.get_sleep_1 = self.api.sleep_get(data_fields=GetSleepField,startdate=arrow.utcnow().shift(days= week_days[i]).replace(hour=0, minute=0, second=0), enddate=arrow.utcnow().shift(days = week_days[i]+1).replace(hour=0, minute=0, second=0),)
+			self.get_sleep_1 = self.api.sleep_get(data_fields=GetSleepField,startdate=arrow.utcnow().shift(days= week_days[i]).replace(hour=13, minute=0, second=0), enddate=arrow.utcnow().shift(days = week_days[i]+1).replace(hour=13, minute=0, second=0),)
 			
-			#print(self.get_sleep_1)
+			#data_startdate = [arrow.get(x['startdate']) for x in self.get_sleep_1['series']]
+			#data_enddate = [arrow.get(x['enddate']) for x in self.get_sleep_1['series']]
+			#data_states = [x['state'] for x in self.get_sleep_1['series']]
+			
+
+			#self.graph.plot_events(data_startdate, data_enddate, data_states)
 			try:
 				#Respiration rate
 				sleephf_data = [x['rr'] for x in self.get_sleep_1['series']]
@@ -824,6 +1125,7 @@ class Devices_OAuth2flow(object):
 				sleephf_enddate = [x['enddate'] for x in self.get_sleep_1['series']]
 				#state
 				sleephf_state = [x['state'] for x in self.get_sleep_1['series']]
+
 
 				#Arrays with all the values from each measurement
 				data.append(sleephf_data)

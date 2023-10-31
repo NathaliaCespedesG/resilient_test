@@ -63,23 +63,26 @@ class Graph_generator(object):
 		x = mdates.date2num(x)
 		y = y
 
-		# Interpolate y values using the new x values
+		if len(x) > 3:
+			# Interpolate y values using the new x values
 
-		try:
-			# Create interpolation function
-			interpolation_function = make_interp_spline(x, y)
+			try:
+				# Create interpolation function
+				interpolation_function = make_interp_spline(x, y)
 
-			# Generate new x values for smooth curve
+				# Generate new x values for smooth curve
+				new_x = np.linspace(min(x), max(x), num=50)
+				smooth_y = interpolation_function(new_x)
+				# Convert matplotlib date numbers back to datetime objects
+				smooth_dates = mdates.num2date(new_x)
 
-			new_x = np.linspace(min(x), max(x), num=50)
-			smooth_y = interpolation_function(new_x)
-			# Convert matplotlib date numbers back to datetime objects
-			smooth_dates = mdates.num2date(new_x)
+				return(smooth_dates,smooth_y)
 
-			return(smooth_dates,smooth_y)
-
-		except:
+			except:
+				return(x,y)
+		else:
 			return(x,y)
+
 
 	def plot_scatter(self, x, y, k, j, name):
 
@@ -123,8 +126,8 @@ class Graph_generator(object):
 
 				# Smooth lines
 				k_s,j_s = self.smooth_lines(k,j)
-				print('From graphs', k)
-				print('From graphs', j)
+				#print('From graphs', k)
+				#print('From graphs', j)
 
 				plt.gca().set_title('Sleep Respiration Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
 				plt.ylabel("Breaths per minute", fontsize = 11, fontdict = self.font)
@@ -323,43 +326,52 @@ class Graph_generator(object):
 		#print(x)
 		#print(y)
 
-		x = [datetime.strptime(date.strftime('%Y-%m-%d'), '%Y-%m-%d') for date in x]
+		try:
 
-		# Create an array of week numbers corresponding to each date
-		week_numbers = [date.isocalendar()[1] for date in x]
-		#print(week_numbers)
+			x = [datetime.strptime(date.strftime('%Y-%m-%d'), '%Y-%m-%d') for date in x]
 
-		# Initialize lists to store the weekly averages
-		week_avg_dates = []
-		week_avg_weights = []
+			# Create an array of week numbers corresponding to each date
+			week_numbers = [date.isocalendar()[1] for date in x]
+			#print(week_numbers)
 
-		current_week = week_numbers[0]
-		weekly_weight_sum = 0
-		weekly_weight_count = 0
+			# Initialize lists to store the weekly averages
+			week_avg_dates = []
+			week_avg_weights = []
 
-		for date, weight, week in zip(x, y, week_numbers):
-			if week == current_week:
-				weekly_weight_sum += weight
-				weekly_weight_count += 1
-			else:
-				# Append the average for the previous week
+			current_week = week_numbers[0]
+			weekly_weight_sum = 0
+			weekly_weight_count = 0
 
-				if weekly_weight_count > 0:
-					week_avg_dates.append(date)
-					week_avg_weights.append(weekly_weight_sum / weekly_weight_count)
-				current_week = week
-				weekly_weight_sum = weight
-				weekly_weight_count = 1
+			for date, weight, week in zip(x, y, week_numbers):
+				if week == current_week:
+					weekly_weight_sum += weight
+					weekly_weight_count += 1
+				else:
+					# Append the average for the previous week
 
-		# Append the last week's average
-		if weekly_weight_count > 0:
-			week_avg_dates.append(x[-1] )
-			week_avg_weights.append(weekly_weight_sum / weekly_weight_count)
+					if weekly_weight_count > 0:
+						week_avg_dates.append(date + timedelta(days=3))
+						week_avg_weights.append(weekly_weight_sum / weekly_weight_count)
+					current_week = week
+					weekly_weight_sum = weight
+					weekly_weight_count = 1
+
+			# Append the last week's average
+			if weekly_weight_count > 0:
+				week_avg_dates.append(x[-1] + timedelta(days=3))
+				week_avg_weights.append(weekly_weight_sum / weekly_weight_count)
 
 
-		#print(week_avg_dates)
-		#print(week_avg_weights)
+			print(week_avg_dates)
+			print(week_avg_weights)
 
+		except:
+
+			week_avg_dates = []
+			week_avg_weights = []
+
+
+		
 		return(week_avg_dates, week_avg_weights)
 
 
@@ -396,27 +408,38 @@ class Graph_generator(object):
 		date_hydration = [value for index, value in enumerate(date_hydration) if index not in index_4]
 
 		weight_date_avg, weight_avg = self.weekly_average(date_weight, weight)
+		mm_date_avg , mm_avg = self.weekly_average(date_muscle_mass, muscle_mass)
+		bm_date_avg, bm_avg = self.weekly_average(date_bone_mass, bone_mass)
+		fm_date_avg, fm_avg = self.weekly_average(date_fat_mass, fat_mass)
+		hydration_date_avg, hydration_avg = self.weekly_average(date_hydration, hydration)
+
+
+
 
 		date_strings = [dt.strftime('%Y-%m-%d') for dt in weight_date_avg]
 
 		#Avoid double values
-		x1,y1 = self.unique_values(date_weight,weight)
-		x2,z1 = self.unique_values(date_muscle_mass,muscle_mass)
-		x3,w1 = self.unique_values(date_bone_mass,bone_mass)
-		x4,t1 = self.unique_values(date_fat_mass,fat_mass)
-		x5,l1 = self.unique_values(date_hydration,hydration)
+		#x1,y1 = self.unique_values(date_weight,weight)
+		#x2,z1 = self.unique_values(date_muscle_mass,muscle_mass)
+		#x3,w1 = self.unique_values(date_bone_mass,bone_mass)
+		#x4,t1 = self.unique_values(date_fat_mass,fat_mass)
+		#x5,l1 = self.unique_values(date_hydration,hydration)
 
 		
 
 		#print('ACA', x1)
 		#print(y1)
+		
+
 
 		# Smooth lines
-		x_s,y_s = self.smooth_lines(x1,y1)
-		x_s2,z_s = self.smooth_lines(x2,z1)
-		x_s3,w_s = self.smooth_lines(x3,w1)
-		x_s4,t_s = self.smooth_lines(x4,t1)
-		x_s5,l_s = self.smooth_lines(x5,l1)
+		x_s,y_s = self.smooth_lines(date_weight,weight)
+		x_s2,z_s = self.smooth_lines(date_muscle_mass,muscle_mass)
+		x_s3,w_s = self.smooth_lines(date_bone_mass,bone_mass)
+		x_s4,t_s = self.smooth_lines(date_fat_mass,fat_mass)
+		x_s5,l_s = self.smooth_lines(date_hydration,hydration)
+
+		print("WEIGH AFTER", y_s)
 
 
 		plt.clf()
@@ -427,8 +450,10 @@ class Graph_generator(object):
 
 			# Create a scatter plot
 			sns.set_style("whitegrid",{ "grid.linewidth":0.5, "grid.color": ".8", "grid.linestyle": ":", "ytick.left": True})
-			
-			sns.lineplot(x = x_s, y = y_s, label = "Weight", color = "darkblue", linewidth = 2)
+			if len(weight_avg) < 2:
+				sns.scatterplot( x= weight_date_avg, y = weight_avg, label = "Weight", color = "darkblue")
+			else:
+				sns.lineplot(x = x_s, y = y_s, label = "Weight", color = "darkblue", linewidth = 2)
 			sns.lineplot(x = x_s2, y = z_s, label = "Muscle mass", linestyle='--',  color = "mediumseagreen", linewidth = 2)
 			sns.lineplot(x = x_s3, y = w_s, label = "Bone mass",linestyle='--',  color = "yellow", linewidth = 2)
 			sns.lineplot(x = x_s4, y = t_s, label = "Fat mass", linestyle='--', color = "mediumpurple", linewidth = 2)
@@ -442,18 +467,16 @@ class Graph_generator(object):
 
 				plt.text(weight_date_avg[index], weight_avg[index], math.floor(weight_avg[index]), size = 11.5,  rotation = 45, fontdict = self.font)
 
-			for index in range(len(date_muscle_mass)):
-				plt.text(date_muscle_mass[index], muscle_mass[index], math.floor(muscle_mass[index]), size = 11.5,  rotation = 45, fontdict = self.font)
-				plt.text(date_bone_mass[index], bone_mass[index], math.floor(bone_mass[index]), size = 11.5,  rotation = 45, fontdict = self.font)
-				plt.text(date_fat_mass[index], fat_mass[index], math.floor(fat_mass[index]), size = 11.5,  rotation = 45, fontdict = self.font)
-				plt.text(date_hydration[index], hydration[index], math.floor(hydration[index]), size = 11.5,  rotation = 45, fontdict = self.font)
+			for index in range(len(mm_date_avg)):
+				plt.text(mm_date_avg[index], mm_avg[index], math.floor(mm_avg[index]), size = 11.5,  rotation = 45, fontdict = self.font)
+				plt.text(bm_date_avg[index], bm_avg[index], math.floor(bm_avg[index]), size = 11.5,  rotation = 45, fontdict = self.font)
+				plt.text(fm_date_avg[index], fm_avg[index], math.floor(fm_avg[index]), size = 11.5,  rotation = 45, fontdict = self.font)
+				plt.text(hydration_date_avg[index], hydration_avg[index], math.floor(hydration_avg[index]), size = 11.5,  rotation = 45, fontdict = self.font)
 
 
-			try:
-				plt.ylim(min(w_s) - 5, max(y_s)+15)
-			except:
-				print('No data for the scale')
-			#plt.xlabel("From" + x[0] + "to" + x[end]))
+
+			if len(z_s) == 0:
+				plt.ylim(min(y_s)-5, max(y_s)+5)
 
 			plt.gca().set_title('Weight',fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
 			plt.ylabel("Mass (kg)", fontdict = self.font)

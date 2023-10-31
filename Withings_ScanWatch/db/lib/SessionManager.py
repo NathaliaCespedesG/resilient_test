@@ -21,7 +21,6 @@ class DatabaseManager(object):
 
 	def load_Scale(self, time = None, weight = None, muscle_mass = None, bone_mass = None, fat_mass = None):
 
-
 		#Loading data
 		self.ScaleFile = open(self.scale_name, 'a')
 		for i in range (len(time)):
