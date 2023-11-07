@@ -213,7 +213,7 @@ class Graph_generator(object):
 
 
 			try:
-				plt.ylim(min(y), max(y))
+				plt.ylim(min(y)-5, max(y)+5)
 			except:
 				print('Empty data')
 		
@@ -668,7 +668,7 @@ class Graph_generator(object):
 			plt.clf()
 
 			plt.bar(x1, y, label='Hours Asleep', color = "cornflowerblue")
-			plt.bar(x1, z, label='Hours Awake in bed', bottom = y, color = "lightgreen")
+			plt.bar(x1, z, label='Hours Awake in bed', bottom = y, color = "lightblue")
 
 
 			sns.lineplot(x = x_soft, y = o_soft, color = "darkblue", markersize = 14, label = "Times out of bed", zorder = 9, linewidth = 2 )

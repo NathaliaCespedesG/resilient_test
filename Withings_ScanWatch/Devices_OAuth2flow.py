@@ -179,7 +179,7 @@ class Devices_OAuth2flow(object):
 
 	def dates(self):
 
-		self.ending_day_c = -2
+		self.ending_day_c = -3
 		self.starting_day_c = self.ending_day_c - 6
 		self.ending_day_p = self.starting_day_c -1
 		self.starting_day_p = self.ending_day_p -6
@@ -323,8 +323,11 @@ class Devices_OAuth2flow(object):
 
 			if date_key in daily_sums:
 				# Add the weight to the daily sum
-				daily_sums[date_key] += weight
-				daily_counts[date_key] += 1
+				if weight is not None:
+					daily_sums[date_key] += weight
+					daily_counts[date_key] += 1
+				else:
+					daily_counts[date_key] = float('nan')
 			else:
 				# Initialize the daily sum and count for a new date
 				daily_sums[date_key] = weight
@@ -345,10 +348,10 @@ class Devices_OAuth2flow(object):
 		new_weights = [np.nan if np.isnan(x) else round(x, 2) for x in new_weights]
 
 
-		print("New Dates:", new_d)
-		print("New Weights:", new_weights)
-		print("New Dates:", len(new_d))
-		print("New Weights:", len(new_weights))
+		#print("New Dates:", new_d)
+		#print("New Weights:", new_weights)
+		#print("New Dates:", len(new_d))
+		#print("New Weights:", len(new_weights))
 
 		return(new_d, new_weights)
 
@@ -422,7 +425,9 @@ class Devices_OAuth2flow(object):
 		self.activity_data['hr_max'] = [x.hr_max for x in self.meas_activity.activities]
 		self.activity_data['date'], self.activity_data['hr_max'] =self.data_cleaning(self.activity_data['date'],self.activity_data['hr_max'])
 
-		#print(self.activity_data['heart_rate'])
+		print('From daily agreggated service')
+		#print(self.activity_data['date'])
+		print(self.activity_data['heart_rate'])
 
 		self.intra_activitydata(type_time = "current")
 
@@ -522,20 +527,21 @@ class Devices_OAuth2flow(object):
 			start_dates_hr = self.wakeup_hours
 			end_dates_hr = self.fellasleep_hours
 			self.hr_based_sleep = self.hr_average_basedon_sleep(dates = dates_to_test, HR = hr_to_test, startdates = start_dates_hr, enddates = end_dates_hr )
-			#self.final_hr = self.backup_data(value1 = self.activity_data['heart_rate'], value2 = self.hr_based_sleep)
-			self.graph.plot_scatter(x = dates_hr_1, y = HR_watch, k = self.activity_data['date'], j = self.hr_based_sleep, name = "HR_ScanWatch")
+			self.final_hr = self.backup_data(value2 = self.activity_data['heart_rate'], value1 = self.hr_based_sleep)
+			self.graph.plot_scatter(x = dates_hr_1, y = HR_watch, k = self.activity_data['date'], j = self.final_hr, name = "HR_ScanWatch")
 			self.database.SM.load_intra_activity(hr = HR_watch, time = dates_hr, time_steps = dates_steps, steps = Steps_watch, time_calories = dates_calories, calories = Calories_watch)
-			self.database.SM.load_ScanWatch(hr = self.hr_based_sleep, calories = self.activity_data['calories'], steps = self.activity_data['steps'],  time = self.activity_data['date'] )
+			self.database.SM.load_ScanWatch(hr = self.activity_data['heart_rate'], calories = self.activity_data['calories'], steps = self.activity_data['steps'],  time = self.activity_data['date'] )
 
 
 		if type_time == "prev":
 			start_dates_hr = self.wakeup_hours_prev
 			end_dates_hr = self.fellasleep_hours_prev
-			print(hr_to_test)
-			print(dates_to_test)
+			#print(hr_to_test)
+			#print(dates_to_test)
 			self.hr_based_sleep_prev = self.hr_average_basedon_sleep(dates = dates_to_test, HR = hr_to_test, startdates = start_dates_hr, enddates = end_dates_hr )
-			#self.hr_based_sleep_prev = []
-			return(self.hr_based_sleep_prev)
+			self.final_hr_prev = self.backup_data(value2 = self.pre_activity_data['heart_rate'], value1 = self.hr_based_sleep_prev)
+			#self.hr_based_sleep_prev = self.pre_activity_data['heart_rate']
+			return(self.final_hr_prev)
 
 
 	def testst(self, dates):
@@ -560,19 +566,19 @@ class Devices_OAuth2flow(object):
 		print(len(startdates))
 		print(len(dates))
 
+
+
 		if len(startdates) < len(dates):
-			# Calculate the previous day's times for the 0th position
-			first1_wakeup = startdates[0].shift(days=-1, hours=0, minutes=0, seconds=0)
-			first1_sleep = enddates[0].shift(days=-1, hours=0, minutes=0, seconds=0)
 
-			first_wakeup = startdates[0].shift(days=-2, hours=0, minutes=0, seconds=0)
-			first_sleep = enddates[0].shift(days=-2, hours=0, minutes=0, seconds=0)
+			missing_days = len(dates) - len(startdates)
 
-			# Insert the calculated times at the 0th position
-			startdates.insert(0, first_wakeup)
-			enddates.insert(0, first_sleep)
-			startdates.insert(1, first1_wakeup)
-			enddates.insert(1, first1_sleep)
+			for i in range(missing_days):
+
+				wakeup_fill = startdates[0].shift(days = -(i+1), hours=0, minutes=0, seconds=0)
+				sleep_fill = enddates[0].shift(days = -(i+1), hours=0, minutes=0, seconds=0)
+
+				startdates.insert(missing_days-(i+1), wakeup_fill)
+				enddates.insert(missing_days-(i+1), sleep_fill)
 
 
 		# Iterate through keys in the 'dates' dictionary
@@ -604,16 +610,16 @@ class Devices_OAuth2flow(object):
 
 			#Calculation of values each 30 min
 
-			#print(timestamps_within_range)
+			#print(hr_values_within_range)
 
-			average = self.halfhour_calculation(timestamps_within_range, hr_values_within_range)
+			#average = self.halfhour_calculation(timestamps_within_range, hr_values_within_range)
 			#average = self.package_halfhour_calculation(timestamps_within_range, hr_values_within_range)
 
 
 			# Calculate the mean of HR values within the date range for this key
 			if hr_values_within_range:
-				#mean_hr = sum(hr_values_within_range) / len(hr_values_within_range)
-				mean_hr_dict[key] = average
+				mean_hr_dict[key] = sum(hr_values_within_range) / len(hr_values_within_range)
+				#mean_hr_dict[key] = average
 			else:
 				# If no HR values found within the specified date range, set the mean to None
 				mean_hr_dict[key] = None
@@ -652,7 +658,7 @@ class Devices_OAuth2flow(object):
 			interval_sum = 0
 			interval_count = 0
 
-			print('----------------------------------------------------------')
+			#print('----------------------------------------------------------')
 			#print(current_interval_start)
 
 			if current_interval_start is not None:
@@ -690,7 +696,7 @@ class Devices_OAuth2flow(object):
 				average = total_sum / num_values
 			
 
-		print(average)
+		#print(average)
 
 		return(average)
 
@@ -735,13 +741,13 @@ class Devices_OAuth2flow(object):
 
 			#print('val at intervals', values_at_intervals)
 			timestamps_repti = [arrow.get(ts) for ts in timestamps_at_intervals]
-			print('timestamps',timestamps_repti)
+			#print('timestamps',timestamps_repti)
 
-			print('------------------------------------')
+			#print('------------------------------------')
 
 			if values_at_intervals:
 				mean_hr = sum(values_at_intervals) / len(values_at_intervals)
-				print(mean_hr)
+				#print(mean_hr)
 			else:
 				print('Not available data')
 
@@ -1103,7 +1109,7 @@ class Devices_OAuth2flow(object):
 			try:
 				#Respiration rate
 				sleephf_data = [x['rr'] for x in self.get_sleep_1['series']]
-				print('--------------------------------------------------------')
+				#print('--------------------------------------------------------')
 				all_values = [value for data_dict in sleephf_data for value in data_dict.values()]
 				all_dates = [value for data_dict in sleephf_data for value in data_dict.keys()]
 				#print(self.get_sleep_1)
@@ -1198,7 +1204,7 @@ class Devices_OAuth2flow(object):
 	# The following function is called when there are higher granularity data but not averages
 	def backup_data(self, value1 = None, value2 = None):
 
-		value = [v1 if v2 is None else v2 for v1, v2 in zip(value1, value2)]
+		value = [v1 if (v2 is None or np.isnan(v2) or v2 == 0) else v2 for v1, v2 in zip(value1, value2)]
 
 		return(value)
 
@@ -1220,7 +1226,7 @@ class Devices_OAuth2flow(object):
 
 		#ScanWatch
 		self.prev_hr = self.intra_activitydata(type_time = 'prev')
-		self.HR_table = ([self.hr_based_sleep, self.prev_hr, self.month_activity_data['heart_rate']]) 
+		self.HR_table = ([self.final_hr, self.prev_hr, self.month_activity_data['heart_rate']]) 
 		self.Steps_table = ([self.activity_data['steps'], self.pre_activity_data['steps'], self.month_activity_data['steps']])
 
 	def usage_levels(self, weekly_usage = None, daily_usage = None):
@@ -1311,7 +1317,7 @@ class Devices_OAuth2flow(object):
 
 M = Devices_OAuth2flow(client_id = 'e64cb563bf44122144cd0702b02f69ad50d21aba0eb50ca443f69db5673ca2cc', 
 		       costumer_secret = 'c2b3bd8f8fa210533aa3e7ef54abd4654d2a44cfe4f33d9f3aff63b4ce0943c4',
-		       callback_uri = 'https://40.81.128.68:443')
+		       callback_uri = 'https://resilient.ukdri.care/')
 M.get_user_credentials()
 M.devices_info()
 M.scale_data()
