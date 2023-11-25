@@ -245,12 +245,20 @@ class PDF_generation(object):
 
 
 		# Add the watermark image
-		watermark_image = Image("sabp.jpg", width = 10*cm, height = 7*cm)
-		watermark_image.drawOn(canvas, doc.leftMargin - 2.6*cm , doc.height + 2.2*cm)
+		if self.id.endswith("sp"):
+			watermark_image = Image("surrey_logo_sp.jpg", width = 7*cm, height = 4*cm)
+			watermark_image.drawOn(canvas, doc.leftMargin - 2.6*cm , doc.height + 1.5*cm)
+		else:
+			watermark_image = Image("sabp.jpg", width = 10*cm, height = 7*cm)
+			watermark_image.drawOn(canvas, doc.leftMargin - 2.6*cm , doc.height + 2.2*cm)
+
+		
 
 		#Add the Surrey logo project watermark
+
 		surrey_image = Image("surrey_logo.jpg", width = 2.143*cm, height = 1.058*cm)
 		surrey_image.drawOn(canvas, doc.leftMargin - 0.5*cm , 1*cm)
+
 
 		#Add the Imperial logo project watermark
 		imperial_image = Image("Imperial_logo.jpg", width = 4.021*cm, height = 1.058*cm)
