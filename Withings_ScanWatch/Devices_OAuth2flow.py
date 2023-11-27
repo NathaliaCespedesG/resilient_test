@@ -97,13 +97,13 @@ class Devices_OAuth2flow(object):
 
 		self.users_path = path.abspath(path.join(self.base_path, self.db_path, users_db))
 
-		#self.dates_SPC_charts()
+		self.dates_SPC_charts()
 
 		
 
 		self.graph = graph.Graph_generator(start_date =self.initial_dates,
 										   end_date = self.ending_dates,
-										   report_type = 1)
+										   report_type = 0)
 
 		
 		#print('PATHH:', self.users_path)
@@ -909,9 +909,19 @@ class Devices_OAuth2flow(object):
 		self.graph.plot_scatter(x = self.dates_rr, y = self.RR , k = self.current_dates_ss, j = self.rr_mean_bu, name = "RR")
 		self.graph.plot_scatter(x = self.dates_hr, y = self.HR , k = self.current_dates_ss,  j = self.hr_mean_bu, name = "HR")
 
+	#The following function is to fill the database with the values from the devices (modules called: db)
+
 	def db_filling(self):
 
-		pass
+		self.database.SM.load_intra_activity(hr = self.HR_watch, time = dates_hr, time_steps = dates_steps, steps = Steps_watch, time_calories = dates_calories, calories = Calories_watch)
+		self.database.SM.load_ScanWatch(hr = self.activity_data['heart_rate'], calories = self.activity_data['calories'], steps = self.activity_data['steps'],  time = self.activity_data['date'] )
+		self.database.SM.load_Scale(time = scale_data['date'], weight = self.weight, muscle_mass = muscle_mass, bone_mass = bone_mass, fat_mass = fat_mass)
+		self.database.SM.load_SleepMat(time = sleeps_data['date'], bd = sleeps_data['breathing disturbances'], dsd = sleeps_data['deep sleep duration'], dts = sleeps_data['duration to sleep'],
+									dtw = sleeps_data['duration to wakeup'], hr = sleeps_data['hr average'], lsd = sleeps_data['light sleep duration'], rsd = sleeps_data['rem sleep duration'], 
+									rr = sleeps_data['rr average'], ss = sleeps_data['sleep score'], wpc = sleeps_data['wake up count'], wpd = sleeps_data['wake up duration'])
+		self.database.SM.load_intra_sleep(start_date = data_startdate, end_date = data_enddate, ss = data_states, hr = self.HR, hr_date = self.dates_hr,
+										rr = self.RR, rr_date = self.dates_rr, snoring = snoring, snoring_date = dates_snoring, sdnn_1 = sdnn_1, sdnn_1_date = dates_sdnn)
+
 
 
 
