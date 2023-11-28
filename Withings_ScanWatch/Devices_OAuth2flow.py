@@ -101,10 +101,6 @@ class Devices_OAuth2flow(object):
 
 		
 
-		self.graph = graph.Graph_generator(start_date =self.initial_dates,
-										   end_date = self.ending_dates,
-										   report_type = 0)
-
 		
 		#print('PATHH:', self.users_path)
 
@@ -899,6 +895,11 @@ class Devices_OAuth2flow(object):
 	#The following function is to generate the images for the PDF files
 
 	def plot_creator(self, type = None):
+		
+		self.graph = graph.Graph_generator(start_date =self.initial_dates,
+										   end_date = self.ending_dates,
+										   report_type = 0)
+
 
 		self.graph.plot_bar(self.activity_data['date'],self.activity_data['steps'])
 		self.graph.plot_scatter(x = self.dates_hr_1, y = self.HR_watch, k = self.activity_data['date'], j = self.final_hr, name = "HR_ScanWatch")
@@ -1016,10 +1017,7 @@ class Devices_OAuth2flow(object):
 
 	def remove_images(self):
 
-		files_in_folder = os.listdir(
-
-
-			self.base_path)
+		files_in_folder = os.listdir(self.base_path)
 
 		for file_name in files_in_folder:
 			file_path = os.path.join(self.base_path, file_name)

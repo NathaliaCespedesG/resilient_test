@@ -28,8 +28,8 @@ class PDF_generation(object):
 					c_date : None,
 					e_date: None,
 					path: None,
-					id_nhs : None
-
+					id_nhs : None, 
+					type_report : None
 					):
 
 
