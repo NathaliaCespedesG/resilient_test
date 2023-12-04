@@ -164,6 +164,8 @@ class Graph_generator(object):
 		# Create a scatter plot
 		sns.set_style("whitegrid",{ "grid.linewidth":0.5, "grid.color": ".8", "grid.linestyle": ":", "ytick.left": True})
 
+	
+
 
 		if y == [] and j == []:
 
@@ -174,6 +176,31 @@ class Graph_generator(object):
 			ax.set_ylabel('value', fontdict = self.font)
 
 		else:
+
+
+			if name == 'RR':
+				#scatter.set_label('Respiration Rate')
+				label_scatter = "Respiration Rate Average"
+				label_lineplot = "Respiration Rate Weekly Average"
+				plt.gca().set_title('Sleep Respiration Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
+				plt.ylabel("Breaths per minute", fontsize = 11, fontdict = self.font)
+
+
+			elif name == 'HR':
+
+				label_scatter = "Sleep Heart Rate Average"
+				label_lineplot = "Sleep Heart Rate Weekly Average"
+				plt.gca().set_title('Sleep Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
+				plt.ylabel("Heart Rate (bpm)", fontsize = 11, fontdict = self.font)
+						
+			elif name == 'HR_ScanWatch':
+
+				label_scatter = "Daily Heart Rate Average"
+				label_lineplot = "Daily Heart Rate Weekly Average"
+				plt.gca().set_title('Daily Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
+				plt.ylabel("Heart Rate (bpm)", fontsize = 11, fontdict = self.font)
+
+
 			#print('**************************************WEEKLY************************************************************')
 			# Smooth lines
 			date_avg, val_avg = self.weekly_average(k, j)
@@ -182,8 +209,8 @@ class Graph_generator(object):
 			#print(k_s)
 
 			if self.report_type == 1:
-				sns.scatterplot( x= x, y = y, color = "cornflowerblue", label = 'Respiration Rate')
-				sns.lineplot(x = k_s, y = j_s, color = "darkblue",label = 'Respiration Rate Average')
+				sns.scatterplot( x= x, y = y, color = "cornflowerblue", label = label_scatter)
+				sns.lineplot(x = k_s, y = j_s, color = "darkblue",label = label_scatter)
 
 				fig_size = fig.get_size_inches()
 				#print('FIG SIZE', fig_size)
@@ -211,20 +238,20 @@ class Graph_generator(object):
 			if self.report_type == 0:
 
 				if len(j_s) < 2:
-					sns.scatterplot( x= k_s, y = j_s, label = "Respiration Rate", color = "darkblue")
+					scatter = sns.scatterplot( x= k_s, y = j_s, label = label_scatter, color = "darkblue")
 				else:
 					max_thresh = np.mean(j_s) + np.std(j_s)
 					min_thresh = np.mean(j_s) - np.std(j_s)
 					aver_thresh = np.mean(j_s)
 
-					sns.lineplot(x = k_s, y = j_s, color = "cornflowerblue", linestyle =':', label = 'Respiration Rate Average')
-					sns.lineplot(x = date_avg, y = val_avg, color = "darkblue",linestyle = '-')
+					line_plot = sns.lineplot(x = k_s, y = j_s, color = "cornflowerblue", linestyle =':', label = label_scatter)
+					sns.lineplot(x = date_avg, y = val_avg, color = "darkblue",linestyle = '-', label = label_lineplot)
 					# Threshold calculations
 					plt.axhline(y=max_thresh, color='darkorange', linestyle='--', label='Upper limit', linewidth = 1)
 					plt.text(self.end_date.shift(days= 1), max_thresh, f'{max_thresh:.2f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
-					plt.axhline(y=min_thresh, color='darkorange', linestyle='--', label=f'Lower limit: {min_thresh:.2f}', linewidth = 1)
+					plt.axhline(y=min_thresh, color='darkorange', linestyle='--', label=f'Lower limit', linewidth = 1)
 					plt.text(self.end_date.shift(days= 1), min_thresh, f'{min_thresh:.2f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
-					plt.axhline(y=aver_thresh, color='mediumseagreen', linestyle='--', label= f'Average: {aver_thresh:.2f}', linewidth = 1)
+					plt.axhline(y=aver_thresh, color='mediumseagreen', linestyle='--', label= f'Average', linewidth = 1)
 					plt.text(self.end_date.shift(days= 1), aver_thresh, f'{aver_thresh:.2f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='mediumseagreen'))
 
 					plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
@@ -234,24 +261,10 @@ class Graph_generator(object):
 
 					for index in range(len(date_avg)):
 
-						plt.text(date_avg[index], val_avg[index], math.floor(val_avg[index]), size = 9.5,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lightblue', edgecolor='white'))
+						plt.text(date_avg[index], val_avg[index], math.floor(val_avg[index]), size = 11,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lightblue', edgecolor='white'))
 
 		
-			if name == 'RR':
 
-				plt.gca().set_title('Sleep Respiration Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
-				plt.ylabel("Breaths per minute", fontsize = 11, fontdict = self.font)
-
-
-			elif name == 'HR':
-			
-				plt.gca().set_title('Sleep Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
-				plt.ylabel("Heart Rate (bpm)", fontsize = 11, fontdict = self.font)
-						
-			elif name == 'HR_ScanWatch':
-
-				plt.gca().set_title('Daily Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
-				plt.ylabel("Heart Rate (bpm)", fontsize = 11, fontdict = self.font)
 			
 		
 			plt.grid(axis = "x")
@@ -262,7 +275,7 @@ class Graph_generator(object):
 
 
 
-		plt.legend(loc= 'upper center', bbox_to_anchor = (0.5,1.09), ncol =2 , frameon=False)
+		plt.legend(loc= 'upper center', bbox_to_anchor = (0.5,1.09), ncol = 3 , frameon=False)
 		# Remove the border around the legend box
 		
 		plt.savefig(name + 'Scatter.png', dpi = 500)
@@ -414,13 +427,13 @@ class Graph_generator(object):
 
 
 		if device == "Scale":
-			print('SCALEEEEEEEEEEEEEEEE')
-			print(x_s)
+			#print('SCALEEEEEEEEEEEEEEEE')
+			#print(date_weight)
 			# Create a scatter plot
 			sns.set_style("whitegrid",{ "grid.linewidth":0.5, "grid.color": ".8", "grid.linestyle": ":", "ytick.left": True})
 			
-			if len(weight_avg) < 2:
-				sns.scatterplot( x= weight_date_avg, y = weight_avg, label = "Weight", color = "darkblue")
+			if len(date_weight) < 2:
+				sns.scatterplot( x= date_weight, y = weight, label = "Weight", color = "darkblue")
 			else:
 				sns.lineplot(x = date_weight, y = weight, label = "Weight", color = "cornflowerblue", linestyle=':', linewidth = 2)
 				sns.lineplot(x= weight_date_avg, y = weight_avg, color = "darkblue", linestyle='-', linewidth = 2)
@@ -443,7 +456,7 @@ class Graph_generator(object):
 
 			for index in range(len(weight_date_avg)):
 
-				plt.text(weight_date_avg[index], weight_avg[index], math.floor(weight_avg[index]), size = 11.5,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lightblue', edgecolor='white'))
+				plt.text(weight_date_avg[index], weight_avg[index], math.floor(weight_avg[index]), size = 11,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lightblue', edgecolor='white'))
 
 			#for index in range(len(mm_date_avg)):
 				#plt.text(mm_date_avg[index], mm_avg[index], math.floor(mm_avg[index]), size = 11.5,  rotation = 45, fontdict = self.font)
@@ -461,7 +474,7 @@ class Graph_generator(object):
 			#plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
 			plt.gca().xaxis.set_major_locator(mdates.WeekdayLocator())
 			plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
-			plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date.shift(days= 1))
+			#plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date.shift(days= 1))
 			plt.legend(loc= 'upper center', bbox_to_anchor = (0.5,1.09), ncol = 4, fontsize = 8.5,frameon=False)
 			# Setting y-axis ticks to integer values
 			plt.yticks(range(int(min(y_s))-1, int(max(y_s))+3))
@@ -551,14 +564,14 @@ class Graph_generator(object):
 
 					for index in range(len(date_avg)):
 
-						plt.text(date_avg[index], val_avg[index], math.floor(val_avg[index]), size = 11.5,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lightblue', edgecolor='white'))
+						plt.text(date_avg[index], val_avg[index], math.floor(val_avg[index]), size = 11,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lightblue', edgecolor='white'))
 
 
 			#plt.clf()
 
 			plt.gca().set_title('Daily Steps Count',fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
 			plt.grid(axis = "x")
-			plt.legend(loc= 'upper center', bbox_to_anchor = (0.5,1.09), ncol = 1, fontsize = 8.5,frameon=False)
+			plt.legend(loc= 'upper center', bbox_to_anchor = (0.5,1.09), ncol = 4, fontsize = 8.5,frameon=False)
 			plt.gca().spines['top'].set_visible(False)
 			plt.gca().spines['right'].set_visible(False)
 
@@ -597,14 +610,6 @@ class Graph_generator(object):
 		else:
 
 			x1 = x
-			#start_date = [arrow_datetime.datetime for arrow_datetime in start_date]
-			#end_date = [arrow_datetime.datetime for arrow_datetime in end_date]
-
-			#print('x from this', x)
-
-			#y = [x/3600 for x in y]
-			#z = [x/3600 for x in z]
-
 			x_u = x1
 			o_u = o
 
@@ -612,20 +617,19 @@ class Graph_generator(object):
 
 
 			x_soft, o_soft= self.smooth_lines(x_u,o_u)
+			x_soft_1, o_soft_1= self.smooth_lines(x_u,y)
 			#x_soft, l_soft = self.smooth_lines(x_u,l_u)
 
 			plt.clf()
 
 			plt.bar(x1, y, label='Hours Asleep', color = "cornflowerblue")
 			plt.bar(x1, z, label='Hours Awake in bed', bottom = y, color = "lightblue")
-
-
-			sns.lineplot(x = x_soft, y = o_soft, color = "darkblue", markersize = 14, label = "Times out of bed", linewidth = 2 )
+			
 			#sns.lineplot(x = x_soft, y = l_soft, color = "darkgreen", markersize = 14, label = "Times woken up in bed" , zorder = 9, linewidth = 2)
 
 
 			if self.report_type == 1:
-
+				sns.lineplot(x = x_soft, y = o_soft, color = "darkblue", markersize = 14, label = "Times out of bed", linewidth = 2 )
 				for index in range(len(x_u)):
 				# Draw the circle patch
 				#circle = patches.Ellipse((x_u[index], o_u[index]), width= 0.35, height= 0.65, facecolor= "lavender")
@@ -638,9 +642,11 @@ class Graph_generator(object):
 						#plt.text(x_u[index], o_u[index], math.floor(o_u[index]), size = 11.5, color = "black", ha = 'center', va = 'center', zorder = 11,fontdict = self.font)
 						plt.text(x_u[index], o_u[index], math.floor(o_u[index]), size = 11.5,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lavender', edgecolor='white'))
 			if self.report_type == 0:
-				date_avg, val_avg = self.weekly_average(x_u,o_u)
+				sns.lineplot(x = x_soft_1, y = o_soft_1, color = "darkblue", markersize = 14, label = "Hours Asleep Weekly Average", linewidth = 2 )
+				date_avg, val_avg = self.weekly_average(x_u,o_soft)
+				sns.lineplot(x = x_soft, y = o_soft, color = "lavender", markersize = 14, label = "Times out of bed",  linestyle='--', linewidth = 2 )
 				for index in range(len(date_avg)):
-					plt.text(date_avg[index], val_avg[index], math.floor(val_avg[index]), size = 11.5,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lavender', edgecolor='white'))
+					plt.text(date_avg[index], val_avg[index], math.floor(val_avg[index]), size = 11,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lavender', edgecolor='white'))
 				#plt.text(x_u[index], l_u[index], math.floor(l_u[index]), size = 11.5, color = "black", ha = 'center', va = 'center', zorder = 11 )
 
 			# Add labels, title, and legend
@@ -651,7 +657,7 @@ class Graph_generator(object):
 			plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
 			plt.ylabel('Hours', fontsize = 11, fontdict = self.font)
 			plt.gca().set_title('Sleep Summary', fontsize = 14, loc = 'left',pad = 30, fontweight=600, fontdict = self.font)
-			plt.gca().xaxis.set_major_locator(mdates.WeekdayLocator())
+			#plt.gca().xaxis.set_major_locator(mdates.WeekdayLocator())
 			plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
 			plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date)
 			# Set the locator for x-axis labels

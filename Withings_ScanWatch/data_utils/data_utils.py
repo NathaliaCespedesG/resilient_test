@@ -182,71 +182,81 @@ class Data_Handler(object):
 
 		# Initialize a dictionary to store mean HR values for each key
 		mean_hr_dict = {}
-		#print(len(startdates))
-		#print(len(dates))
+
+		print('IN FILLIIIIIIIIIIIING')
+		print(len(startdates))
+		print(len(dates))
 
 
+		try:
 
-		if len(startdates) < len(dates):
+			if len(startdates) < len(dates):
 
-			missing_days = len(dates) - len(startdates)
+				missing_days = len(dates) - len(startdates)
 
-			for i in range(missing_days):
+				for i in range(missing_days):
 
-				wakeup_fill = startdates[0].shift(days = -(i+1), hours=0, minutes=0, seconds=0)
-				sleep_fill = enddates[0].shift(days = -(i+1), hours=0, minutes=0, seconds=0)
+					wakeup_fill = startdates[0].shift(days = -(i+1), hours=0, minutes=0, seconds=0)
+					sleep_fill = enddates[0].shift(days = -(i+1), hours=0, minutes=0, seconds=0)
 
-				startdates.insert(missing_days-(i+1), wakeup_fill)
-				enddates.insert(missing_days-(i+1), sleep_fill)
+					startdates.insert(missing_days-(i+1), wakeup_fill)
+					enddates.insert(missing_days-(i+1), sleep_fill)
 
+			# Iterate through keys in the 'dates' dictionary
+			for key in dates:
+				timestamps = [int(ts) for ts in dates[key]]
+				hr_values = HR[key]
+				#print(key)
 
-		# Iterate through keys in the 'dates' dictionary
-		for key in dates:
-			timestamps = [int(ts) for ts in dates[key]]
-			hr_values = HR[key]
-			#print(key)
-
-			# Get the corresponding start and end dates for this key using the key index
-			#startdate = startdates[key] #.replace(tzinfo='UTC')
-			#enddate = enddates[key]#.replace(tzinfo='UTC')
-			# Doing calculations between 6 am - 6 pm 
-			
-			startdate = startdates[key].replace(hour=6, minute=0, second=0)
-			enddate = enddates[key].replace(hour=18, minute=0, second=0)
-
-			# Convert startdate and enddate to timestamps
-			startdate_ts = startdate.timestamp()
-			enddate_ts = enddate.timestamp()
-
-			# Initialize a list to store HR values within the date range for this key
-			hr_values_within_range = []
-			timestamps_within_range = []
-			
-
-			# Iterate through timestamps and HR values for this key
-			for timestamp, hr in zip(timestamps, hr_values):
+				# Get the corresponding start and end dates for this key using the key index
+				#startdate = startdates[key] #.replace(tzinfo='UTC')
+				#enddate = enddates[key]#.replace(tzinfo='UTC')
+				# Doing calculations between 6 am - 6 pm 
 				
-				if startdate_ts <= timestamp <= enddate_ts:
-					hr_values_within_range.append(hr)
-					timestamps_within_range.append(timestamp)
+				startdate = startdates[key].replace(hour=6, minute=0, second=0)
+				enddate = enddates[key].replace(hour=18, minute=0, second=0)
 
-			#Calculation of values each 30 min
+				# Convert startdate and enddate to timestamps
+				startdate_ts = startdate.timestamp()
+				enddate_ts = enddate.timestamp()
 
-			#print(hr_values_within_range)
+				# Initialize a list to store HR values within the date range for this key
+				hr_values_within_range = []
+				timestamps_within_range = []
+				
 
-			#average = self.halfhour_calculation(timestamps_within_range, hr_values_within_range)
-			#average = self.package_halfhour_calculation(timestamps_within_range, hr_values_within_range)
+				# Iterate through timestamps and HR values for this key
+				for timestamp, hr in zip(timestamps, hr_values):
+					
+					if startdate_ts <= timestamp <= enddate_ts:
+						hr_values_within_range.append(hr)
+						timestamps_within_range.append(timestamp)
 
-			# Calculate the mean of HR values within the date range for this key
-			if hr_values_within_range:
-				mean_hr_dict[key] = sum(hr_values_within_range) / len(hr_values_within_range)
-				#mean_hr_dict[key] = average
-			else:
-				# If no HR values found within the specified date range, set the mean to None
-				mean_hr_dict[key] = None
+				#Calculation of values each 30 min
 
+				#print(hr_values_within_range)
+
+				#average = self.halfhour_calculation(timestamps_within_range, hr_values_within_range)
+				#average = self.package_halfhour_calculation(timestamps_within_range, hr_values_within_range)
+
+				# Calculate the mean of HR values within the date range for this key
+				if hr_values_within_range:
+					mean_hr_dict[key] = sum(hr_values_within_range) / len(hr_values_within_range)
+					#mean_hr_dict[key] = average
+				else:
+					# If no HR values found within the specified date range, set the mean to None
+					mean_hr_dict[key] = None
 			
-			rounded_values_list = [round(value)  if value is not None else None for value in mean_hr_dict.values()]
+				rounded_values_list = [round(value)  if value is not None else None for value in mean_hr_dict.values()]
+
+
+		except IndexError:
+			
+			print("Warning ! : Startdates list list is empty.")
+			rounded_values_list = np.full(7, np.nan)
+
+		
+			
 
 		#print(rounded_values_list)
 		return(rounded_values_list)

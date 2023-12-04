@@ -53,7 +53,13 @@ class Devices_OAuth2flow(object):
 
 	def __init__(self, client_id: None, 
 					   costumer_secret: None, 
-					   callback_uri: None):
+					   callback_uri: None,
+					   report_type: None):
+
+
+		# Report type
+
+		self.report_type = report_type
 
 
 		# Creates the database object
@@ -189,13 +195,13 @@ class Devices_OAuth2flow(object):
 
 	def dates(self):
 
-		self.ending_day_c = -2
+		self.ending_day_c = -3
 		self.starting_day_c = self.ending_day_c - 6
 		self.ending_day_p = self.starting_day_c -1
 		self.starting_day_p = self.ending_day_p -6
 
-		#print(arrow.utcnow().shift(days = self.ending_day_c))
-		#print(arrow.utcnow().shift(days = self.starting_day_c))
+		print(arrow.utcnow().shift(days = self.ending_day_c))
+		print(arrow.utcnow().shift(days = self.starting_day_c))
 		#print(arrow.utcnow().shift(days = self.ending_day_p))
 		#print(arrow.utcnow().shift(days = self.starting_day_p))
 
@@ -239,8 +245,8 @@ class Devices_OAuth2flow(object):
 		else:
 			self.starting_day_c = - days_difference 
 
-		self.ending_day_p = self.starting_day_c -1
-		self.starting_day_p = self.ending_day_p -6
+		self.ending_day_p = -3
+		self.starting_day_p = self.ending_day_p - 6
 
 		#print(arrow.utcnow().shift(days = self.ending_day_c))
 		#print(arrow.utcnow().shift(days = self.starting_day_c))
@@ -895,10 +901,10 @@ class Devices_OAuth2flow(object):
 	#The following function is to generate the images for the PDF files
 
 	def plot_creator(self, type = None):
-		
+
 		self.graph = graph.Graph_generator(start_date =self.initial_dates,
 										   end_date = self.ending_dates,
-										   report_type = 0)
+										   report_type = self.report_type)
 
 
 		self.graph.plot_bar(self.activity_data['date'],self.activity_data['steps'])
@@ -930,21 +936,40 @@ class Devices_OAuth2flow(object):
 	def table_filler(self):
 		# Values for the table
 
-		#Sleep
-		self.HR_Sleep_table = ([self.hr_mean_bu, self.prev_heart_rate, self.monthly_heart_rate ])
-		self.RR_Sleep_table = ([self.rr_mean_bu, self.prev_rr, self.monthly_rr ])
-		self.ST_Sleep_table = ([self.current_sleep_time, self.prev_sleep_time, self.monthly_sleep_time])
-		#print(self.current_apnea)
-		#print(self.prev_apnea)
-		self.AP_Sleep_table = ([self.current_apnea, self.prev_apnea, self.monthly_apnea])
+		if self.report_type == 1:
+			#Sleep
+			self.HR_Sleep_table = ([self.hr_mean_bu, self.prev_heart_rate, self.monthly_heart_rate ])
+			self.RR_Sleep_table = ([self.rr_mean_bu, self.prev_rr, self.monthly_rr ])
+			self.ST_Sleep_table = ([self.current_sleep_time, self.prev_sleep_time, self.monthly_sleep_time])
+			#print(self.current_apnea)
+			#print(self.prev_apnea)
+			self.AP_Sleep_table = ([self.current_apnea, self.prev_apnea, self.monthly_apnea])
 
-		#Scale
-		self.Weight_table = (self.weight, self.weight_p, self.weight_m)
+			#Scale
+			self.Weight_table = (self.weight, self.weight_p, self.weight_m)
 
-		#ScanWatch
-		self.prev_hr = self.intra_activitydata(type_time = 'prev')
-		self.HR_table = ([self.final_hr, self.prev_hr, self.month_activity_data['heart_rate']]) 
-		self.Steps_table = ([self.activity_data['steps'], self.pre_activity_data['steps'], self.month_activity_data['steps']])
+			#ScanWatch
+			self.prev_hr = self.intra_activitydata(type_time = 'prev')
+			self.HR_table = ([self.final_hr, self.prev_hr, self.month_activity_data['heart_rate']]) 
+			self.Steps_table = ([self.activity_data['steps'], self.pre_activity_data['steps'], self.month_activity_data['steps']])
+
+		elif self.report_type == 0:
+
+			#Sleep
+			self.HR_Sleep_table = ([self.prev_heart_rate, self.hr_mean_bu, []])
+			self.RR_Sleep_table = ([self.prev_rr, self.rr_mean_bu, []])
+			self.ST_Sleep_table = ([self.prev_sleep_time, self.current_sleep_time,[]])
+			self.AP_Sleep_table = ([self.prev_apnea,self.current_apnea,[]])
+
+			#Scale
+			self.Weight_table = (self.weight_p,self.weight,[])
+
+			#ScanWatch
+			self.prev_hr = self.intra_activitydata(type_time = 'prev')
+			self.HR_table = ([self.prev_hr,self.final_hr,[]]) 
+			self.Steps_table = ([self.pre_activity_data['steps'],self.activity_data['steps'],[]])
+
+
 
 
 
@@ -1012,7 +1037,8 @@ class Devices_OAuth2flow(object):
 					c_date = self.initial_dates_table,
 					e_date = self.ending_dates_table,
 					path = path,
-					id_nhs = self.id_user)
+					id_nhs = self.id_user,
+					report_type = self.report_type)
 
 
 	def remove_images(self):
@@ -1034,7 +1060,8 @@ class Devices_OAuth2flow(object):
 
 M = Devices_OAuth2flow(client_id = 'e64cb563bf44122144cd0702b02f69ad50d21aba0eb50ca443f69db5673ca2cc', 
 		       costumer_secret = 'c2b3bd8f8fa210533aa3e7ef54abd4654d2a44cfe4f33d9f3aff63b4ce0943c4',
-		       callback_uri = 'https://resilient.ukdri.care/')
+		       callback_uri = 'https://resilient.ukdri.care/',
+		       report_type = 0)
 M.get_user_credentials()
 M.devices_info()
 M.scale_data()

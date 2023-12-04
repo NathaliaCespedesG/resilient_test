@@ -29,7 +29,7 @@ class PDF_generation(object):
 					e_date: None,
 					path: None,
 					id_nhs : None, 
-					type_report : None
+					report_type : None
 					):
 
 
@@ -37,6 +37,7 @@ class PDF_generation(object):
 		self.path = path
 		#print('path', self.path)
 		# Values for building the table
+		self.report_type = report_type
 		self.day_hr = day_hr
 		self.night_hr = night_hr
 		self.night_rr = night_rr
@@ -231,17 +232,32 @@ class PDF_generation(object):
 
 		text1 = '* indicates a value that would be flagged by the NEWS2'
 		canvas.setFont("Arial", 7)
-		canvas.drawString(doc.leftMargin + 10.5 * cm , doc.height - 3.8* cm, text1)
-
+		if self.report_type == 1:
+			canvas.drawString(doc.leftMargin + 10.5 * cm , doc.height - 3.8* cm, text1)
+		if self.report_type == 0:
+			canvas.drawString(doc.leftMargin + 10.5 * cm , doc.height - 2.4* cm, text1)
 		#Draw sd text
 
-		text_sd = 'A value highlighted in orange indicates a change of 1 SD from the previous week'
-		canvas.setFont("Arial", 7.5)
-		canvas.drawString(doc.leftMargin - 1.5 * cm , doc.height - 3.8* cm, text_sd)
+		if self.report_type == 1:
+			text_sd = 'A value highlighted in orange indicates a change of 1 SD from the previous week'
+			canvas.drawString(doc.leftMargin - 1.5 * cm , doc.height - 3.8* cm, text_sd)
+			canvas.setFont("Arial", 7.5)
+		if self.report_type == 0:
+			text_sd = 'A value highlighted in orange indicates a change of 1 SD from the previous 3 months'
+			canvas.drawString(doc.leftMargin - 1.5 * cm , doc.height - 2.4* cm, text_sd)
+			canvas.setFont("Arial", 7.5)
 
-		text_2sd = 'A value highlighted in red indicates a change of 2 or more SD from the previous week'
-		canvas.setFont("Arial", 7.5)
-		canvas.drawString(doc.leftMargin - 1.5 * cm , doc.height - 4.1* cm, text_2sd)
+		
+
+		
+		if self.report_type == 1:
+			text_2sd = 'A value highlighted in red indicates a change of 2 or more SD from the previous week'
+			canvas.drawString(doc.leftMargin - 1.5 * cm , doc.height - 4.1* cm, text_2sd)
+			canvas.setFont("Arial", 7.5)
+		if self.report_type == 0:
+			text_sd = 'A value highlighted in orange indicates a change of 1 SD from the previous 3 months'
+			canvas.drawString(doc.leftMargin - 1.5 * cm , doc.height - 2.8* cm, text_sd)
+			canvas.setFont("Arial", 7.5)
 
 
 		# Add the watermark image
@@ -317,13 +333,22 @@ class PDF_generation(object):
 		w_c, w_p, w_m = self.averages_data(self.weight[0], self.weight[1], self.weight[2], type_d = 'weight')
 
 
-		# Create a list of data for the table
-		data = [
-    	["Overview", "Day Heart \n  Rate \n [bpm]", "Sleep \n Heart Rate \n [bpm]", "Sleep \n Respiration \n Rate", "Steps",  "Weight \n [kg]", "Sleep \n Duration \n [hours]", " Sleep \n Apnoea Index \n [AHI] "],
-    	["Current Week \n Average",hr_c , nhr_c , rr_c , steps_c, w_c , sd_c , sa_c],
-    	["Last Week \n Average",hr_p , nhr_p  ,rr_p , steps_p , w_p , sd_p  , sa_p],
-    	["Monthly values \n (Mean. +/- 1 SD)", hr_m, nhr_m, rr_m , steps_m, w_m , sd_m, sa_m]
-				]
+		if self.report_type == 1:
+			# Create a list of data for the table
+			data = [
+	    	["Overview", "Day Heart \n  Rate \n [bpm]", "Sleep \n Heart Rate \n [bpm]", "Sleep \n Respiration \n Rate", "Steps",  "Weight \n [kg]", "Sleep \n Duration \n [hours]", " Sleep \n Apnoea Index \n [AHI] "],
+	    	["Current Week \n Average",hr_c , nhr_c , rr_c , steps_c, w_c , sd_c , sa_c],
+	    	["Last Week \n Average",hr_p , nhr_p  ,rr_p , steps_p , w_p , sd_p  , sa_p],
+	    	["Monthly values \n (Mean. +/- 1 SD)", hr_m, nhr_m, rr_m , steps_m, w_m , sd_m, sa_m]
+					]
+
+		elif self.report_type ==0:
+			# Create a list of data for the table
+			data = [
+	    	["Overview", "Day Heart \n  Rate \n [bpm]", "Sleep \n Heart Rate \n [bpm]", "Sleep \n Respiration \n Rate", "Steps",  "Weight \n [kg]", "Sleep \n Duration \n [hours]", " Sleep \n Apnoea Index \n [AHI] "],
+	    	["Current Week \n Average",hr_c , nhr_c , rr_c , steps_c, w_c , sd_c , sa_c],
+	    	[f"Average since \n {self.c_date}",hr_p , nhr_p  ,rr_p , steps_p , w_p , sd_p  , sa_p]
+	    			]
 
 		# Create a list of images for the matrix plot
 		images = [
