@@ -183,9 +183,9 @@ class Data_Handler(object):
 		# Initialize a dictionary to store mean HR values for each key
 		mean_hr_dict = {}
 
-		print('IN FILLIIIIIIIIIIIING')
-		print(len(startdates))
-		print(len(dates))
+		#print('IN FILLIIIIIIIIIIIING')
+		#print(len(startdates))
+		#print(len(dates))
 
 
 		try:
@@ -434,6 +434,57 @@ class Data_Handler(object):
 		return(weight, muscle_mass, bone_mass, fat_mass, hydration)
 
 
+
+	def hr_filtering(self, x, y):
+
+		# Create a dictionary to aggregate y-values for each unique x-value
+		data_dict = {}
+
+		for i in range(len(x)):
+			if x[i] not in data_dict:
+				data_dict[x[i]] = []
+			data_dict[x[i]].append(y[i])
+
+
+		# Calculate the average y-values for each unique x-value
+		timestamps = list(data_dict.keys())
+		values = [np.mean(data_dict[x_val]) for x_val in timestamps]
+
+		# Convert timestamps to integers
+
+		timestamps = [int(ts_str) for ts_str in timestamps]
+
+		#Deleting HR values at higher frequencies than 9min
+
+
+		try:
+			# Find the minimum timestamp
+			min_timestamp = min(timestamps)
+
+		except ValueError:
+			# Handle the case when the timestamps list is empty
+			min_timestamp = None
+
+
+		# Create new arrays for filtered timestamps and values
+		filtered_timestamps = []
+		filtered_values = []
+
+
+		if min_timestamp is not None:
+			filtered_timestamps = [min_timestamp]
+			filtered_values = [values[0]]
+
+		for i in range(1, len(timestamps)):
+			time_diff = (timestamps[i] - filtered_timestamps[-1])  # Calculate time difference in seconds
+			if time_diff >= 540:  # 9 minutes in seconds
+				filtered_timestamps.append(timestamps[i])
+				filtered_values.append(values[i])
+
+
+		return(filtered_timestamps, filtered_values)
+
+
 	def str_to_float(self, number, unit):
 
 		number = str(number)
@@ -450,7 +501,90 @@ class Data_Handler(object):
 		return(value)
 
 
-	#The following function is to generate the images for the PDF files
+	#The following function is to extract the data of the last week from all the values since registration
+
+	def last_week_from_reg(self, dates = None, start_date = None, end_date = None, values = None):
+		dates =  np.array(dates, dtype='datetime64')
+
+		start_date = np.datetime64(start_date.format('YYYY-MM-DD'))
+		end_date = np.datetime64(end_date.format('YYYY-MM-DD'))
+
+		# Create a boolean mask for filtering
+		mask = [(start_date <= date <= end_date) for date in dates]
+
+		# Apply the mask to get filtered values
+		filtered_values = [value for value, m in zip(values, mask) if m]
+
+
+		return(filtered_values)
+
+	# The following function is to understand the weekly devices usage during the week
+	def usage_understanding(self, start_date = None, end_date = None, sleep_u = None, watch_u = None, scale_u = None):
+
+		print('USAAAAAAAAAAGE')
+
+		usage = {}
+
+		day_diff = (end_date - start_date).days + 1
+		
+		# Counting None and NaN values
+		none_count_sleep = np.count_nonzero(sleep_u == None)
+		nan_count_sleep = np.count_nonzero(np.isnan(sleep_u))
+		none_count_watch = np.count_nonzero(watch_u == None)
+		nan_count_watch = np.count_nonzero(np.isnan(watch_u))
+		none_count_scale = np.count_nonzero(scale_u == None)
+		nan_count_scale = np.count_nonzero(np.isnan(scale_u))
+
+		len_sleep = len(sleep_u)
+		len_watch = len(watch_u)
+		len_scale = len(scale_u)
+
+		sleep_miss = none_count_sleep + nan_count_sleep + (day_diff - len_sleep)
+		watch_miss = none_count_watch + nan_count_watch + (day_diff - len_watch)
+		scale_miss = none_count_scale + nan_count_scale + (day_diff - len_scale)
+
+		# Sleep Mat
+		if (sleep_miss < 2):
+			usage['Sleep Mat'] = 'High'
+		elif(sleep_miss >= 2 and sleep_miss < 4):
+			usage['Sleep Mat'] = 'Medium'
+		elif(sleep_miss >= 4):
+			usage['Sleep Mat'] = 'Low'
+		elif (len(sleep_u) == 0):
+			usage['Sleep Mat'] = 'No data'
+
+		#Watch
+		if (watch_miss < 2):
+			usage['Watch'] = 'High'
+		elif(watch_miss >= 2 and watch_miss < 4):
+			usage['Watch'] = 'Medium'
+		elif(watch_miss >= 4):
+			usage['Watch'] = 'Low'
+		elif (len(watch_u) == 0):
+			usage['Watch'] = 'No data'
+
+		#Scale
+		if (scale_miss < 2):
+			usage['Scale'] = 'High'
+		elif(scale_miss >= 2 and scale_miss < 4):
+			usage['Scale'] = 'Medium'
+		elif(scale_miss >= 4):
+			usage['Watch'] = 'Low'
+		elif (len(scae_u) == 0):
+			usage['Watch'] = 'No data'
+
+
+		return(usage)
+
+
+
+
+
+
+
+
+
+
 
 			
 

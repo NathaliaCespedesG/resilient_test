@@ -66,7 +66,6 @@ class DatabaseManager(object):
 		self.DevicesFile.close()
 
 
-
 	def load_intra_activity(self, time = None, hr = None, time_steps = None, steps = None,  time_calories = None, calories = None):
 
 		self.ScanIntraFile = open(self.scanwatch_intraday, 'a')
@@ -122,6 +121,32 @@ class DatabaseManager(object):
 		self.SleepIntraFile.close()
 
 
+	def load_usage(self, user_id = None, start_date = None, end_date = None, sleep_usage = None, sleep_battery = None, watch_usage = None, watch_battery = None, scale_usage = None, scale_battery = None):
+
+
+		with open(self.usage_info, 'a', newline='') as csv_file:
+			# Append a row to the DataFrame
+			self.df_usage = self.df_usage.append({
+				'id': user_id,
+				'start_date': start_date,
+				'end_date': end_date,
+				'SleepMat Usage': sleep_usage,
+				'SleepMat Battery': sleep_battery,
+				'Watch Usage': watch_usage,
+				'Watch Battery': watch_battery,
+				'Scale Usage': scale_usage,
+				'Scale Battery': scale_battery
+				}, ignore_index=True)
+
+
+			# Write the updated DataFrame to the CSV file
+			self.df_usage.to_csv(csv_file, index=False, mode='a', header=not csv_file.tell())
+		#self.UsageFile.close()
+
+# The file is closed automatically when leaving the 'with' block
+
+
+		self.UsageFile.close()
 
 
 	def set_User(self, US):
@@ -184,7 +209,9 @@ class DatabaseManager(object):
 
 		#Headers on usage files
 
-		self.df_usage = pd.DataFrame({'Week': [], 'SleepMat_usage': [], 'SleepMat_battery':[], 'Scale_usage': [], 'Scale_battery': [], 'Watch_usage': [], 'Watch_battery': []} )
+		self.df_usage = pd.DataFrame({'id': [], 'start_date': [], 'end_date': [], 'SleepMat Usage': [], 'SleepMat Battery': [], 'Watch Usage': [], 'Watch Battery': [],
+				 'Scale Usage': [], 'Scale Battery': []})
+		self.df_usage.to_csv(self.usage_info, index = False )
 
 		#Headers on each files
 

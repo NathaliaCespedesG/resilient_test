@@ -53,7 +53,7 @@ class PDF_generation(object):
 		print(type(self.c_date))
 
 		#Current year
-		self.current_year = datetime.datetime.now().year
+		self.current_year =str(datetime.datetime.now().year)
 		#NHS
 		self.id = "00"+id_nhs+"p"
 
@@ -224,7 +224,7 @@ class PDF_generation(object):
 
 		#Draw the years in the upper part of the report
 
-		text_year = str(self.current_year)
+		text_year = self.current_year
 		canvas.setFont("Arial", 11)
 		canvas.drawString(doc.leftMargin + 16.5 * cm , doc.height + 4.2* cm, text_year)
 
