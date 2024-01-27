@@ -231,33 +231,35 @@ class PDF_generation(object):
 		# Draw NEWS2 text
 
 		text1 = '* indicates a value that would be flagged by the NEWS2'
-		canvas.setFont("Arial", 7)
+		canvas.setFont("Arial", 7.3)
 		if self.report_type == 1:
 			canvas.drawString(doc.leftMargin + 10.5 * cm , doc.height - 3.8* cm, text1)
 		if self.report_type == 0:
 			canvas.drawString(doc.leftMargin + 10.5 * cm , doc.height - 2.4* cm, text1)
 		#Draw sd text
 
+		canvas.setFont("Arial", 7.3)
+
 		if self.report_type == 1:
 			text_sd = 'A value highlighted in orange indicates a change of 1 SD from the previous week'
 			canvas.drawString(doc.leftMargin - 1.5 * cm , doc.height - 3.8* cm, text_sd)
-			canvas.setFont("Arial", 7.5)
+			
 		if self.report_type == 0:
-			text_sd = 'A value highlighted in orange indicates a change of 1 SD from the previous 3 months'
+			text_sd = 'A value highlighted in orange indicates a change of 1 SD from the average of the previous 3 months.' 
 			canvas.drawString(doc.leftMargin - 1.5 * cm , doc.height - 2.4* cm, text_sd)
-			canvas.setFont("Arial", 7.5)
+			
 
 		
-
+		canvas.setFont("Arial", 7.3)
 		
 		if self.report_type == 1:
 			text_2sd = 'A value highlighted in red indicates a change of 2 or more SD from the previous week'
 			canvas.drawString(doc.leftMargin - 1.5 * cm , doc.height - 4.1* cm, text_2sd)
-			canvas.setFont("Arial", 7.5)
+			
 		if self.report_type == 0:
-			text_sd = 'A value highlighted in orange indicates a change of 1 SD from the previous 3 months'
+			text_sd = 'A value highlighted in red indicates a change of 2 or more SD from the average of the previous 3 months.'
 			canvas.drawString(doc.leftMargin - 1.5 * cm , doc.height - 2.8* cm, text_sd)
-			canvas.setFont("Arial", 7.5)
+			
 
 
 		# Add the watermark image

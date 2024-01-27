@@ -65,7 +65,11 @@ class Devices_OAuth2flow(object):
 
 		# Creates the database object
 		self.database = database.General()
-		self.dates()
+		#self.dates()
+
+		
+
+		#time.sleep(0.5)
 
 		# Creates the data utils object
 		self.data_utils = data_utils.Data_Handler()
@@ -82,7 +86,11 @@ class Devices_OAuth2flow(object):
 
 		self.id_user = input('Please provide the id for the user: ')
 
+
+		self.database.SM.set_date_report(date = str(datetime.now()))
+
 		self.database.register(user = self.id_user)
+
 
 
 		#Create the credentials File
@@ -104,9 +112,9 @@ class Devices_OAuth2flow(object):
 
 		self.users_path = path.abspath(path.join(self.base_path, self.db_path, users_db))
 
-		#self.dates_SPC_charts()
+		self.dates_SPC_charts()
 
-		time.sleep(0.5)
+		#time.sleep(0.5)
 
 		self.CREDENTIALS_FILE: Final = self.final_path
 		
@@ -205,6 +213,9 @@ class Devices_OAuth2flow(object):
 
 	def dates_SPC_charts(self):
 
+		#self.database.SM.set_date_report(date = datetime.now())
+
+
 		df = pd.read_csv(self.users_path , header = 0, delimiter=';')
 		#df.columns = df.columns.str.lower()
 		#print(df.columns)
@@ -219,13 +230,18 @@ class Devices_OAuth2flow(object):
 		#calculate the number of days between the register day and the current date
 
 		date_of_registration =  datetime.strptime(date_of_registration, '%Y-%m-%d')
+		
+
+		self.ending_day_c = -4
+
 		# Calculate the difference in days
-		days_difference = (datetime.now() - date_of_registration).days
+		days_difference = ((datetime.now()- timedelta(days=4)) - date_of_registration).days
 
-		self.ending_day_c = -3
 
+		#print('Days difference **************************')
+		#print(days_difference)
 		if days_difference > 90:
-			self.starting_day_c = - days_difference + 6
+			self.starting_day_c = -(90 - self.ending_day_c) 
 		else:
 			self.starting_day_c = - days_difference 
 
@@ -243,8 +259,7 @@ class Devices_OAuth2flow(object):
 		self.ending_dates_table = self.ending_dates.format('D MMM ')
 
 
-		self.database.SM.set_date_report(date = datetime.now())
-
+		
 
 	def devices_info(self):
 
@@ -262,8 +277,8 @@ class Devices_OAuth2flow(object):
 
 		#Getting battery from devices
 		self.battery = [i['battery'] for i in devices]
-		print(self,type_d)
-		print("battery from devices", self.battery)
+		#print(self,type_d)
+		#print("battery from devices", self.battery)
 
 
 
@@ -289,7 +304,7 @@ class Devices_OAuth2flow(object):
 		self.activity_data = {}
 		self.pre_activity_data = {}
 		self.month_activity_data = {}
-	
+
 
 		self.meas_activity  =  self.api.measure_get_activity(startdateymd = arrow.utcnow().shift(days=self.starting_day_c), enddateymd = arrow.utcnow().shift(days= self.ending_day_c))
 		self.prev_meas_activity  =  self.api.measure_get_activity(startdateymd = arrow.utcnow().shift(days=self.starting_day_p), enddateymd = arrow.utcnow().shift(days= self.ending_day_p))
@@ -298,10 +313,13 @@ class Devices_OAuth2flow(object):
 		#Current Week
 		self.activity_data['date'] = [arrow.get(x.date) for x in self.meas_activity.activities]
 		self.activity_data['heart_rate'] = [x.hr_average for x in self.meas_activity.activities]
+		print('***********************************')
+		print(self.activity_data['date'])
 		self.activity_data['date'], self.activity_data['heart_rate'] =self.data_utils.data_cleaning(self.activity_data['date'],self.activity_data['heart_rate'])
 		self.activity_data['calories'] = [x.totalcalories for x in self.meas_activity.activities]
 		self.activity_data['date'], self.activity_data['calories'] = self.data_utils.data_cleaning(self.activity_data['date'],self.activity_data['calories'])
 		self.activity_data['steps'] = [x.steps for x in self.meas_activity.activities]
+		#print(self.activity_data['date'])
 		self.activity_data['date'], self.activity_data['steps'] = self.data_utils.data_cleaning(self.activity_data['date'],self.activity_data['steps'])
 		self.activity_data['hr_min'] = [x.hr_min for x in self.meas_activity.activities]
 		self.activity_data['date'], self.activity_data['hr_min'] = self.data_utils.data_cleaning(self.activity_data['date'],self.activity_data['hr_min'])
@@ -309,8 +327,8 @@ class Devices_OAuth2flow(object):
 		self.activity_data['date'], self.activity_data['hr_max'] = self.data_utils.data_cleaning(self.activity_data['date'],self.activity_data['hr_max'])
 
 		#print('From daily agreggated service')
-		#print(self.activity_data['date'])
-		#print(self.activity_data['heart_rate'])
+		print(self.activity_data['date'])
+		#print(self.activity_data['steps'])
 
 		self.intra_activitydata(type_time = "current")
 
@@ -420,7 +438,7 @@ class Devices_OAuth2flow(object):
 				print('No data for the week')
 				self.final_hr_prev = []
 			else:
-				print(start_dates_hr)
+				#print(start_dates_hr)
 				#print(dates_to_test)
 				self.hr_based_sleep_prev = self.data_utils.hr_average_basedon_sleep(dates = dates_to_test, HR = hr_to_test, startdates = start_dates_hr, enddates = end_dates_hr )
 				self.final_hr_prev = self.data_utils.backup_data(value2 = self.pre_activity_data['heart_rate'], value1 = self.hr_based_sleep_prev)
@@ -430,8 +448,8 @@ class Devices_OAuth2flow(object):
 
 
 
-		print('DATOS DEL RELOJ')
-		print(self.final_hr)
+		#print('DATOS DEL RELOJ')
+		#print(self.final_hr)
 
 	def scale_data(self):
 
@@ -445,14 +463,19 @@ class Devices_OAuth2flow(object):
 
 		self.meas_current = self.api.measure_get_meas(startdate=arrow.utcnow().shift(days= self.starting_day_c), enddate = arrow.utcnow().shift(days= self.ending_day_c), lastupdate = None)
 		self.meas_prev = self.api.measure_get_meas(startdate=arrow.utcnow().shift(days= self.starting_day_p), enddate = arrow.utcnow().shift(days= self.ending_day_p), lastupdate = None)
-		self.meas_monthly = self.api.measure_get_meas(startdate = arrow.utcnow().shift(days= self.ending_day_c - 30), enddate = arrow.utcnow().shift(days= self.ending_day_c), lastupdate = None)
+		self.meas_monthly = self.api.measure_get_meas(startdate = arrow.utcnow().shift(days= self.starting_day_c), enddate = arrow.utcnow().shift(days= self.ending_day_c), lastupdate = None)
 
 		#Current week values
 		scale_data['date'] = [arrow.get(x.date) for x in self.meas_current.measuregrps]
 		scale_data['measures'] = [x.measures for x in self.meas_current.measuregrps]
+		#print(scale_data['date'])
+		#print(scale_data['measures'])
 		self.weight, muscle_mass, bone_mass, fat_mass, hydration = self.data_utils.scale_data_extractor(scale_data['measures'])
+		#print('weight values', self.weight)
 		#Cleaning data for the table
 		scale_data['date'], self.weight = self.data_utils.data_cleaning(scale_data['date'],self.weight)
+		#print('date', scale_data['date'])
+		#print('weight', self.weight)
 
 		#Prev week values
 		prev_scale_data['date'] = [arrow.get(x.date) for x in self.meas_prev.measuregrps]
@@ -465,7 +488,7 @@ class Devices_OAuth2flow(object):
 		self.monthly_scale_data['date'] = [arrow.get(x.date) for x in self.meas_monthly.measuregrps]
 
 
-		print('monthly_scale_data', self.monthly_scale_data['date'])
+		#print('monthly_scale_data', self.monthly_scale_data['date'])
 
 		#Graph x titles dates
 		try:
@@ -480,8 +503,8 @@ class Devices_OAuth2flow(object):
 	
 		self.weight_m, muscle_mass_m, bone_mass_m, fat_mass_m, hydration_m = self.data_utils.scale_data_extractor(self.monthly_scale_data['measures'])
 
-		print('monthly_scale_data', self.monthly_scale_data['date'])
-		print('weight m', self.weight_m)
+		#print('monthly_scale_data', self.monthly_scale_data['date'])
+		#print('weight m', self.weight_m)
 
 
 		#Cleaning data for the table
@@ -498,8 +521,8 @@ class Devices_OAuth2flow(object):
 
 		self.database.SM.load_Scale(time = scale_data['date'], weight = self.weight, muscle_mass = muscle_mass, bone_mass = bone_mass, fat_mass = fat_mass)
 
-		print('WEIGHT', self.weight_m)
-		print('monthly_scale_data', self.monthly_scale_data['date'])
+		#print('WEIGHT', self.weight_m)
+		#print('monthly_scale_data', self.monthly_scale_data['date'])
 	
 	def sleep(self):
 
@@ -524,12 +547,16 @@ class Devices_OAuth2flow(object):
 		#self.graph.plot_events(sleephf_data['start_date'], sleephf_data['end_date'], sleephf_data['state'])
 
 
+		print('SLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEP')
+		print(self.ending_day_c)
 		self.sleep_summary = self.api.sleep_get_summary(data_fields=GetSleepSummaryField, startdateymd=arrow.utcnow().shift(days = self.starting_day_c),enddateymd=arrow.utcnow().shift(days = self.ending_day_c), lastupdate = None)
 		self.prev_sleep_summary = self.api.sleep_get_summary(data_fields=GetSleepSummaryField, startdateymd=arrow.utcnow().shift(days = self.starting_day_p),enddateymd=arrow.utcnow().shift(days= self.ending_day_p), lastupdate = None)
 		self.month_sleep_summary = self.api.sleep_get_summary(data_fields=GetSleepSummaryField, startdateymd=arrow.utcnow().shift(days = self.starting_day_c-30),enddateymd=arrow.utcnow().shift(days= self.ending_day_c), lastupdate = None)
 		
 		#print(self.sleep_summary)
 		sleeps_data['date'] = [arrow.get(x.date) for x in self.sleep_summary.series]
+		print('SLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEP')
+		print(sleeps_data['date'] )
 		sleeps_data['start_date'] = [arrow.get(x.startdate) for x in self.sleep_summary.series]
 		sleeps_data['end_date'] = [arrow.get(x.enddate) for x in self.sleep_summary.series]
 		sleeps_data['data'] = [x.data for x in self.sleep_summary.series]
@@ -820,6 +847,8 @@ class Devices_OAuth2flow(object):
 
 	def plot_creator(self, type = None):
 
+
+		print(self.ending_dates)
 		self.graph = graph.Graph_generator(start_date =self.initial_dates,
 										   end_date = self.ending_dates,
 										   report_type = self.report_type)
@@ -1000,7 +1029,7 @@ class Devices_OAuth2flow(object):
 M = Devices_OAuth2flow(client_id = 'e64cb563bf44122144cd0702b02f69ad50d21aba0eb50ca443f69db5673ca2cc', 
 		       costumer_secret = 'c2b3bd8f8fa210533aa3e7ef54abd4654d2a44cfe4f33d9f3aff63b4ce0943c4',
 		       callback_uri = 'https://resilient.ukdri.care/',
-		       report_type = 1)
+		       report_type = 0)
 M.get_user_credentials()
 M.devices_info()
 M.scale_data()

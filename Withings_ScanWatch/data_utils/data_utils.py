@@ -19,6 +19,7 @@ class Data_Handler(object):
 
 	def data_cleaning(self, x, y):
 
+
 		y = np.array(y, dtype=float)
 		y[np.isnan(y)] = np.nan
 

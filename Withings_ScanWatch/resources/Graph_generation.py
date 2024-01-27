@@ -89,7 +89,7 @@ class Graph_generator(object):
 
 
 		weekly_average = {
-		week_start: sum(values) / len(values) if len(values) > 0 else values[0]
+		week_start:  np.nanmean(values) if len(values) > 0 else np.nan
 		for week_start, values in weekly_data.items()}
 
 		print(weekly_average)
@@ -238,21 +238,32 @@ class Graph_generator(object):
 					label_lineplot = "Respiration Rate Weekly Average"
 					plt.gca().set_title('Sleep Respiration Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
 					plt.ylabel("Breaths per minute", fontsize = 11, fontdict = self.font)
+					plt.yticks(np.arange(min(y), max(y) + 0.5, 0.5))
+
+
+
 
 
 				elif name == 'HR':
+					print('************************************************************')
+					print(k)
+					#]PRINT('MS')
 
 					label_scatter = "Sleep Heart Rate Daily Average"
 					label_lineplot = "Sleep Heart Rate Weekly Average"
 					plt.gca().set_title('Sleep Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
 					plt.ylabel("Heart Rate (bpm)", fontsize = 11, fontdict = self.font)
+					plt.yticks(range(int(min(j)), int(max(j)) + 1, 5))
+
 							
 				elif name == 'HR_ScanWatch':
 
-					label_scatter = "Daily Heart Rate Daily Average"
-					label_lineplot = "Daily Heart Rate Weekly Average"
-					plt.gca().set_title('Daily Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
+					label_scatter = "Day Heart Rate Daily Average"
+					label_lineplot = "Day Heart Rate Weekly Average"
+					plt.gca().set_title('Day Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
 					plt.ylabel("Heart Rate (bpm)", fontsize = 11, fontdict = self.font)
+					plt.yticks(range(int(min(j)), int(max(j)) + 1, 5))
+
 
 
 				if len(j_s) < 2:
@@ -261,29 +272,30 @@ class Graph_generator(object):
 					max_thresh = np.mean(j_s) + np.std(j_s)
 					min_thresh = np.mean(j_s) - np.std(j_s)
 					aver_thresh = np.mean(j_s)
-
-					line_plot = sns.lineplot(x = k, y = j, color = "cornflowerblue", linestyle =':', label = label_scatter)
+					sns.lineplot(x = k, y = j, color = "cornflowerblue", linestyle =':', label = label_scatter)
 					sns.lineplot(x = date_avg, y = val_avg, color = "darkblue",linestyle = '-', label = label_lineplot)
 					# Threshold calculations
 					plt.axhline(y=max_thresh, color='darkorange', linestyle='--', label='Upper limit', linewidth = 1)
 					plt.text(self.end_date.shift(days= 1), max_thresh, f'{max_thresh:.2f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
 					plt.axhline(y=min_thresh, color='darkorange', linestyle='--', label=f'Lower limit', linewidth = 1)
 					plt.text(self.end_date.shift(days= 1), min_thresh, f'{min_thresh:.2f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
-					plt.axhline(y=aver_thresh, color='mediumseagreen', linestyle='--', label= f'Average', linewidth = 1)
+					plt.axhline(y=aver_thresh, color='mediumseagreen', linestyle='-', label= f'Average', linewidth = 2)
 					plt.text(self.end_date.shift(days= 1), aver_thresh, f'{aver_thresh:.2f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='mediumseagreen'))
 
 					plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
-					plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
 					plt.gca().xaxis.set_major_locator((MaxNLocator(nbins=7)))
-					plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date.shift(days= 1))
+					plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+					
+					plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(days = -7), self.end_date.shift(days = 2 ))
 
 					for index in range(len(date_avg)):
 
-						plt.text(date_avg[index], val_avg[index], math.floor(val_avg[index]), size = 11,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lightblue', edgecolor='white'))
+						if not np.isnan(val_avg[index]):
+							plt.text(date_avg[index], val_avg[index], math.floor(val_avg[index]), size = 11,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lightblue', edgecolor='white'))
 
 		
 
-			
+				
 		
 			plt.grid(axis = "x")
 
@@ -415,10 +427,10 @@ class Graph_generator(object):
 		date_fat_mass = [value for index, value in enumerate(date_fat_mass) if index not in index_3]
 		date_hydration = [value for index, value in enumerate(date_hydration) if index not in index_4]
 
-		print('SCALEEEEEEEEEEEEEEEE')
+		#print('SCALEEEEEEEEEEEEEEEE')
 
-		print(weight)
-		print(date_weight)
+		#print(weight)
+		#print(date_weight)
 
 		weight_date_avg, weight_avg = self.weekly_average(date_weight, weight)
 		mm_date_avg , mm_avg = self.weekly_average(date_muscle_mass, muscle_mass)
@@ -456,20 +468,22 @@ class Graph_generator(object):
 			sns.set_style("whitegrid",{ "grid.linewidth":0.5, "grid.color": ".8", "grid.linestyle": ":", "ytick.left": True})
 			
 			if len(date_weight) < 2:
-				sns.scatterplot( x= date_weight, y = weight, label = "Weight", color = "darkblue")
+				sns.scatterplot( x= date_weight, y = weight, label = "Weight readings", color = "darkblue")
 			else:
-				sns.lineplot(x = date_weight, y = weight, label = "Weight", color = "cornflowerblue", linestyle=':', linewidth = 2)
-				sns.lineplot(x= weight_date_avg, y = weight_avg, color = "darkblue", linestyle='-', linewidth = 2)
+				print('******************************************************')
+				print(date_weight)
+				sns.lineplot(x = date_weight, y = weight, label = "Weight readings", color = "cornflowerblue", linestyle=':', linewidth = 2)
+				sns.lineplot(x= weight_date_avg, y = weight_avg, color = "darkblue", linestyle='-', linewidth = 2, label = "Weight Weekly Average")
 				# Threshold calculations
-				print(weight_date_avg)
+				#print(weight_date_avg)
 				w_date = arrow.get(weight_date_avg[0])
-				print(w_date)
-				plt.text(w_date.shift(days= 2), max_thresh, f'{max_thresh:.2f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
+				#print(w_date)
+				plt.text(w_date.shift(days= 4), max_thresh, f'{max_thresh:.2f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
 				plt.axhline(y=max_thresh, color='darkorange', linestyle='--', label=f'Upper limit', linewidth = 1)
-				plt.text(w_date.shift(days= 2), min_thresh, f'{min_thresh:.2f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
+				plt.text(w_date.shift(days= 4), min_thresh, f'{min_thresh:.2f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
 				plt.axhline(y=min_thresh, color='darkorange', linestyle='--', label=f'Lower limit', linewidth = 1)
-				plt.text(w_date.shift(days= 2), aver_thresh, f'{aver_thresh:.2f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='mediumseagreen'))
-				plt.axhline(y=aver_thresh, color='mediumseagreen', linestyle='--', label= f'Average', linewidth = 1)
+				plt.text(w_date.shift(days= 4), aver_thresh, f'{aver_thresh:.2f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='mediumseagreen'))
+				plt.axhline(y=aver_thresh, color='mediumseagreen', linestyle='-', label= f'Average', linewidth = 2)
 
 			#sns.lineplot(x = x_s2, y = z_s, label = "Muscle mass", linestyle='--',  color = "mediumseagreen", linewidth = 2)
 			#sns.lineplot(x = x_s3, y = w_s, label = "Bone mass",linestyle='--',  color = "yellow", linewidth = 2)
@@ -482,7 +496,9 @@ class Graph_generator(object):
 
 			for index in range(len(weight_date_avg)):
 
-				plt.text(weight_date_avg[index], weight_avg[index], math.floor(weight_avg[index]), size = 11,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lightblue', edgecolor='white'))
+				if not np.isnan(weight_avg[index]):
+
+					plt.text(weight_date_avg[index], weight_avg[index], math.floor(weight_avg[index]), size = 11,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lightblue', edgecolor='white'))
 
 			#for index in range(len(mm_date_avg)):
 				#plt.text(mm_date_avg[index], mm_avg[index], math.floor(mm_avg[index]), size = 11.5,  rotation = 45, fontdict = self.font)
@@ -499,7 +515,7 @@ class Graph_generator(object):
 			plt.ylabel("kg", fontdict = self.font)
 			#plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
 			#plt.gca().xaxis.set_major_locator(mdates.DayLocator())
-			plt.gca().xaxis.set_major_locator((MaxNLocator(nbins=1)))
+			plt.gca().xaxis.set_major_locator((MaxNLocator(nbins=7)))
 			plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
 			#plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date.shift(days= 1))
 			plt.legend(loc= 'upper center', bbox_to_anchor = (0.5,1.09), ncol = 4, fontsize = 8.5,frameon=False)
@@ -543,11 +559,9 @@ class Graph_generator(object):
 
 			y = [0 if element is None else element for element in y]
 
+
+
 			x, y = self.unique_values(x,y)
-
-
-
-
 
 			if self.report_type == 1:
 				
@@ -573,34 +587,36 @@ class Graph_generator(object):
 				if len(y) < 2:
 						sns.scatterplot( x= x, y = y, label = "Steps", color = "darkblue")
 				else:
-					max_thresh = np.mean(y) + np.std(y)
-					min_thresh = np.mean(y) - np.std(y)
-					aver_thresh = np.mean(y)
+					
+					max_thresh = np.nanmean(y) + np.nanstd(y)
+					min_thresh = np.nanmean(y) - np.nanstd(y)
+					aver_thresh = np.nanmean(y)
 
 					sns.lineplot(x = x, y = y, color = "cornflowerblue", linestyle = ':', label = "Steps")
 					sns.lineplot(x = date_avg, y = val_avg, color = "darkblue", linestyle = '-')
 
 					# Threshold calculations
-					plt.axhline(y=max_thresh, color='darkorange', linestyle='--', label=f'Upper limit: {max_thresh:.2f}', linewidth = 1)
-					plt.text(self.end_date.shift(days= 1), max_thresh, f'{max_thresh:.2f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
-					plt.axhline(y=min_thresh, color='darkorange', linestyle='--', label=f'Lower limit: {min_thresh:.2f}', linewidth = 1)
-					plt.text(self.end_date.shift(days= 1), min_thresh, f'{min_thresh:.2f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
-					plt.axhline(y=aver_thresh, color='mediumseagreen', linestyle='--', label= f'Average: {aver_thresh:.2f}', linewidth = 1)
-					plt.text(self.end_date.shift(days= 1), aver_thresh, f'{aver_thresh:.2f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='mediumseagreen'))
+					plt.axhline(y=max_thresh, color='darkorange', linestyle='--', label= 'Upper limit', linewidth = 1)
+					plt.text(self.end_date.shift(days= 1), max_thresh, f'{max_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
+					plt.axhline(y=min_thresh, color='darkorange', linestyle='--', label= 'Lower limit', linewidth = 1)
+					plt.text(self.end_date.shift(days= 1), min_thresh, f'{min_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
+					plt.axhline(y=aver_thresh, color='mediumseagreen', linestyle='-', label= 'Average', linewidth = 2)
+					plt.text(self.end_date.shift(days= 1), aver_thresh, f'{aver_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='mediumseagreen'))
 
 					plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
 					plt.gca().xaxis.set_major_locator((MaxNLocator(nbins=7)))
 					plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
-					plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date.shift(days = 1))
+					#plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(days = -7), self.end_date.shift(days = 1))
 
 					for index in range(len(date_avg)):
 
-						plt.text(date_avg[index], val_avg[index], (math.floor(val_avg[index]) if not np.isnan(val_avg[index]) else np.nan), size = 11,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lightblue', edgecolor='white'))
+						if not np.isnan(val_avg[index]):
+							plt.text(date_avg[index], val_avg[index], (math.floor(val_avg[index]) if not np.isnan(val_avg[index]) else np.nan), size = 11,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lightblue', edgecolor='white'))
 
 
 			#plt.clf()
 
-			plt.gca().set_title('Daily Steps Count',fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
+			plt.gca().set_title('Daily Step Count',fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
 			plt.grid(axis = "x")
 			plt.legend(loc= 'upper center', bbox_to_anchor = (0.5,1.09), ncol = 4, fontsize = 8.5,frameon=False)
 			plt.gca().spines['top'].set_visible(False)
@@ -673,9 +689,9 @@ class Graph_generator(object):
 						#plt.text(x_u[index], o_u[index], math.floor(o_u[index]), size = 11.5, color = "black", ha = 'center', va = 'center', zorder = 11,fontdict = self.font)
 						plt.text(x_u[index], o_u[index], math.floor(o_u[index]), size = 11.5,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lavender', edgecolor='white'))
 			if self.report_type == 0:
-				sns.lineplot(x = x_soft_1, y = o_soft_1, color = "darkblue", markersize = 14, label = "Hours Asleep Weekly Average", linewidth = 2 )
+				sns.lineplot(x = x_soft_1, y = o_soft_1, color = "darkblue", markersize = 14, label = "Hours asleep in bed weekly average", linewidth = 2 )
 				date_avg, val_avg = self.weekly_average(x_u,o_u)
-				sns.lineplot(x = date_avg, y = val_avg, color = "lavender", markersize = 14, label = "Times out of bed",  linestyle='--', linewidth = 2 )
+				sns.lineplot(x = date_avg, y = val_avg, color = "lavender", markersize = 14, label = "Times out of bed weekly average",  linestyle='--', linewidth = 2 )
 				for index in range(len(date_avg)):
 					plt.text(date_avg[index], val_avg[index], math.floor(val_avg[index]), size = 11,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lavender', edgecolor='white'))
 				#plt.text(x_u[index], l_u[index], math.floor(l_u[index]), size = 11.5, color = "black", ha = 'center', va = 'center', zorder = 11 )
@@ -690,7 +706,8 @@ class Graph_generator(object):
 			plt.gca().set_title('Sleep Summary', fontsize = 14, loc = 'left',pad = 30, fontweight=600, fontdict = self.font)
 			#plt.gca().xaxis.set_major_locator(mdates.WeekdayLocator())
 			plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
-			plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date)
+			plt.gca().xaxis.set_major_locator((MaxNLocator(nbins=7)))
+			plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(days = -7), self.end_date)
 			# Set the locator for x-axis labels
 			plt.gca().spines['top'].set_visible(False)
 			plt.gca().spines['right'].set_visible(False)
