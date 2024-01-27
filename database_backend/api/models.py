@@ -63,7 +63,7 @@ class Sleepmat_IntraActivity(models.Model):
     device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='sleepmat_intraactivity')
     start_date = models.DateField()
     end_date = models.DateField()
-    sleep_state = models.CharField()
+    sleep_state = models.CharField(max_length=50)
     date_heart_rate = models.FloatField()
     heart_rate = models.FloatField()
     date_respiration_rate = models.FloatField()
