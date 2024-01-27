@@ -22,6 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
         return {
             'id': instance.id,
             'username': instance.username,
+            'role': instance.role,
             'created_at': instance.created_at,
             'updated_at': instance.updated_at
         }
@@ -69,4 +70,14 @@ class SleepmatIntraActivitySerializer(serializers.ModelSerializer):
 class SleepmatSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = Sleepmat_Summary
+        fields = '__all__'
+
+class ReportSerializer(serializers.Serializer):
+    class Meta:
+        model = Report
+        fields = '__all__'
+
+class UsageSerializer(serializers.Serializer):
+    class Meta:
+        model = Usage
         fields = '__all__'
