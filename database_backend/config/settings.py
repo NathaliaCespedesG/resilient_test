@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     'api'
 ]
 
@@ -77,7 +78,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'sergiosierra',
+        'NAME': 'withings',
         'USER': 'sergiosierra',
         'PASSWORD': '2021',
         'HOST': 'localhost',

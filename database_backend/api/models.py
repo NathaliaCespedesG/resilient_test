@@ -6,7 +6,7 @@ import uuid
 class User(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = models.CharField(max_length=50)
-    fullname = models.CharField(max_length=100)
+    role = models.CharField(max_length=100)
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
     password_hash = models.CharField(max_length=200)
@@ -88,3 +88,39 @@ class Sleepmat_Summary(models.Model):
     sleep_score = models.FloatField()
     wakeup_count = models.FloatField()
     wakeup_duration = models.FloatField()
+
+class Report(models.Model):
+    id =  models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reports')
+    path = models.CharField(max_length=300)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        # Update the `updated_at` field before saving the record
+        self.updated_at = timezone.now()
+        super(User, self).save(*args, **kwargs)
+
+class Usage(models.Model):
+    id =  models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='usages')
+    report = models.ForeignKey(Report, on_delete=models.CASCADE, related_name='report_usages')
+    scanwatch_usage_level = models.CharField(max_length=10)
+    scanwatch_battery = models.FloatField()
+    scanwatch_last_date = models.DateField()
+    sleepmat_usage_level = models.CharField(max_length=10)
+    sleepmat_battery = models.FloatField()
+    sleepmat_last_date = models.DateField()
+    scale_usage_level = models.CharField(max_length=10)
+    scale_battery = models.FloatField()
+    scale_last_date = models.DateField()
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        # Update the `updated_at` field before saving the record
+        self.updated_at = timezone.now()
+        super(User, self).save(*args, **kwargs)
+    
