@@ -570,9 +570,9 @@ class Data_Handler(object):
 		elif(scale_miss >= 2 and scale_miss < 4):
 			usage['Scale'] = 'Medium'
 		elif(scale_miss >= 4):
-			usage['Watch'] = 'Low'
+			usage['Scale'] = 'Low'
 		elif (len(scae_u) == 0):
-			usage['Watch'] = 'No data'
+			usage['Scale'] = 'No data'
 
 
 		return(usage)
