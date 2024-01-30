@@ -85,22 +85,21 @@ class Graph_generator(object):
 
 
 
-		print(weekly_data)
+		#print(weekly_data)
 
 
 		weekly_average = {
 		week_start:  np.nanmean(values) if len(values) > 0 else np.nan
 		for week_start, values in weekly_data.items()}
 
-		print(weekly_average)
+		#print(weekly_average)
 
 		# Extract keys and values from the weekly_average dictionary
 		week_avg_dates = list(weekly_average.keys())
 		week_avg_weights = list(weekly_average.values())
 		
-		print('HELOOOOOOOOOOOOOOOOOOOOOOOOOOOOO')
-		print(week_avg_dates)
-		print(week_avg_weights)
+		#print(week_avg_dates)
+		#print(week_avg_weights)
 		
 		return(week_avg_dates, week_avg_weights)
 
@@ -245,10 +244,6 @@ class Graph_generator(object):
 
 
 				elif name == 'HR':
-					print('************************************************************')
-					print(k)
-					#]PRINT('MS')
-
 					label_scatter = "Sleep Heart Rate Daily Average"
 					label_lineplot = "Sleep Heart Rate Weekly Average"
 					plt.gca().set_title('Sleep Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
@@ -470,8 +465,8 @@ class Graph_generator(object):
 			if len(date_weight) < 2:
 				sns.scatterplot( x= date_weight, y = weight, label = "Weight readings", color = "darkblue")
 			else:
-				print('******************************************************')
-				print(date_weight)
+				#print('******************************************************')
+				#print(date_weight)
 				sns.lineplot(x = date_weight, y = weight, label = "Weight readings", color = "cornflowerblue", linestyle=':', linewidth = 2)
 				sns.lineplot(x= weight_date_avg, y = weight_avg, color = "darkblue", linestyle='-', linewidth = 2, label = "Weight Weekly Average")
 				# Threshold calculations

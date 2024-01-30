@@ -121,30 +121,25 @@ class DatabaseManager(object):
 		self.SleepIntraFile.close()
 
 
-	def load_usage(self, user_id = None, start_date = None, end_date = None, sleep_usage = None, sleep_battery = None, watch_usage = None, watch_battery = None, scale_usage = None, scale_battery = None):
+	def load_usage(self, user_id = None, start_date = None, end_date = None, sleep_usage = None, sleep_battery = None, sleep_lastday = None,  watch_usage = None, watch_battery = None, watch_lastday = None,  scale_usage = None, scale_battery = None, scale_lastday = None):	
+	
+		self.df_usage = self.df_usage.append({
+			'id': user_id,
+			'start_date': start_date,
+			'end_date': end_date,
+			'SleepMat Usage': sleep_usage,
+			'SleepMat Battery': sleep_battery,
+			'SleepMat Last reading': sleep_lastday,
+			'Watch Usage': watch_usage,
+			'Watch Battery': watch_battery,
+			'Watch Last reading': watch_lastday,
+			'Scale Usage': scale_usage,
+			'Scale Battery': scale_battery,
+			'Scale Last reading': scale_lastday,
+			}, ignore_index=True)
 
-
-		with open(self.usage_info, 'a', newline='') as csv_file:
-			# Append a row to the DataFrame
-			self.df_usage = self.df_usage.append({
-				'id': user_id,
-				'start_date': start_date,
-				'end_date': end_date,
-				'SleepMat Usage': sleep_usage,
-				'SleepMat Battery': sleep_battery,
-				'Watch Usage': watch_usage,
-				'Watch Battery': watch_battery,
-				'Scale Usage': scale_usage,
-				'Scale Battery': scale_battery
-				}, ignore_index=True)
-
-
-			# Write the updated DataFrame to the CSV file
-			self.df_usage.to_csv(csv_file, index=False, mode='a', header=not csv_file.tell())
-		#self.UsageFile.close()
-
-# The file is closed automatically when leaving the 'with' block
-
+		# Updated DataFrame to the CSV file
+		self.df_usage.to_csv(self.usage_info, index=False, mode='a', header = False)
 
 		self.UsageFile.close()
 
@@ -184,6 +179,7 @@ class DatabaseManager(object):
 		self.scale_name = self.user_folder + "/Scale.csv"
 		self.scanwatch_name = self.user_folder + "/ScanWatch_summary.csv"
 		self.sleepmat_name = self.user_folder + "/SleepMat_summary.csv"
+
 		self.devices_info = self.user_folder_wd+ "/Devices.csv"
 		self.usage_info = self.user_folder_wd+ "/Usage.csv"
 
@@ -198,22 +194,31 @@ class DatabaseManager(object):
 		self.ScanWatchfile = open(self.scanwatch_name, 'w+')
 		self.SleepMatFile = open(self.sleepmat_name, "w+")
 		self.DevicesFile = open(self.devices_info, "w+")
-		self.UsageFile = open(self.usage_info, "w+")
+		
 		self.ScanIntraFile = open(self.scanwatch_intraday, "w+")
 		self.SleepIntraFile = open(self.sleepmat_intraday, "w+")
+
+		self.UsageFile = open(self.usage_info, "a+")
 
 		#Headers on devices files
 
 		self.df_devices = pd.DataFrame({'Device': [], 'Hash_deviceid': [], 'MAC_address': []} )
 		self.df_devices.to_csv(self.devices_info, index = False )
 
-		#Headers on usage files
-
-		self.df_usage = pd.DataFrame({'id': [], 'start_date': [], 'end_date': [], 'SleepMat Usage': [], 'SleepMat Battery': [], 'Watch Usage': [], 'Watch Battery': [],
-				 'Scale Usage': [], 'Scale Battery': []})
-		self.df_usage.to_csv(self.usage_info, index = False )
+		#Headers and data on usage files
+		try:
+			existing_data = pd.read_csv(self.usage_info)
+			self.df_usage = existing_data
+		except:
+			
+			self.df_usage = pd.DataFrame({'id': [], 'start_date': [], 'end_date': [], 'SleepMat Usage': [], 'SleepMat Battery': [],'SleepMat Last reading' : [], 'Watch Usage': [], 'Watch Battery': [], 'Watch Last reading': [],
+				 'Scale Usage': [], 'Scale Battery': [], 'Scale Last reading': []})
+		
+			self.df_usage.to_csv(self.usage_info, index = False )
 
 		#Headers on each files
+
+		
 
 		self.df_scanwatch = pd.DataFrame({'date': [], 'HR_Average': [], 'Calories': [], 'Steps': []} )
 		self.df_scanwatch.to_csv(self.scanwatch_name, index = False )
