@@ -232,7 +232,7 @@ class Devices_OAuth2flow(object):
 		date_of_registration =  datetime.strptime(date_of_registration, '%Y-%m-%d')
 		
 
-		self.ending_day_c = -4
+		self.ending_day_c = -1
 
 		# Calculate the difference in days
 		days_difference = ((datetime.now()- timedelta(days=4)) - date_of_registration).days
@@ -313,8 +313,8 @@ class Devices_OAuth2flow(object):
 		#Current Week
 		self.activity_data['date'] = [arrow.get(x.date) for x in self.meas_activity.activities]
 		self.activity_data['heart_rate'] = [x.hr_average for x in self.meas_activity.activities]
-		#print('***********************************')
-		#print(self.activity_data['date'])
+		print('***********************************')
+		print(self.activity_data['date'][-1])
 		self.activity_data['date'], self.activity_data['heart_rate'] =self.data_utils.data_cleaning(self.activity_data['date'],self.activity_data['heart_rate'])
 		self.activity_data['calories'] = [x.totalcalories for x in self.meas_activity.activities]
 		self.activity_data['date'], self.activity_data['calories'] = self.data_utils.data_cleaning(self.activity_data['date'],self.activity_data['calories'])
@@ -468,7 +468,9 @@ class Devices_OAuth2flow(object):
 		#Current week values
 		scale_data['date'] = [arrow.get(x.date) for x in self.meas_current.measuregrps]
 		scale_data['measures'] = [x.measures for x in self.meas_current.measuregrps]
-		#print(scale_data['date'])
+		print('SCALEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+		self.last_scale = scale_data['date']
+		print(scale_data['date'])
 		#print(scale_data['measures'])
 		self.weight, muscle_mass, bone_mass, fat_mass, hydration = self.data_utils.scale_data_extractor(scale_data['measures'])
 		#print('weight values', self.weight)
@@ -555,8 +557,9 @@ class Devices_OAuth2flow(object):
 		
 		#print(self.sleep_summary)
 		sleeps_data['date'] = [arrow.get(x.date) for x in self.sleep_summary.series]
-		#print('SLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEP')
-		#print(sleeps_data['date'] )
+		print('SLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEP')
+		print(sleeps_data['date'] )
+		self.last_sleep = sleeps_data['date'][-1]
 		sleeps_data['start_date'] = [arrow.get(x.startdate) for x in self.sleep_summary.series]
 		sleeps_data['end_date'] = [arrow.get(x.enddate) for x in self.sleep_summary.series]
 		sleeps_data['data'] = [x.data for x in self.sleep_summary.series]
@@ -945,19 +948,24 @@ class Devices_OAuth2flow(object):
 		
 		#Battery 
 		self.battery_report = self.battery
-		
 		#Last date of usage
-		last_date_watch = None
-		last_date_sleep = None
-		last_date_scale = self.monthly_scale_data['date'][-1]
+
+		self.last_day_use = {'Watch': self.activity_data['date'][-1], 'Scale': self.last_scale[0], 'Sleep': self.last_sleep} 
 
 		print(usage)
 		print(usage['Scale'])
 		print('Batteryyyyyyyyyyyyy')
 		print(self.battery)
 		print(self.battery[2])
-		self.database.SM.load_usage( user_id = self.id_user, start_date = start_date, end_date = end_date, sleep_usage = usage['Sleep Mat'], sleep_battery = self.battery[1], watch_usage = usage['Watch'],
-									 watch_battery = self.battery[2], scale_usage = usage['Scale'], scale_battery = self.battery[0])
+
+		print('################################################################')
+		print(self.last_day_use)
+		print(self.activity_data['date'][-1])
+		print(self.last_scale[0])
+		print(self.last_sleep)
+
+		self.database.SM.load_usage( user_id = self.id_user, start_date = start_date, end_date = end_date, sleep_usage = usage['Sleep Mat'], sleep_battery = self.battery[1], sleep_lastday = self.last_day_use['Sleep'], watch_usage = usage['Watch'],
+									 watch_battery = self.battery[2], watch_lastday = self.last_day_use['Sleep'], scale_usage = usage['Scale'], scale_battery = self.battery[0], scale_lastday = self.last_day_use['Scale'])
 
 	#The following functions will be used to get the users' raw data. Please keep in mind that you need to activate and deactivate
 	#the device you want to acquiere the raw data from
@@ -966,12 +974,10 @@ class Devices_OAuth2flow(object):
 
 		#This function allows the user to activate the raw data acquisition, data_type: type of data that needs to be 
 		#activated (1: accelerometer, 2: optical sensor)
-
 		self.api.activate_raw_data(hash_deviceid = self.hash_deviceid, rawdata_type = 1, enddate = arrow.utcnow().shift(days = 2))
 
 
 	def deactivate_raw_data(self, data_type = None):
-
 		#This function allows the user to deactivate the raw data acquisition, data_type: type of data that needs to be 
 		#activated (1: accelerometer, 2: optical sensor)
 		self.api.deactivate_raw_data(hash_deviceid = self.hash_deviceid, rawdata_type = 1)
