@@ -237,7 +237,8 @@ class Graph_generator(object):
 					label_lineplot = "Respiration Rate Weekly Average"
 					plt.gca().set_title('Sleep Respiration Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
 					plt.ylabel("Breaths per minute", fontsize = 11, fontdict = self.font)
-					plt.yticks(np.arange(min(y), max(y) + 0.5, 0.5))
+					if j:
+						plt.yticks(np.arange(min(y), max(y) + 0.5, 0.5))
 
 
 
@@ -248,7 +249,8 @@ class Graph_generator(object):
 					label_lineplot = "Sleep Heart Rate Weekly Average"
 					plt.gca().set_title('Sleep Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
 					plt.ylabel("Heart Rate (bpm)", fontsize = 11, fontdict = self.font)
-					plt.yticks(range(int(min(j)), int(max(j)) + 1, 5))
+					if j:
+						plt.yticks(range(int(min(j)), int(max(j)) + 1, 5))
 
 							
 				elif name == 'HR_ScanWatch':
@@ -257,7 +259,8 @@ class Graph_generator(object):
 					label_lineplot = "Day Heart Rate Weekly Average"
 					plt.gca().set_title('Day Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
 					plt.ylabel("Heart Rate (bpm)", fontsize = 11, fontdict = self.font)
-					plt.yticks(range(int(min(j)), int(max(j)) + 1, 5))
+					if j:
+						plt.yticks(range(int(min(j)), int(max(j)) + 1, 5))
 
 
 
@@ -582,10 +585,16 @@ class Graph_generator(object):
 				if len(y) < 2:
 						sns.scatterplot( x= x, y = y, label = "Steps", color = "darkblue")
 				else:
+
+					print('********************************************')
+					print(y)
 					
 					max_thresh = np.nanmean(y) + np.nanstd(y)
+					print(max_thresh)
 					min_thresh = np.nanmean(y) - np.nanstd(y)
+					print(min_thresh)
 					aver_thresh = np.nanmean(y)
+					print(aver_thresh)
 
 					sns.lineplot(x = x, y = y, color = "cornflowerblue", linestyle = ':', label = "Steps")
 					sns.lineplot(x = date_avg, y = val_avg, color = "darkblue", linestyle = '-')
@@ -601,7 +610,8 @@ class Graph_generator(object):
 					plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
 					plt.gca().xaxis.set_major_locator((MaxNLocator(nbins=7)))
 					plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
-					#plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(days = -7), self.end_date.shift(days = 1))
+					plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(days = -7), self.end_date.shift(days = 2 ))
+					
 
 					for index in range(len(date_avg)):
 
@@ -616,8 +626,6 @@ class Graph_generator(object):
 			plt.legend(loc= 'upper center', bbox_to_anchor = (0.5,1.09), ncol = 4, fontsize = 8.5,frameon=False)
 			plt.gca().spines['top'].set_visible(False)
 			plt.gca().spines['right'].set_visible(False)
-
-			
 
 
 		#plt.grid(axis = "x")

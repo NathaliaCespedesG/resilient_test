@@ -106,7 +106,8 @@ class Data_Handler(object):
 
 			if date_key in daily_sums:
 				# Add the weight to the daily sum
-				if weight is not None:
+				if weight is not None and daily_sums.get(date_key) is not None:
+					print(daily_sums[date_key])
 					daily_sums[date_key] += weight
 					daily_counts[date_key] += 1
 				else:

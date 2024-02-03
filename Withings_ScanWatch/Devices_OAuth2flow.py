@@ -55,12 +55,17 @@ class Devices_OAuth2flow(object):
 	def __init__(self, client_id: None, 
 					   costumer_secret: None, 
 					   callback_uri: None,
-					   report_type: None):
+					   report_type: None,
+					   generation_type: None,
+					   id_participant: None):
 
 
 		# Report type
 
 		self.report_type = report_type
+		
+		#Generation type
+		self.generation_type = generation_type
 
 
 		# Creates the database object
@@ -84,7 +89,10 @@ class Devices_OAuth2flow(object):
 
 		#Create an ID for each user
 
-		self.id_user = input('Please provide the id for the user: ')
+		if self.generation_type == 'all':
+			self.id_user = id_participant
+		else:
+			self.id_user = input('Please provide the id for the user: ')
 
 
 		self.database.SM.set_date_report(date = str(datetime.now()))
@@ -232,7 +240,7 @@ class Devices_OAuth2flow(object):
 		date_of_registration =  datetime.strptime(date_of_registration, '%Y-%m-%d')
 		
 
-		self.ending_day_c = -1
+		self.ending_day_c = -3
 
 		# Calculate the difference in days
 		days_difference = ((datetime.now()- timedelta(days=4)) - date_of_registration).days
@@ -314,7 +322,7 @@ class Devices_OAuth2flow(object):
 		self.activity_data['date'] = [arrow.get(x.date) for x in self.meas_activity.activities]
 		self.activity_data['heart_rate'] = [x.hr_average for x in self.meas_activity.activities]
 		print('***********************************')
-		print(self.activity_data['date'][-1])
+		#print(self.activity_data['date'][-1])
 		self.activity_data['date'], self.activity_data['heart_rate'] =self.data_utils.data_cleaning(self.activity_data['date'],self.activity_data['heart_rate'])
 		self.activity_data['calories'] = [x.totalcalories for x in self.meas_activity.activities]
 		self.activity_data['date'], self.activity_data['calories'] = self.data_utils.data_cleaning(self.activity_data['date'],self.activity_data['calories'])
@@ -372,79 +380,90 @@ class Devices_OAuth2flow(object):
 			ending_day = self.ending_day_p
 		
 		week_days = list(range(starting_day, ending_day))
-		week_days.append(week_days[-1]+1)
-		#print(week_days)
 
-		total = abs(starting_day) - abs(ending_day)
+		try:
+			week_days.append(week_days[-1]+1)
+			#print(week_days)
 
-
-		for i in range (len(week_days)):
-
-			#print('date 1', arrow.utcnow().shift(days= week_days[i]).replace(hour=0, minute=0, second=0))
-			#print('date2', arrow.utcnow().shift(days = week_days[i]+1).replace(hour=0, minute=0, second=0) )
+			total = abs(starting_day) - abs(ending_day)
 
 
+			for i in range (len(week_days)):
 
-			self.meas_intraactivity = self.api.measure_get_intraactivity(startdate= arrow.utcnow().shift(days= week_days[i]).replace(hour=0, minute=0, second=0), enddate=arrow.utcnow().shift(days = week_days[i]+1).replace(hour=0, minute=0, second=0))
-			dates = [key for key, sub_dict in self.meas_intraactivity['series'].items() if 'heart_rate' in sub_dict]
-			watch_data = [sub_dict['heart_rate'] for sub_dict in self.meas_intraactivity['series'].values() if 'heart_rate' in sub_dict]
-			dates_s = [key for key, sub_dict in self.meas_intraactivity['series'].items() if 'steps' in sub_dict]
-			step_watch_data = [sub_dict['steps'] for sub_dict in self.meas_intraactivity['series'].values() if 'steps' in sub_dict]
-			dates_c = [key for key, sub_dict in self.meas_intraactivity['series'].items() if 'calories' in sub_dict]
-			calories_watch_data = [sub_dict['calories'] for sub_dict in self.meas_intraactivity['series'].values() if 'calories' in sub_dict]
-			
-			dates, watch_data = self.data_utils.hr_filtering(dates, watch_data)
-
-			dates_to_test[i] = dates
-			hr_to_test[i] = watch_data
-			dates_hr.append(dates)
-			#print(np.mean(watch_data))
-			self.HR_watch.append(watch_data)
-			dates_steps.append(dates_s)
-			Steps_watch.append(step_watch_data)
-			dates_calories.append(dates_c)
-			Calories_watch.append(calories_watch_data)
-
-	
-		#self.small_test(dates_to_test)
-
-		self.HR_watch = sum(self.HR_watch,[])
-		Steps_watch = sum(Steps_watch,[])
-		Calories_watch = sum(Calories_watch,[])
-		#dates_db_a = sum(dates_db_a, [])
-		dates_hr = sum(dates_hr,[])
-		self.dates_hr_1 = [int(x) for x in dates_hr]
-		dates_steps = sum(dates_steps,[])
-		#dates_steps = [int(x) for x in dates_steps]
-		dates_calories = sum(dates_calories,[])
-		#dates_calories = [int(x) for x in dates_calories]
-
-		if type_time == "current":
-			start_dates_hr = self.wakeup_hours
-			end_dates_hr = self.fellasleep_hours
-			self.hr_based_sleep = self.data_utils.hr_average_basedon_sleep(dates = dates_to_test, HR = hr_to_test, startdates = start_dates_hr, enddates = end_dates_hr )
-			self.final_hr = self.data_utils.backup_data(value2 = self.activity_data['heart_rate'], value1 = self.hr_based_sleep)
-			
-
-			self.database.SM.load_intra_activity(hr = self.HR_watch, time = dates_hr, time_steps = dates_steps, steps = Steps_watch, time_calories = dates_calories, calories = Calories_watch)
-			self.database.SM.load_ScanWatch(hr = self.final_hr, calories = self.activity_data['calories'], steps = self.activity_data['steps'],  time = self.activity_data['date'] )
+				#print('date 1', arrow.utcnow().shift(days= week_days[i]).replace(hour=0, minute=0, second=0))
+				#print('date2', arrow.utcnow().shift(days = week_days[i]+1).replace(hour=0, minute=0, second=0) )
 
 
-		if type_time == "prev":
-			start_dates_hr = self.wakeup_hours_prev
-			end_dates_hr = self.fellasleep_hours_prev
 
-			if start_dates_hr == []:
-				print('No data for the week')
-				self.final_hr_prev = []
-			else:
-				#print(start_dates_hr)
-				#print(dates_to_test)
-				self.hr_based_sleep_prev = self.data_utils.hr_average_basedon_sleep(dates = dates_to_test, HR = hr_to_test, startdates = start_dates_hr, enddates = end_dates_hr )
-				self.final_hr_prev = self.data_utils.backup_data(value2 = self.pre_activity_data['heart_rate'], value1 = self.hr_based_sleep_prev)
-				#self.hr_based_sleep_prev = self.pre_activity_data['heart_rate']	
+				self.meas_intraactivity = self.api.measure_get_intraactivity(startdate= arrow.utcnow().shift(days= week_days[i]).replace(hour=0, minute=0, second=0), enddate=arrow.utcnow().shift(days = week_days[i]+1).replace(hour=0, minute=0, second=0))
+				dates = [key for key, sub_dict in self.meas_intraactivity['series'].items() if 'heart_rate' in sub_dict]
+				watch_data = [sub_dict['heart_rate'] for sub_dict in self.meas_intraactivity['series'].values() if 'heart_rate' in sub_dict]
+				dates_s = [key for key, sub_dict in self.meas_intraactivity['series'].items() if 'steps' in sub_dict]
+				step_watch_data = [sub_dict['steps'] for sub_dict in self.meas_intraactivity['series'].values() if 'steps' in sub_dict]
+				dates_c = [key for key, sub_dict in self.meas_intraactivity['series'].items() if 'calories' in sub_dict]
+				calories_watch_data = [sub_dict['calories'] for sub_dict in self.meas_intraactivity['series'].values() if 'calories' in sub_dict]
+				
+				dates, watch_data = self.data_utils.hr_filtering(dates, watch_data)
+
+				dates_to_test[i] = dates
+				hr_to_test[i] = watch_data
+				dates_hr.append(dates)
+				#print(np.mean(watch_data))
+				self.HR_watch.append(watch_data)
+				dates_steps.append(dates_s)
+				Steps_watch.append(step_watch_data)
+				dates_calories.append(dates_c)
+				Calories_watch.append(calories_watch_data)
+
 		
-			return(self.final_hr_prev)
+			#self.small_test(dates_to_test)
+
+			self.HR_watch = sum(self.HR_watch,[])
+			Steps_watch = sum(Steps_watch,[])
+			Calories_watch = sum(Calories_watch,[])
+			#dates_db_a = sum(dates_db_a, [])
+			dates_hr = sum(dates_hr,[])
+			self.dates_hr_1 = [int(x) for x in dates_hr]
+			dates_steps = sum(dates_steps,[])
+			#dates_steps = [int(x) for x in dates_steps]
+			dates_calories = sum(dates_calories,[])
+			#dates_calories = [int(x) for x in dates_calories]
+
+			if type_time == "current":
+				start_dates_hr = self.wakeup_hours
+				end_dates_hr = self.fellasleep_hours
+				self.hr_based_sleep = self.data_utils.hr_average_basedon_sleep(dates = dates_to_test, HR = hr_to_test, startdates = start_dates_hr, enddates = end_dates_hr )
+				self.final_hr = self.data_utils.backup_data(value2 = self.activity_data['heart_rate'], value1 = self.hr_based_sleep)
+				
+
+				self.database.SM.load_intra_activity(hr = self.HR_watch, time = dates_hr, time_steps = dates_steps, steps = Steps_watch, time_calories = dates_calories, calories = Calories_watch)
+				self.database.SM.load_ScanWatch(hr = self.final_hr, calories = self.activity_data['calories'], steps = self.activity_data['steps'],  time = self.activity_data['date'] )
+
+
+			if type_time == "prev":
+				start_dates_hr = self.wakeup_hours_prev
+				end_dates_hr = self.fellasleep_hours_prev
+
+				if start_dates_hr == []:
+					print('No data for the week')
+					self.final_hr_prev = []
+				else:
+					#print(start_dates_hr)
+					#print(dates_to_test)
+					self.hr_based_sleep_prev = self.data_utils.hr_average_basedon_sleep(dates = dates_to_test, HR = hr_to_test, startdates = start_dates_hr, enddates = end_dates_hr )
+					self.final_hr_prev = self.data_utils.backup_data(value2 = self.pre_activity_data['heart_rate'], value1 = self.hr_based_sleep_prev)
+					#self.hr_based_sleep_prev = self.pre_activity_data['heart_rate']	
+			
+				return(self.final_hr_prev)
+
+		except IndexError:
+
+			print('No dates for heart rate')
+
+			self.dates_hr_1 = []
+			self.HR_watch = []
+			self.final_hr = []
+
 
 
 
@@ -559,7 +578,11 @@ class Devices_OAuth2flow(object):
 		sleeps_data['date'] = [arrow.get(x.date) for x in self.sleep_summary.series]
 		print('SLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEP')
 		print(sleeps_data['date'] )
-		self.last_sleep = sleeps_data['date'][-1]
+		try:
+			self.last_sleep = sleeps_data['date'][-1]
+
+		except:
+			print('No sleep data available')
 		sleeps_data['start_date'] = [arrow.get(x.startdate) for x in self.sleep_summary.series]
 		sleeps_data['end_date'] = [arrow.get(x.enddate) for x in self.sleep_summary.series]
 		sleeps_data['data'] = [x.data for x in self.sleep_summary.series]
@@ -949,20 +972,10 @@ class Devices_OAuth2flow(object):
 		#Battery 
 		self.battery_report = self.battery
 		#Last date of usage
-
-		self.last_day_use = {'Watch': self.activity_data['date'][-1], 'Scale': self.last_scale[0], 'Sleep': self.last_sleep} 
-
-		print(usage)
-		print(usage['Scale'])
-		print('Batteryyyyyyyyyyyyy')
-		print(self.battery)
-		print(self.battery[2])
-
-		print('################################################################')
-		print(self.last_day_use)
-		print(self.activity_data['date'][-1])
-		print(self.last_scale[0])
-		print(self.last_sleep)
+		try:
+			self.last_day_use = {'Watch': self.activity_data['date'][-1], 'Scale': self.last_scale[0], 'Sleep': self.last_sleep} 
+		except IndexError:
+			self.last_day_use = {'Watch': None, 'Scale': None, 'Sleep': None} 
 
 		self.database.SM.load_usage( user_id = self.id_user, start_date = start_date, end_date = end_date, sleep_usage = usage['Sleep Mat'], sleep_battery = self.battery[1], sleep_lastday = self.last_day_use['Sleep'], watch_usage = usage['Watch'],
 									 watch_battery = self.battery[2], watch_lastday = self.last_day_use['Sleep'], scale_usage = usage['Scale'], scale_battery = self.battery[0], scale_lastday = self.last_day_use['Scale'])
@@ -1044,11 +1057,12 @@ class Devices_OAuth2flow(object):
 
 
 
-
+'''
 M = Devices_OAuth2flow(client_id = 'e64cb563bf44122144cd0702b02f69ad50d21aba0eb50ca443f69db5673ca2cc', 
 		       costumer_secret = 'c2b3bd8f8fa210533aa3e7ef54abd4654d2a44cfe4f33d9f3aff63b4ce0943c4',
 		       callback_uri = 'https://resilient.ukdri.care/',
-		       report_type = 0)
+		       report_type = 1,
+			   generation_type = None)
 M.get_user_credentials()
 M.devices_info()
 M.scale_data()
@@ -1061,3 +1075,4 @@ M.remove_images()
 M.usage_levels()
 #M.deactivate_raw_data()
 #M.activate_raw_data()
+'''
