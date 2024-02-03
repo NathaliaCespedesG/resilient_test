@@ -40,7 +40,7 @@ class Scale(models.Model):
     bone_mass = models.FloatField()
     fat_mass = models.FloatField()
 
-class ScanWatch_IntraActivity(models.Model):
+class ScanWatchIntraActivity(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='scanwatch_intraactivity')
     heart_rate = models.FloatField()
@@ -50,7 +50,7 @@ class ScanWatch_IntraActivity(models.Model):
     calories = models.FloatField()
     date_calories = models.FloatField()
 
-class ScanWatch_Summary(models.Model):
+class ScanWatchSummary(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='scanwatch_summary')
     date = models.DateField()
@@ -58,7 +58,7 @@ class ScanWatch_Summary(models.Model):
     calories = models.FloatField()
     steps = models.FloatField()
 
-class Sleepmat_IntraActivity(models.Model):
+class SleepmatIntraActivity(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='sleepmat_intraactivity')
     start_date = models.DateField()
@@ -73,7 +73,7 @@ class Sleepmat_IntraActivity(models.Model):
     date_sdnn_1 = models.FloatField()
     sdnn_1 = models.FloatField()
 
-class Sleepmat_Summary(models.Model):
+class SleepmatSummary(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='sleepmat_summary')
     date = models.DateField()

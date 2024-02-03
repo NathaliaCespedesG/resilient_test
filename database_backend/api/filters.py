@@ -4,8 +4,10 @@ from .models import *
 class UserFilter(django_filters.FilterSet):
     id = django_filters.UUIDFilter(field_name='id', lookup_expr='exact')
     username = django_filters.CharFilter(field_name='username', lookup_expr='exact') 
+    created_at = django_filters.DateFilter(field_name='created_at', lookup_expr='exact')
     created_at_from = django_filters.DateFilter(field_name='created_at', lookup_expr='gte')
     created_at_to = django_filters.DateFilter(field_name='created_at', lookup_expr='lte')
+    updated_at = django_filters.DateFilter(field_name='updated_at', lookup_expr='exact')
     updated_at_from = django_filters.DateFilter(field_name='updated_at', lookup_expr='gte')
     updated_at_to = django_filters.DateFilter(field_name='updated_at', lookup_expr='lte')
 
@@ -58,7 +60,7 @@ class ScanWatch_IntraActivityFilter(django_filters.FilterSet):
         return queryset.filter(device__user__username=value)
 
     class Meta:
-        model = ScanWatch_IntraActivity
+        model = ScanWatchIntraActivity
         fields = []
 
 class ScanWatch_SummaryFilter(django_filters.FilterSet):
@@ -76,7 +78,7 @@ class ScanWatch_SummaryFilter(django_filters.FilterSet):
         return queryset.filter(device__user__username=value)
 
     class Meta:
-        model = ScanWatch_Summary
+        model = ScanWatchSummary
         fields = []
 
 class Sleepmat_IntraActivityFilter(django_filters.FilterSet):
@@ -102,7 +104,7 @@ class Sleepmat_IntraActivityFilter(django_filters.FilterSet):
         return queryset.filter(device__user__username=value)
 
     class Meta:
-        model = Sleepmat_IntraActivity
+        model = SleepmatIntraActivity
         fields = []
 
 class Sleepmat_SummaryFilter(django_filters.FilterSet):
@@ -128,7 +130,7 @@ class Sleepmat_SummaryFilter(django_filters.FilterSet):
         return queryset.filter(device__user__username=value)
 
     class Meta:
-        model = Sleepmat_Summary
+        model = SleepmatSummary
         fields = []
 
 class ReportFilter(django_filters.FilterSet):
