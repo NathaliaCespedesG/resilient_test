@@ -121,12 +121,13 @@ class DatabaseManager(object):
 		self.SleepIntraFile.close()
 
 
-	def load_usage(self, user_id = None, start_date = None, end_date = None, sleep_usage = None, sleep_battery = None, sleep_lastday = None,  watch_usage = None, watch_battery = None, watch_lastday = None,  scale_usage = None, scale_battery = None, scale_lastday = None):	
+	def load_usage(self, user_id = None, start_date = None, end_date = None, report_generation_date = None, sleep_usage = None, sleep_battery = None, sleep_lastday = None,  watch_usage = None, watch_battery = None, watch_lastday = None,  scale_usage = None, scale_battery = None, scale_lastday = None):	
 	
 		self.df_usage = self.df_usage.append({
 			'id': user_id,
 			'start_date': start_date,
 			'end_date': end_date,
+			'report_generation_date':  report_generation_date,
 			'SleepMat Usage': sleep_usage,
 			'SleepMat Battery': sleep_battery,
 			'SleepMat Last reading': sleep_lastday,
@@ -211,7 +212,7 @@ class DatabaseManager(object):
 			self.df_usage = existing_data
 		except:
 			
-			self.df_usage = pd.DataFrame({'id': [], 'start_date': [], 'end_date': [], 'SleepMat Usage': [], 'SleepMat Battery': [],'SleepMat Last reading' : [], 'Watch Usage': [], 'Watch Battery': [], 'Watch Last reading': [],
+			self.df_usage = pd.DataFrame({'id': [], 'start_date': [], 'end_date': [], 'report_generation_date':[], 'SleepMat Usage': [], 'SleepMat Battery': [],'SleepMat Last reading' : [], 'Watch Usage': [], 'Watch Battery': [], 'Watch Last reading': [],
 				 'Scale Usage': [], 'Scale Battery': [], 'Scale Last reading': []})
 		
 			self.df_usage.to_csv(self.usage_info, index = False )
@@ -352,7 +353,9 @@ class DatabaseManager(object):
 			f.write("Id; Date of Registration\n")
 			f.close()
 			return {"registered" : False, "id" : self.user['id']}
-
+		
+	def delete_usage(self):
+		pass
 
 
 
