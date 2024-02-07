@@ -52,24 +52,24 @@ class ScaleSerializer(serializers.ModelSerializer):
         model = Scale
         fields = '__all__'
 
-class ScanWatch_IntraActivitySerializer(serializers.ModelSerializer):
+class ScanWatchIntraActivitySerializer(serializers.ModelSerializer):
     class Meta:
-        model = ScanWatch_IntraActivity
+        model = ScanWatchIntraActivity
         fields = '__all__'
 
-class ScanWatch_SummarySerializer(serializers.ModelSerializer):
+class ScanWatchSummarySerializer(serializers.ModelSerializer):
     class Meta:
-        model = ScanWatch_Summary
+        model = ScanWatchSummary
         fields = '__all__'
 
 class SleepmatIntraActivitySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Sleepmat_IntraActivity
+        model = SleepmatIntraActivity
         fields = '__all__'
 
 class SleepmatSummarySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Sleepmat_Summary
+        model = SleepmatSummary
         fields = '__all__'
 
 class ReportSerializer(serializers.Serializer):
@@ -81,3 +81,24 @@ class UsageSerializer(serializers.Serializer):
     class Meta:
         model = Usage
         fields = '__all__'
+
+class UserHealthDataSerializer(serializers.Serializer):
+    scanwatch_summary = ScanWatchSummarySerializer(many=True, read_only=True)
+    scanwatch_intraactivity = ScanWatchIntraActivitySerializer(many=True, read_only=True)
+    sleepmat_summary = SleepmatSummarySerializer(many=True, read_only=True)
+    sleepmat_intraactivity = SleepmatIntraActivitySerializer(many=True, read_only=True)
+    scale =  ScaleSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = User
+        fields = ['id',
+                  'username',
+                  'role',
+                  'created_at',
+                  'updated_at',
+                  'scanwatch_summary',
+                  'scanwatch_intractivty',
+                  'sleepmat_summary',
+                  'sleepmat_intraactivity',
+                  'scale'
+                  ]

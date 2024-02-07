@@ -1,6 +1,8 @@
+from django.http import HttpResponse, JsonResponse
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import api_view
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import *
 from .serializers import *
@@ -20,11 +22,34 @@ class UserListCreateView(generics.ListCreateAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
-        return Response({"users": serializer.data})
+        return JsonResponse({"users": serializer.data})
 
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+class UserHealthDataView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserHealthDataSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        user = self.get_object()
+        scanwatch_summary = ScanWatchSummary.objects.filter(device__user=user)
+        scanWatch_intraactivity = ScanWatchIntraActivity.objects.filter(device__user=user)
+        sleepmat_summary = SleepmatSummary.objects.filter(device__user=user)
+        sleepmat_intraactivity = SleepmatIntraActivity.objects.filter(device__user=user)
+        scale = Scale.objects.filter(device__user=user)
+        
+        data = {
+            'user': UserSerializer(user).data,
+            'scale' : ScaleSerializer(scale, many=True).data,
+            'scanwatch_summary': ScanWatchSummarySerializer(scanwatch_summary, many=True).data,
+            'scanwatch_intraactivity': ScanWatchIntraActivitySerializer(scanWatch_intraactivity, many=True).data,
+            'sleepmat_summary': SleepmatSummarySerializer(sleepmat_summary, many=True).data,
+            'sleepmat_intraactivity':  SleepmatIntraActivitySerializer(sleepmat_intraactivity, many=True).data
+        }
+
+        return JsonResponse({'health_data': data})
 
 class DeviceListCreateView(generics.ListCreateAPIView):
     queryset = Device.objects.all()
@@ -65,8 +90,8 @@ class ScaleDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ScaleSerializer
     
 class ScanWatchIntraActivityListCreateView(generics.ListCreateAPIView):
-    queryset = ScanWatch_IntraActivity.objects.all()
-    serializer_class = ScanWatch_IntraActivitySerializer
+    queryset = ScanWatchIntraActivity.objects.all()
+    serializer_class = ScanWatchIntraActivitySerializer
     filterset_class = ScanWatch_IntraActivityFilter
     filter_backends = [DjangoFilterBackend]
 
@@ -81,11 +106,11 @@ class ScanWatchIntraActivityListCreateView(generics.ListCreateAPIView):
     
 class ScanWatchIntraActivityDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Scale.objects.all()
-    serializer_class = ScanWatch_IntraActivitySerializer
+    serializer_class = ScanWatchIntraActivitySerializer
 
 class ScanWatchSummaryListCreateView(generics.ListCreateAPIView):
-    queryset = ScanWatch_Summary.objects.all()
-    serializer_class = ScanWatch_SummarySerializer
+    queryset = ScanWatchSummary.objects.all()
+    serializer_class = ScanWatchSummarySerializer
     filterset_class = ScanWatch_SummaryFilter
     filter_backends = [DjangoFilterBackend]
 
@@ -100,10 +125,10 @@ class ScanWatchSummaryListCreateView(generics.ListCreateAPIView):
     
 class ScanWatchSummaryDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Scale.objects.all()
-    serializer_class = ScanWatch_IntraActivitySerializer
+    serializer_class = ScanWatchIntraActivitySerializer
 
 class SleepmatIntraActivityListCreateView(generics.ListCreateAPIView):
-    queryset = Sleepmat_IntraActivity.objects.all()
+    queryset = SleepmatIntraActivity.objects.all()
     serializer_class = SleepmatIntraActivitySerializer
 
     def perform_create(self, serializer):
@@ -116,11 +141,11 @@ class SleepmatIntraActivityListCreateView(generics.ListCreateAPIView):
         return Response({"sleepmats_intraactivity": serializer.data})
 
 class SleepmatIntraActivityDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Sleepmat_IntraActivity.objects.all()
+    queryset = SleepmatIntraActivity.objects.all()
     serializer_class = SleepmatIntraActivitySerializer
 
 class SleepmatSummaryListCreateView(generics.ListCreateAPIView):
-    queryset = Sleepmat_Summary.objects.all()
+    queryset = SleepmatSummary.objects.all()
     serializer_class = SleepmatSummarySerializer
 
     def perform_create(self, serializer):
@@ -133,5 +158,43 @@ class SleepmatSummaryListCreateView(generics.ListCreateAPIView):
         return Response({"sleepmats_summary": serializer.data})
 
 class SleepmatSummaryDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Sleepmat_Summary.objects.all()
+    queryset = SleepmatSummary.objects.all()
     serializer_class = SleepmatSummarySerializer
+
+class ReportListCreateView(generics.ListCreateAPIView):
+    queryset = Report.objects.all()
+    serializer_class = ReportSerializer
+    filterset_class = ReportFilter
+    filter_backends = [DjangoFilterBackend]
+
+    def perform_create(self, serializer):
+        # Generate a new UUID before saving the instance
+        serializer.save(id=uuid.uuid4())
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({"reports": serializer.data})
+
+class UsageDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Report.objects.all()
+    serializer_class = ReportSerializer
+
+class UsageListCreateView(generics.ListCreateAPIView):
+    queryset = Usage.objects.all()
+    serializer_class = UsageSerializer
+    filterset_class = UsageFilter
+    filter_backends = [DjangoFilterBackend]
+
+    def perform_create(self, serializer):
+        # Generate a new UUID before saving the instance
+        serializer.save(id=uuid.uuid4())
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({"usages": serializer.data})
+
+class ReportDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Report.objects.all()
+    serializer_class = ReportSerializer

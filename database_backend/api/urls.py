@@ -6,6 +6,7 @@ app_name = 'api'
 urlpatterns = [
     path('users/', UserListCreateView.as_view(), name='user-list-create'),
     path('user/<uuid:pk>/', UserDetailView.as_view(), name='user-detail'),
+    path('user/<uuid:pk>/health_data', UserHealthDataView.as_view(), name='user-health-data-'),
 
     path('devices/', DeviceListCreateView.as_view(), name='device-list-create'),
     path('device/<uuid:pk>/', DeviceDetailView.as_view(), name='device-detail'),
@@ -24,4 +25,10 @@ urlpatterns = [
 
     path('sleepmats/summary/', SleepmatSummaryListCreateView.as_view(), name='sleepmat-summary-list-create'),
     path('sleepmat/summary/<uuid:pk>/', SleepmatSummaryDetailView.as_view(), name='sleepmat-summary-detail'),
+
+    path('reports/', ReportListCreateView.as_view(), name='report-list-create'),
+    path('report/<uuid:pk>', ReportDetailView.as_view(), name='report-detail'),
+
+    path('usages/', UsageListCreateView.as_view(), name='usage-list-create'),
+    path('usage/<uuid:pk>', UsageDetailView.as_view(), name='usage-detail'),
 ]
