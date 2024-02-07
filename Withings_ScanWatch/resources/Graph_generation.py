@@ -267,9 +267,9 @@ class Graph_generator(object):
 				if len(j_s) < 2:
 					scatter = sns.scatterplot( x= k_s, y = j_s, label = label_scatter, color = "darkblue")
 				else:
-					max_thresh = np.mean(j_s) + np.std(j_s)
-					min_thresh = np.mean(j_s) - np.std(j_s)
-					aver_thresh = np.mean(j_s)
+					max_thresh = np.nanmean(j_s) + np.nanstd(j_s)
+					min_thresh = np.nanmean(j_s) - np.nanstd(j_s)
+					aver_thresh = np.nanmean(j_s)
 					sns.lineplot(x = k, y = j, color = "cornflowerblue", linestyle =':', label = label_scatter)
 					sns.lineplot(x = date_avg, y = val_avg, color = "darkblue",linestyle = '-', label = label_lineplot)
 					# Threshold calculations
@@ -539,6 +539,8 @@ class Graph_generator(object):
 
 		# Create a scatter plot
 		sns.set_style("whitegrid",{ "grid.linewidth":0.5, "grid.color": ".8", "grid.linestyle": ":", "ytick.left": True})
+
+		plt.clf()
 
 		check = np.array(y)
 		if (y == [] or (np.all(check == 0))):
