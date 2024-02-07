@@ -1,3 +1,4 @@
 /Withings_ScanWatch/db/General
 venv/*
 .env
+/Withings_ScanWatch_reports
