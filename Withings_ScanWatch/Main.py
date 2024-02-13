@@ -12,22 +12,26 @@ class Resilient(object):
 
         # Types of generation
 
-        gen_type = input('Please indicate  the type of report you want to generate, all - one - create: ')
+        self.gen_type = input('Please indicate  the type of report you want to generate, all - one - create: ')
 
-        self.users_path()
+        self.users_path()   
 
-        print(gen_type)
+        #print(gen_type)
 
-        '''
+       
 
-        if gen_type == 'all':
+    
+    def individual_report_generation(self):
+
+
+        if self.gen_type == 'all':
             
             self.run_all_participants()
 
-        elif gen_type == 'create' :
+        elif self.gen_type == 'create' :
 
             self.create_participant()
-        '''
+
 
     def users_path(self):
 
@@ -115,7 +119,7 @@ class Resilient(object):
 
     def create_folder_reports(self):
 
-        folder_path = self.current_path + 'reports'
+        folder_path = self.current_path + '_reports'
         general = 'db/General'
         #source_folder = path.abspath(path.join(self.current_path,
 
@@ -197,4 +201,5 @@ class Resilient(object):
 
         
 a = Resilient()
-a.create_folder_reports()
+a.individual_report_generation()
+#a.create_folder_reports()

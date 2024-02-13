@@ -4,5 +4,9 @@ from .views import *
 app_name  = 'reports'
 
 urlpatterns = [
-    path('example/<str:param>', example_view, name='example-view'),
+    #Endpoint for the individual reports
+    path('individual_report/<int:report_id>', IndividualReportView.as_view(), name='individual-report'),
+
+    #Endpoint for multiple reports
+    path('all_reports/', AllReportsView.as_view(), name = 'all-reports' )
 ]

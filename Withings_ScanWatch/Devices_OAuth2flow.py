@@ -231,7 +231,7 @@ class Devices_OAuth2flow(object):
 
 		if not filtered_df.empty:
 			date_of_registration = filtered_df[' Date of Registration'].iloc[0]
-			#print(f"Date of registration for ID {self.id_user}: {date_of_registration}")
+			print(f"Date of registration for ID {self.id_user}: {date_of_registration}")
 		else:
 			print(f"No records found for ID {self.id_user}")
 
