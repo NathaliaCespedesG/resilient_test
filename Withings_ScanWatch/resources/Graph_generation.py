@@ -18,7 +18,7 @@ import matplotlib.patches as mpatches
 from matplotlib.patches import FancyBboxPatch
 from scipy.interpolate import make_interp_spline
 from matplotlib.ticker import MaxNLocator
-
+from itertools import chain
 
 class Graph_generator(object):
 
@@ -250,7 +250,10 @@ class Graph_generator(object):
 					plt.gca().set_title('Sleep Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
 					plt.ylabel("Heart Rate (bpm)", fontsize = 11, fontdict = self.font)
 					if j:
-						plt.yticks(range(int(min(j)), int(max(j)) + 1, 5))
+						print(j)
+						j = np.array(j)
+						j_ticks = j[~np.isnan(j)]
+						plt.yticks(range(int(np.min(j_ticks)), int(np.max(j_ticks )) + 1, 5))
 
 							
 				elif name == 'HR_ScanWatch':
@@ -260,7 +263,10 @@ class Graph_generator(object):
 					plt.gca().set_title('Day Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
 					plt.ylabel("Heart Rate (bpm)", fontsize = 11, fontdict = self.font)
 					if j:
-						plt.yticks(range(int(min(j)), int(max(j)) + 1, 5))
+						print(j)
+						j = np.array(j)
+						j_ticks = j[~np.isnan(j)]
+						plt.yticks(range(int(np.min(j_ticks)), int(np.max(j_ticks )) + 1, 5))
 
 
 
@@ -284,7 +290,7 @@ class Graph_generator(object):
 					plt.gca().xaxis.set_major_locator((MaxNLocator(nbins=7)))
 					plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
 					
-					plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(days = -7), self.end_date.shift(days = 2 ))
+					#plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(days = -7), self.end_date.shift(days = 2 ))
 
 					for index in range(len(date_avg)):
 
@@ -307,6 +313,8 @@ class Graph_generator(object):
 		# Remove the border around the legend box
 		
 		plt.savefig(name + 'Scatter.png', dpi = 500)
+
+		plt.close()
 
 		# Display the plot
 		#plt.show()
@@ -396,6 +404,7 @@ class Graph_generator(object):
 		plt.gca().spines['top'].set_visible(False)
 		plt.gca().spines['right'].set_visible(False)
 		plt.savefig(device+"_"+type_d, dpi = 500)
+		plt.close()
 
 		#plt.show()
 
@@ -534,6 +543,7 @@ class Graph_generator(object):
 
 		plt.savefig(device, dpi = 500)
 		#plt.show()
+		plt.close()
 
 	def plot_bar(self,x,y):
 
@@ -600,19 +610,19 @@ class Graph_generator(object):
 
 					sns.lineplot(x = x, y = y, color = "cornflowerblue", linestyle = ':', label = "Steps")
 					sns.lineplot(x = date_avg, y = val_avg, color = "darkblue", linestyle = '-')
-
+					self.v_date = arrow.get(date_avg[-1])
 					# Threshold calculations
 					plt.axhline(y=max_thresh, color='darkorange', linestyle='--', label= 'Upper limit', linewidth = 1)
-					plt.text(self.end_date.shift(days= 1), max_thresh, f'{max_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
+					plt.text(self.v_date.shift(days= 1), max_thresh, f'{max_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
 					plt.axhline(y=min_thresh, color='darkorange', linestyle='--', label= 'Lower limit', linewidth = 1)
-					plt.text(self.end_date.shift(days= 1), min_thresh, f'{min_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
+					plt.text(self.v_date.shift(days= 1), min_thresh, f'{min_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
 					plt.axhline(y=aver_thresh, color='mediumseagreen', linestyle='-', label= 'Average', linewidth = 2)
-					plt.text(self.end_date.shift(days= 1), aver_thresh, f'{aver_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='mediumseagreen'))
+					plt.text(self.v_date.shift(days= 1), aver_thresh, f'{aver_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='mediumseagreen'))
 
 					plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
 					plt.gca().xaxis.set_major_locator((MaxNLocator(nbins=7)))
 					plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
-					plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(days = -7), self.end_date.shift(days = 2 ))
+					#plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(days = -7), self.end_date.shift(days = 2 ))
 					
 
 					for index in range(len(date_avg)):
@@ -633,6 +643,7 @@ class Graph_generator(object):
 		#plt.grid(axis = "x")
 		
 		plt.savefig('Steps_curvedbar', dpi = 500)
+		plt.close()
 
 		# Display the plot
 		#plt.show()
@@ -696,6 +707,8 @@ class Graph_generator(object):
 			if self.report_type == 0:
 				sns.lineplot(x = x_soft_1, y = o_soft_1, color = "darkblue", markersize = 14, label = "Hours asleep in bed weekly average", linewidth = 2 )
 				date_avg, val_avg = self.weekly_average(x_u,o_u)
+				print('HELLOOOOOOOOOOOOOO')
+				print(val_avg)
 				sns.lineplot(x = date_avg, y = val_avg, color = "lavender", markersize = 14, label = "Times out of bed weekly average",  linestyle='--', linewidth = 2 )
 				for index in range(len(date_avg)):
 					plt.text(date_avg[index], val_avg[index], math.floor(val_avg[index]), size = 11,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lavender', edgecolor='white'))
@@ -705,14 +718,15 @@ class Graph_generator(object):
 			#print(max(y+z))
 			plt.grid(axis = "x")
 			plt.ylim(bottom = -1)
-			plt.ylim(top= (max(y+z)+5))
+			max_value_stacked = max(chain(y, z, val_avg))
+			plt.ylim(top= max_value_stacked + 2)
 			plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
 			plt.ylabel('Hours', fontsize = 11, fontdict = self.font)
 			plt.gca().set_title('Sleep Summary', fontsize = 14, loc = 'left',pad = 30, fontweight=600, fontdict = self.font)
 			#plt.gca().xaxis.set_major_locator(mdates.WeekdayLocator())
 			plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
 			plt.gca().xaxis.set_major_locator((MaxNLocator(nbins=7)))
-			plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(days = -7), self.end_date)
+			#plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(days = -7), self.end_date)
 			# Set the locator for x-axis labels
 			plt.gca().spines['top'].set_visible(False)
 			plt.gca().spines['right'].set_visible(False)
@@ -814,3 +828,4 @@ class Graph_generator(object):
 		# Display the plot
 		plt.legend(handles= handles, labels = labels, loc = "upper right", frameon=False)
 		plt.show()
+		plt.close()

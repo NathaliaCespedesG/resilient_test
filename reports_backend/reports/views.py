@@ -23,6 +23,6 @@ class AllReportsView:
     def get(self, request):
 
         reports = resilient_generator.individual_report_generation()
-        # Assuming reports is a list of dictionaries or any serializable objects
-        return JsonResponse({'reports': reports})
+        # Urls
+        return JsonResponse(reports)
 
