@@ -17,6 +17,13 @@ class Data_Handler(object):
 		print('Data Utils module loaded')
 
 
+	def initial_day(self):
+		#Function to calculat the ending date (latest date for acquisition) for the request with the Withings API
+		
+		today = datetime.today()
+		days_difference = today.isoweekday() % 7
+		return (-days_difference)
+
 	def data_cleaning(self, x, y):
 
 
@@ -233,13 +240,6 @@ class Data_Handler(object):
 					if startdate_ts <= timestamp <= enddate_ts:
 						hr_values_within_range.append(hr)
 						timestamps_within_range.append(timestamp)
-
-				#Calculation of values each 30 min
-
-				#print(hr_values_within_range)
-
-				#average = self.halfhour_calculation(timestamps_within_range, hr_values_within_range)
-				#average = self.package_halfhour_calculation(timestamps_within_range, hr_values_within_range)
 
 				# Calculate the mean of HR values within the date range for this key
 				if hr_values_within_range:
@@ -505,7 +505,7 @@ class Data_Handler(object):
 
 	#The following function is to extract the data of the last week from all the values since registration
 
-	def last_week_from_reg(self, dates = None, start_date = None, end_date = None, values = None):
+	def values_dates_intersection(self, dates = None, start_date = None, end_date = None, values = None):
 		dates =  np.array(dates, dtype='datetime64')
 
 		start_date = np.datetime64(start_date.format('YYYY-MM-DD'))
@@ -513,70 +513,96 @@ class Data_Handler(object):
 
 		# Create a boolean mask for filtering
 		mask = [(start_date <= date <= end_date) for date in dates]
+		#print('Printing the mask for usage')
+		#print(mask)
 
 		# Apply the mask to get filtered values
 		filtered_values = [value for value, m in zip(values, mask) if m]
 
 
 		return(filtered_values)
-
+	
 	# The following function is to understand the weekly devices usage during the week
-	def usage_understanding(self, start_date = None, end_date = None, sleep_u = None, watch_u = None, scale_u = None):
+	def usage_understanding(self, start_date = None, end_date = None, start_date_scale = None, sleep_u = None, watch_u = None, scale_u = None):
 
 		print('USAAAAAAAAAAGE')
 
 		usage = {}
 
 		day_diff = (end_date - start_date).days + 1
-		
-		# Counting None and NaN values
-		none_count_sleep = np.count_nonzero(sleep_u == None)
-		nan_count_sleep = np.count_nonzero(np.isnan(sleep_u))
-		none_count_watch = np.count_nonzero(watch_u == None)
-		nan_count_watch = np.count_nonzero(np.isnan(watch_u))
-		none_count_scale = np.count_nonzero(scale_u == None)
-		nan_count_scale = np.count_nonzero(np.isnan(scale_u))
+		day_diff_scale = (end_date - start_date_scale).days + 1
 
-		len_sleep = len(sleep_u)
-		len_watch = len(watch_u)
-		len_scale = len(scale_u)
 
-		sleep_miss = none_count_sleep + nan_count_sleep + (day_diff - len_sleep)
-		watch_miss = none_count_watch + nan_count_watch + (day_diff - len_watch)
-		scale_miss = none_count_scale + nan_count_scale + (day_diff - len_scale)
+		print(sleep_u)
+		print(watch_u)
+		print(scale_u)
+		print(day_diff)
+		print(day_diff_scale)
 
-		# Sleep Mat
-		if (sleep_miss < 2):
+		# Counting values None and NaN values
+		total_sleep_nan = [value for value in sleep_u if value is None or np.isnan(value) or value == 0]
+		total_watch_nan = [value for value in watch_u if value is None or np.isnan(value) or value == 0]
+		total_scale_nan = [value for value in scale_u if value is None or np.isnan(value) or value == 0]
+
+		# Total of existant values
+
+		total_sleep = len(sleep_u) - len(total_sleep_nan)
+		total_watch = len(watch_u) - len(total_watch_nan)
+		total_scale = len(scale_u) - len(total_scale_nan)
+
+		rule_sleep = day_diff - total_sleep
+		rule_watch = day_diff - total_watch
+		rule_scale = day_diff_scale - total_scale
+
+
+		# Usage understanding for sleep
+
+		if rule_sleep <= 1:
 			usage['Sleep Mat'] = 'High'
-		elif(sleep_miss >= 2 and sleep_miss < 4):
+		elif rule_sleep >1 and rule_sleep <=2:
 			usage['Sleep Mat'] = 'Medium'
-		elif(sleep_miss >= 4):
+		else:
 			usage['Sleep Mat'] = 'Low'
-		elif (len(sleep_u) == 0):
-			usage['Sleep Mat'] = 'No data'
 
-		#Watch
-		if (watch_miss < 2):
+		if rule_watch <= 1:
 			usage['Watch'] = 'High'
-		elif(watch_miss >= 2 and watch_miss < 4):
+		elif rule_watch >1 and rule_watch <=2:
 			usage['Watch'] = 'Medium'
-		elif(watch_miss >= 4):
+		else:
 			usage['Watch'] = 'Low'
-		elif (len(watch_u) == 0):
-			usage['Watch'] = 'No data'
 
-		#Scale
-		if (scale_miss < 2):
+		if rule_scale <= 12:
 			usage['Scale'] = 'High'
-		elif(scale_miss >= 2 and scale_miss < 4):
+		elif rule_scale >12 and rule_scale <= 13:
 			usage['Scale'] = 'Medium'
-		elif(scale_miss >= 4):
+		else:
 			usage['Scale'] = 'Low'
-		elif (len(scae_u) == 0):
-			usage['Scale'] = 'No data'
 
 
+
+		print(usage)
+
+
+
+
+
+		# Usage understanding for watch
+
+		# Usage understanding for scale 
+
+
+
+
+
+
+
+		
 		return(usage)
+
+
+
+
+		
 
 
 

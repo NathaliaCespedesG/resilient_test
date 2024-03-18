@@ -4,7 +4,10 @@ import os
 from os import path 
 import pandas as pd
 import Devices_OAuth2flow as reports
+import resources.PDF_usage_generation as usage_pdf
 import shutil
+from datetime import datetime
+import numpy as np
 
 class Resilient(object):
 
@@ -14,7 +17,8 @@ class Resilient(object):
 
         self.gen_type = input('Please indicate  the type of report you want to generate, all - one - create: ')
 
-        self.users_path()   
+        self.users_path()
+        self.general = 'db/General'   
 
         #print(gen_type)
 
@@ -48,7 +52,7 @@ class Resilient(object):
                 df = pd.read_csv(self.users_path, header = 0, delimiter=';')
                 if "Id" in df.columns:
                     self.id_available = df['Id'].values
-                    #print(id_available)
+                    print(self.id_available)
 
                 else:
                     print('The id colum does not exists ')
@@ -86,9 +90,11 @@ class Resilient(object):
                 reports_resilient.sleep_daily()
                 reports_resilient.activity_data_watch()
                 reports_resilient.plot_creator()
+                reports_resilient.db_filling()
                 reports_resilient.doc_generation()
                 reports_resilient.remove_images()
                 reports_resilient.usage_levels()
+                reports_resilient.db_cleaning()
 
             
 
@@ -112,6 +118,7 @@ class Resilient(object):
         reports_resilient.doc_generation()
         reports_resilient.remove_images()
         reports_resilient.usage_levels()
+        reports_resilient.db_cleaning()
 
     
     def merge_pdf(self):
@@ -120,7 +127,7 @@ class Resilient(object):
     def create_folder_reports(self):
 
         folder_path = self.current_path + '_reports'
-        general = 'db/General'
+        self.general = 'db/General'
         #source_folder = path.abspath(path.join(self.current_path,
 
         try:
@@ -133,7 +140,7 @@ class Resilient(object):
         
         for i in range (len(self.id_available)):
             #General database path for the users folders
-            new_path = path.abspath(path.join(self.current_path, general, self.id_available[i]))
+            new_path = path.abspath(path.join(self.current_path, self.general, self.id_available[i]))
             # Latest directory on the file
             latest = self.latest_directory(directory_path = new_path)
             # General path + latest directory
@@ -184,22 +191,73 @@ class Resilient(object):
         except Exception as e:
             print(f"Error: {e}")
 
+    
+    def usage_reports(self):
+        usage_users = []
 
+
+
+        self.usage = 'Usage.csv'
+
+
+        for i in range (len(self.id_available)):
+            #General database path for the users folders
+            new_path = path.abspath(path.join(self.current_path, self.general, self.id_available[i], self.usage))
+            #print(new_path)
+            
+            if os.path.exists(new_path):
+                # Open the CSV file in read mode
+                with open(new_path, 'r', newline='') as csv_file:
+                    df = pd.read_csv(new_path, header = 0, delimiter=',')
+                    last_row_values = df.iloc[-1].tolist()
+                    usage_users.append(last_row_values)
+                    
+                    
+                    
+        # Transpose the dat
+        usage_data = list(zip(*usage_users))
+        
+        # Convert each tuple to a list
+        result_usage = [list(column) for column in usage_data]
+
+        start_dates_str = [str(x) for x in result_usage[1]]
+        end_dates_str = [str(x) for x in result_usage[2]]
+        sleep_last = [str(x) for x in result_usage[6]]
+        watch_last = [str(x) for x in result_usage[9]]
+        scale_last = [str(x) for x in result_usage[12]]
+
+        #print(sleep_last[-1])
+        formatted_start_dates = [(' ' if date_str == 'nan' else datetime.strptime(date_str[:10], '%Y-%m-%d').strftime('%b %d')) for date_str in start_dates_str]
+        formatted_end_dates = [(' ' if date_str == 'nan' else datetime.strptime(date_str[:10], '%Y-%m-%d').strftime('%b %d')) for date_str in end_dates_str]
+        formatted_sleeplast_dates = [(' ' if date_str == 'nan'  else datetime.strptime(date_str[:10], '%Y-%m-%d').strftime('%b %d')) for date_str in sleep_last]
+        formatted_watchlast_dates = [(' ' if date_str == 'nan' else datetime.strptime(date_str[:10], '%Y-%m-%d').strftime('%b %d')) for date_str in watch_last]
+        formatted_scalelast_dates = [(' ' if date_str == 'nan' else datetime.strptime(date_str[:10], '%Y-%m-%d').strftime('%b %d')) for date_str in scale_last]
+
+
+        usage_reports = usage_pdf.PDF_Usage(id_user = self.id_available,
+                                            path = None,
+                                            start_date = formatted_start_dates,
+                                            end_date = formatted_end_dates,
+                                            sleepmat_usage = result_usage[4],
+                                            sleepmat_battery = result_usage[5],
+                                            sleepmat_last = formatted_sleeplast_dates,
+                                            watch_usage = result_usage[7],
+                                            watch_battery = result_usage[8],
+                                            watch_last = formatted_watchlast_dates,
+                                            scale_usage = result_usage[10],
+                                            scale_battery = result_usage[11],
+                                            scale_last = formatted_scalelast_dates
+                                            )
+            
+            
+        #print(result_usage)
+
+
+                    
 
         
- 
-
-
-
-
-
-
-        
-
-    
-    
-
         
 a = Resilient()
 a.individual_report_generation()
 #a.create_folder_reports()
+#a.usage_reports()

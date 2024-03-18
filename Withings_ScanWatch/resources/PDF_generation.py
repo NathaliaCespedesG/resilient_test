@@ -55,12 +55,28 @@ class PDF_generation(object):
 		#Current year
 		self.current_year =str(datetime.datetime.now().year)
 		#NHS
-		self.id = "00"+id_nhs+"p"
+		self.id = self.id_string(id_nhs)
 
 
 		self.document_generation()
 
 	# Function to create the title page
+		
+	def id_string(self, x):
+		
+		if x.endswith('s'):
+			base_id = x.rstrip('s')
+		else:
+			base_id = x
+		formatted_id = '{:03d}'.format(int(base_id))
+		if x.endswith('s'):
+			formatted_id += 's'
+		else:
+			formatted_id += 'p'
+
+			
+		return formatted_id
+
 
 	def averages_data(self, val1, val2, val3, type_d):
 
@@ -263,34 +279,34 @@ class PDF_generation(object):
 
 
 		# Add the watermark image
-		if self.id.endswith("sp"):
-			watermark_image = Image("surrey_logo_sp.jpg", width = 7*cm, height = 4*cm)
+		if self.id.endswith("s"):
+			watermark_image = Image("img/surrey_logo_sp.jpg", width = 7*cm, height = 4*cm)
 			watermark_image.drawOn(canvas, doc.leftMargin - 2.6*cm , doc.height + 1.5*cm)
 		else:
-			watermark_image = Image("sabp.jpg", width = 10*cm, height = 7*cm)
+			watermark_image = Image("img/sabp.jpg", width = 10*cm, height = 7*cm)
 			watermark_image.drawOn(canvas, doc.leftMargin - 2.6*cm , doc.height + 2.2*cm)
 
 		
 
 		#Add the Surrey logo project watermark
 
-		surrey_image = Image("surrey_logo.jpg", width = 2.143*cm, height = 1.058*cm)
+		surrey_image = Image("img/surrey_logo.jpg", width = 2.143*cm, height = 1.058*cm)
 		surrey_image.drawOn(canvas, doc.leftMargin - 0.5*cm , 1*cm)
 
 
 		#Add the Imperial logo project watermark
-		imperial_image = Image("Imperial_logo.jpg", width = 4.021*cm, height = 1.058*cm)
+		imperial_image = Image("img/Imperial_logo.jpg", width = 4.021*cm, height = 1.058*cm)
 		imperial_image.drawOn(canvas, doc.leftMargin + 1.943*cm , 1*cm)
 
 
 		#Add the NIHR project watermark
-		nihr_image = Image("nihr_logo.jpg", width = 5.979*cm, height = 1.058*cm)
+		nihr_image = Image("img/nihr_logo.jpg", width = 5.979*cm, height = 1.058*cm)
 		nihr_image.drawOn(canvas, doc.leftMargin + 6.264*cm , 1*cm )
 
 
 
 		#Add the EPSCR project watermark
-		epscr_image = Image("epsrc_logo.jpg", width = 4.233*cm, height = 1.058*cm)
+		epscr_image = Image("img/epsrc_logo.jpg", width = 4.233*cm, height = 1.058*cm)
 		epscr_image.drawOn(canvas, doc.leftMargin + 12.543*cm , 1*cm )
 
 		

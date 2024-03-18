@@ -177,27 +177,27 @@ class DatabaseManager(object):
 
 		#Create sensors file
 
-		self.scale_name = self.user_folder + "/Scale.csv"
-		self.scanwatch_name = self.user_folder + "/ScanWatch_summary.csv"
-		self.sleepmat_name = self.user_folder + "/SleepMat_summary.csv"
+		self.scale_name = self.user_folder_wd+ "/Scale.csv"
+		self.scanwatch_name = self.user_folder_wd + "/ScanWatch_summary.csv"
+		self.sleepmat_name = self.user_folder_wd + "/SleepMat_summary.csv"
 
 		self.devices_info = self.user_folder_wd+ "/Devices.csv"
 		self.usage_info = self.user_folder_wd+ "/Usage.csv"
 
 		#Create sensors file for higher granularity
 
-		self.scanwatch_intraday = self.user_folder + "/ScanWatch_intra_activity.csv"
-		self.sleepmat_intraday = self.user_folder + "/Sleepmat_intra_activity.csv"
+		self.scanwatch_intraday = self.user_folder_wd + "/ScanWatch_intra_activity.csv"
+		self.sleepmat_intraday = self.user_folder_wd + "/Sleepmat_intra_activity.csv"
 		
 
 		#Open the files to save the data
-		self.ScaleFile = open(self.scale_name, 'w+')
-		self.ScanWatchfile = open(self.scanwatch_name, 'w+')
-		self.SleepMatFile = open(self.sleepmat_name, "w+")
+		self.ScaleFile = open(self.scale_name, 'a+')
+		self.ScanWatchfile = open(self.scanwatch_name, 'a+')
+		self.SleepMatFile = open(self.sleepmat_name, "a+")
 		self.DevicesFile = open(self.devices_info, "w+")
 		
-		self.ScanIntraFile = open(self.scanwatch_intraday, "w+")
-		self.SleepIntraFile = open(self.sleepmat_intraday, "w+")
+		self.ScanIntraFile = open(self.scanwatch_intraday, "a+")
+		self.SleepIntraFile = open(self.sleepmat_intraday, "a+")
 
 		self.UsageFile = open(self.usage_info, "a+")
 
@@ -220,31 +220,51 @@ class DatabaseManager(object):
 		#Headers on each files
 
 		
+		try:
+			existing_data_hr = pd.read_csv(self.scanwatch_name)
+			self.df_scanwatch = existing_data_hr
 
-		self.df_scanwatch = pd.DataFrame({'date': [], 'HR_Average': [], 'Calories': [], 'Steps': []} )
-		self.df_scanwatch.to_csv(self.scanwatch_name, index = False )
-
-
-		self.df_scale = pd.DataFrame({'date': [], 'Weight': [], 'Muscle mass': [], 'Bone mass': [] , 'Fat mass Weight': [] } )
-		self.df_scale.to_csv(self.scale_name, index = False )
-
-		self.df_sleepsummary = pd.DataFrame({'date': [], 'Breathing disturbances': [], 'Deep sleep duration': [], 'Duration to sleep': [] , 'Duration to wakeup': [],
-								'HR average': [], 'Light sleep duration': [], 'Rem sleep duration': [], 'RR average': [], 'Sleep score': [], 'Wake up count': [],
-								 'Wake up duration': []} )
-		self.df_sleepsummary.to_csv(self.sleepmat_name, index = False )
+		except:
+			self.df_scanwatch = pd.DataFrame({'date': [], 'HR_Average': [], 'Calories': [], 'Steps': []} )
+			self.df_scanwatch.to_csv(self.scanwatch_name, index = False )
 
 
-		self.df_scawatch_intra = pd.DataFrame({'date HR': [], 'Heart Rate': [], 'date Steps':[], 'Steps': [], 'date Calories': [] , 'Calories': []})
-		self.df_scawatch_intra.to_csv(self.scanwatch_intraday, index = False)
+		try:
+			existing_data_scale = pd.read_csv(self.scale_name)
+			self.df_scale = existing_data_scale
+		except:
 
-		self.df_hr = pd.DataFrame({'date HR': [], 'Heart Rate': []})
-		self.df_steps = pd.DataFrame({'date Steps': [], 'Steps': []})
-		self.df_calories = pd.DataFrame({'date Calories': [], 'Calories': []})
-		#self.df_scanwatch_intra.to_csv(self.scanwatch_intraday, index = False )
+			self.df_scale = pd.DataFrame({'date': [], 'Weight': [], 'Muscle mass': [], 'Bone mass': [] , 'Fat mass Weight': [] } )
+			self.df_scale.to_csv(self.scale_name, index = False )
 
-		self.df_sleep_intra =  pd.DataFrame({'startdate':[], 'enddate': [], 'Sleep state':[], 'Heart Rate date': [], 'Heart Rate': [] ,  'Respiration rate date': [],
+		try:
+			existing_data_sleep = pd.read_csv(self.sleepmat_name)
+			self.df_sleepsummary = existing_data_sleep
+
+		except:
+			self.df_sleepsummary = pd.DataFrame({'date': [], 'Breathing disturbances': [], 'Deep sleep duration': [], 'Duration to sleep': [] , 'Duration to wakeup': [],
+									'HR average': [], 'Light sleep duration': [], 'Rem sleep duration': [], 'RR average': [], 'Sleep score': [], 'Wake up count': [],
+								 	'Wake up duration': []} )
+			self.df_sleepsummary.to_csv(self.sleepmat_name, index = False )
+
+
+		try:
+			existing_data_scanintra = pd.read_csv(self.scanwatch_intraday)
+			self.df_scawatch_intra = existing_data_scanintra
+		except:
+			self.df_scawatch_intra = pd.DataFrame({'date HR': [], 'Heart Rate': [], 'date Steps':[], 'Steps': [], 'date Calories': [] , 'Calories': []})
+			self.df_scawatch_intra.to_csv(self.scanwatch_intraday, index = False)
+
+		
+
+		try:
+			existing_data_sleepintra = pd.read_csv(self.sleepmat_intraday)
+			self.df_sleep_intra = existing_data_sleepintra 
+
+		except:
+			self.df_sleep_intra =  pd.DataFrame({'startdate':[], 'enddate': [], 'Sleep state':[], 'Heart Rate date': [], 'Heart Rate': [] ,  'Respiration rate date': [],
 			 												'Respiration rate': [] , 'Snoring date': [], 'Snoring': [], 'sdnn_1 date': [], 'sdnn_1': []})
-		self.df_sleep_intra.to_csv(self.sleepmat_intraday, index = False)
+			self.df_sleep_intra.to_csv(self.sleepmat_intraday, index = False)
 
 		#Closing files
 
@@ -255,16 +275,68 @@ class DatabaseManager(object):
 		self.SleepIntraFile.close()
 
 
-	def finish_datastorage(self):
+	def close_all_cvs_files(self):
 
 		#Closing files
 
 		self.ScaleFile.close()
 		self.ScanWatchfile.close()
 		self.SleepMatFile.close()
-		self.TestFile.close()
 		self.ScanIntraFile.close()
 		self.SleepIntraFile.close()
+
+
+	def cleaning_cvs_files(self, cvs_from = None):
+
+
+		if cvs_from == 'Scan_summary':
+			file_name = self.scanwatch_name
+			ref_column_name = 'date'
+		elif cvs_from == 'Sleep_summary':
+			file_name = self.sleepmat_name
+			ref_column_name = 'date'
+		elif cvs_from == 'Scale':
+			file_name = self.scale_name
+			ref_column_name = 'date'
+		elif cvs_from == 'Intra_watch':
+			file_name = self.scanwatch_intraday
+			ref_column_name = 'date HR'
+		elif cvs_from == 'Intra_sleep':
+			file_name = self.sleepmat_intraday
+			ref_column_name = 'startdate'
+		
+		# Open the corresponding data file
+		df = pd.read_csv(file_name, header = 0, delimiter=',')
+		#Converting the dates to datetime
+		
+		if cvs_from == 'Intra_watch':
+			df[ref_column_name] = pd.to_datetime(df[ref_column_name], unit = 's') 
+		elif cvs_from == 'Intra_sleep':
+			df[ref_column_name] = pd.to_datetime(df[ref_column_name], unit = 's')
+		else:
+			df[ref_column_name] = pd.to_datetime(df[ref_column_name])
+
+		df = df.drop_duplicates(subset=ref_column_name)
+		# Sorting values according the date
+		df = df.sort_values(by = ref_column_name, ascending=False)
+
+		if cvs_from == 'Intra_watch':
+			df[ref_column_name] = df[ref_column_name].apply(lambda x: x.timestamp() if pd.notnull(x) else np.nan)
+		if cvs_from == 'Intra_sleep':
+			df[ref_column_name] = df[ref_column_name].apply(lambda x: x.timestamp() if pd.notnull(x) else np.nan)
+		
+			
+
+
+
+		#Info to csv file
+		df.to_csv(file_name, index=False)
+		
+	
+	
+
+
+
 
 	def set_user(self, p):
 
