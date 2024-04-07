@@ -74,19 +74,19 @@ class PDF_Usage(object):
             
         #Add the Surrey logo project watermark
             
-        surrey_image = Image("surrey_logo.jpg", width = 2.143*cm, height = 1.058*cm)
+        surrey_image = Image("img/surrey_logo.jpg", width = 2.143*cm, height = 1.058*cm)
         surrey_image.drawOn(canvas, doc.leftMargin - 0.5*cm , 1*cm)
         
         #Add the Imperial logo project watermark
-        imperial_image = Image("Imperial_logo.jpg", width = 4.021*cm, height = 1.058*cm)
+        imperial_image = Image("img/Imperial_logo.jpg", width = 4.021*cm, height = 1.058*cm)
         imperial_image.drawOn(canvas, doc.leftMargin + 1.943*cm , 1*cm)
         
         #Add the NIHR project watermark
-        nihr_image = Image("nihr_logo.jpg", width = 5.979*cm, height = 1.058*cm)
+        nihr_image = Image("img/nihr_logo.jpg", width = 5.979*cm, height = 1.058*cm)
         nihr_image.drawOn(canvas, doc.leftMargin + 6.264*cm , 1*cm )
         
         #Add the EPSCR project watermark
-        epscr_image = Image("epsrc_logo.jpg", width = 4.233*cm, height = 1.058*cm)
+        epscr_image = Image("img/epsrc_logo.jpg", width = 4.233*cm, height = 1.058*cm)
         epscr_image.drawOn(canvas, doc.leftMargin + 12.543*cm , 1*cm )
         
         #Semi-transparent white rectangle to simulate opacity in the EPSCR logo

@@ -202,7 +202,7 @@ class Graph_generator(object):
 					plt.gca().set_title('Daily Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
 					plt.ylabel("Heart Rate (bpm)", fontsize = 11, fontdict = self.font)
 				
-
+		
 				sns.scatterplot( x= x, y = y, color = "cornflowerblue", label = label_scatter)
 				sns.lineplot(x = k_s, y = j_s, color = "darkblue",label = label_lineplot)
 
@@ -218,8 +218,11 @@ class Graph_generator(object):
 						#circle.set_zorder(5)
 						#plt.gca().add_patch(circle)
 						plt.text(t, t1-(0.1* fig_size[1]), math.floor(t1), size = 11.5,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='white', edgecolor='white'))				
-				
-				plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date)
+				try:
+					plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date)
+				except TypeError as e:
+					print("TypeError caught:", e)
+
 				plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
 				# Set the locator for x-axis labels
 				plt.gca().xaxis.set_major_locator(mdates.DayLocator())	
@@ -238,8 +241,13 @@ class Graph_generator(object):
 					plt.gca().set_title('Sleep Respiration Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
 					plt.ylabel("Breaths per minute", fontsize = 11, fontdict = self.font)
 					if j:
-						plt.yticks(np.arange(min(y), max(y) + 0.5, 0.5))
-
+						try:
+							plt.yticks(np.arange(min(y), max(y) + 0.5, 0.5))
+							
+						except ValueError as e:
+							# Handle the ValueError
+							print("Caught ValueError:", e)
+							print("The sequence is empty. Provide a non-empty sequence.")
 
 
 
@@ -713,13 +721,13 @@ class Graph_generator(object):
 				for index in range(len(date_avg)):
 					plt.text(date_avg[index], val_avg[index], math.floor(val_avg[index]), size = 11,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lavender', edgecolor='white'))
 				#plt.text(x_u[index], l_u[index], math.floor(l_u[index]), size = 11.5, color = "black", ha = 'center', va = 'center', zorder = 11 )
-
+				max_value_stacked = max(chain(y, z, val_avg))
+				plt.ylim(top= max_value_stacked + 2)
 			# Add labels, title, and legend
 			#print(max(y+z))
 			plt.grid(axis = "x")
 			plt.ylim(bottom = -1)
-			max_value_stacked = max(chain(y, z, val_avg))
-			plt.ylim(top= max_value_stacked + 2)
+			
 			plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
 			plt.ylabel('Hours', fontsize = 11, fontdict = self.font)
 			plt.gca().set_title('Sleep Summary', fontsize = 14, loc = 'left',pad = 30, fontweight=600, fontdict = self.font)

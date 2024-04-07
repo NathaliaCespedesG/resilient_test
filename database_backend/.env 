@@ -1,0 +1,6 @@
+#Copy this file and create one without the .example extension
+DB_NAME=withings-db
+DB_USER=withings
+DB_PASSWORD=withings_admin
+DB_HOST=127.0.0.1
+DB_PORT=5432

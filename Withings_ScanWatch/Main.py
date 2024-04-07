@@ -5,15 +5,21 @@ from os import path
 import pandas as pd
 import Devices_OAuth2flow as reports
 import resources.PDF_usage_generation as usage_pdf
+from PyPDF2 import PdfMerger
 import shutil
 from datetime import datetime
 import numpy as np
+import time
+
 
 class Resilient(object):
 
     def __init__(self):
 
         # Types of generation
+
+
+        self.db_type =  input('Please indicate  the running mode, original - test:' )
 
         self.gen_type = input('Please indicate  the type of report you want to generate, all - one - create: ')
 
@@ -75,13 +81,15 @@ class Resilient(object):
             for i in range (total_participants):
 
                 id_report = self.id_available[i]
+                print(id_report)
                 
                 reports_resilient = reports.Devices_OAuth2flow(client_id = 'e64cb563bf44122144cd0702b02f69ad50d21aba0eb50ca443f69db5673ca2cc', 
 		                            costumer_secret = 'c2b3bd8f8fa210533aa3e7ef54abd4654d2a44cfe4f33d9f3aff63b4ce0943c4',
 		                            callback_uri = 'https://resilient.ukdri.care/',
 		                            report_type = 0,
 			                        generation_type = 'all',
-                                    id_participant = id_report)
+                                    id_participant = id_report,
+                                    running_type = self.db_type)
 
                 reports_resilient.get_user_credentials()
                 reports_resilient.devices_info()
@@ -92,8 +100,8 @@ class Resilient(object):
                 reports_resilient.plot_creator()
                 reports_resilient.db_filling()
                 reports_resilient.doc_generation()
-                reports_resilient.remove_images()
                 reports_resilient.usage_levels()
+                reports_resilient.remove_images()
                 reports_resilient.db_cleaning()
 
             
@@ -106,41 +114,98 @@ class Resilient(object):
 		                            callback_uri = 'https://resilient.ukdri.care/',
 		                            report_type = 0,
 			                        generation_type = 'create',
-                                    id_participant = None)
+                                    id_participant = None,
+                                    running_type = self.db_type)
 
         reports_resilient.get_user_credentials()
         reports_resilient.devices_info()
         reports_resilient.scale_data()
         reports_resilient.sleep()
+        print('Sleep daily')
         reports_resilient.sleep_daily()
         reports_resilient.activity_data_watch()
         reports_resilient.plot_creator()
+        reports_resilient.db_filling()
         reports_resilient.doc_generation()
         reports_resilient.remove_images()
         reports_resilient.usage_levels()
         reports_resilient.db_cleaning()
+    
+    def sort_files(self, files):
+        return sorted(files, key=lambda x: x[3]) 
 
     
     def merge_pdf(self):
-        pass
+       
+        reports_folder = '/Withings_reports'
+        pdfs_path = self.current_path + reports_folder
+        
+
+        pdf_files = [f for f in os.listdir(pdfs_path) if f.endswith('.pdf')]
+        
+        # Organize PDFs by the first three characters of their name
+        pdf_groups = {}
+        for pdf_file in pdf_files:
+            prefix = pdf_file[:3]
+            if prefix not in pdf_groups:
+                pdf_groups[prefix] = []
+            pdf_groups[prefix].append(pdf_file)
+            
+            
+        # Merge PDFs in each group
+        for prefix, files in pdf_groups.items():
+            if len(files) > 1:  # Only merge if there are at least two files to merge
+                sorted_files = self.sort_files(files)
+                merger = PdfMerger()
+                for filename in sorted_files:
+                    merger.append(os.path.join(pdfs_path, filename))
+                
+                # Define the merged PDF's name and save path
+                merged_pdf_path = os.path.join(pdfs_path, f"{prefix}p_{prefix}s_report.pdf")
+                merger.write(merged_pdf_path)
+                merger.close()
+
+        
+
+    def delete_files(self, folder_path):
+        
+        if os.path.exists(folder_path):
+            # List all files in the directory
+            for filename in os.listdir(folder_path):
+                file_path = os.path.join(folder_path, filename)
+                try:
+                    # Check if it's a file and then delete it
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)
+                        
+                except Exception as e:
+                    print('Failed to delete %s. Reason: %s' % (file_path, e))
+        else:
+            print(f"The folder {folder_path} does not exist.")
+
 
     def create_folder_reports(self):
 
-        folder_path = self.current_path + '_reports'
+        folder_path =  'Withings_reports'
         self.general = 'db/General'
         #source_folder = path.abspath(path.join(self.current_path,
 
-        try:
-            os.mkdir(folder_path)
-            print('Folder created correctly')
         
-        except OSError as error:
-            print('Failed to create folder in the path')
+        if os.path.exists(folder_path):
+            self.delete_files(folder_path)
+        else:
+            try:
+                os.mkdir(folder_path)
+                print('Folder created correctly')
+            
+            except OSError as error:
+                print('Failed to create folder in the path')
 
         
         for i in range (len(self.id_available)):
             #General database path for the users folders
             new_path = path.abspath(path.join(self.current_path, self.general, self.id_available[i]))
+
             # Latest directory on the file
             latest = self.latest_directory(directory_path = new_path)
             # General path + latest directory
@@ -208,8 +273,11 @@ class Resilient(object):
             if os.path.exists(new_path):
                 # Open the CSV file in read mode
                 with open(new_path, 'r', newline='') as csv_file:
+                    print(self.id_available[i])
                     df = pd.read_csv(new_path, header = 0, delimiter=',')
                     last_row_values = df.iloc[-1].tolist()
+                   
+
                     usage_users.append(last_row_values)
                     
                     
@@ -219,6 +287,7 @@ class Resilient(object):
         
         # Convert each tuple to a list
         result_usage = [list(column) for column in usage_data]
+        print(result_usage)
 
         start_dates_str = [str(x) for x in result_usage[1]]
         end_dates_str = [str(x) for x in result_usage[2]]
@@ -258,6 +327,7 @@ class Resilient(object):
         
         
 a = Resilient()
-a.individual_report_generation()
-#a.create_folder_reports()
-#a.usage_reports()
+#a.individual_report_generation()
+a.create_folder_reports()
+a.usage_reports()
+a.merge_pdf()
