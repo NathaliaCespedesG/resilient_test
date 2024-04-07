@@ -8,11 +8,18 @@ import shutil
 
 class General(object):
 
-	def __init__(self):
+	def __init__(self, 
+			  db_type: None):
 		#load project handler
 		self.dir = os.getcwd()
 
+		self.db_type = db_type
+		print('from db', self.db_type)
+
+	
 		self.database_path = self.dir + '/'+'db'
+
+		
 		
 		#self.PH = ProjectHandler
 		# Update user status
@@ -20,7 +27,7 @@ class General(object):
 
 		#Create session manager
 
-		self.SM = SM.DatabaseManager(ProjectHandler = self.database_path, UserStatus = self.UserStatus)
+		self.SM = SM.DatabaseManager(ProjectHandler = self.database_path, UserStatus = self.UserStatus,  db_type = self.db_type)
 
 		self.TherapyStatus = {"user": "none", "mode":0}
 

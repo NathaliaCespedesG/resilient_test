@@ -8,13 +8,14 @@ import numpy as np
 
 class DatabaseManager(object):
 
-	def __init__(self,ProjectHandler = None, UserStatus = None):
+	def __init__(self,ProjectHandler = None, UserStatus = None, db_type = None):
 
 		# Loading User Status
-
 		self.UserStatus = UserStatus
-
+		#Loading Project Handler - paths handler
 		self.PH = ProjectHandler
+		#Loading database type considering the running type
+		self.db_type = db_type
 
 		self.date = datetime.datetime.now()
 
@@ -169,6 +170,12 @@ class DatabaseManager(object):
 		self.user_folder_wd = self.PH + "/" +"General" + "/" + str(self.UserStatus['id'])
 
 		self.user_folder = self.PH + "/" +"General" + "/" + str(self.UserStatus['id']) +"/"+ self.report_date
+
+
+		#Create folders for each user - testing purposes
+
+
+
 	
 
 		if not os.path.exists(self.user_folder):
