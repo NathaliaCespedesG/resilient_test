@@ -17,8 +17,8 @@ urlpatterns = [
     path('scanwatches/intra_activity/', ScanWatchIntraActivityListCreateView.as_view(), name='scanwatch-intra-list-create'),
     path('scanwatch/intra_activity/<uuid:pk>/', ScanWatchIntraActivityDetailView.as_view(), name='scanwatch-intra-list-create'),
 
-    path('scanwatches/summary/', ScanWatchIntraActivityListCreateView.as_view(), name='scanwatch-intra-list-create'),
-    path('scanwatch/summary/<uuid:pk>/', ScanWatchIntraActivityDetailView.as_view(), name='scanwatch-intra-list-create'),
+    path('scanwatches/summary/', ScanWatchSummaryListCreateView.as_view(), name='scanwatch-intra-list-create'),
+    path('scanwatch/summary/<uuid:pk>/', ScanWatchSummaryDetailView.as_view(), name='scanwatch-intra-list-create'),
 
     path('sleepmats/intraactivity/', SleepmatIntraActivityListCreateView.as_view(), name='sleepmat-intraactivity-list-create'),
     path('sleepmat/intraactivity/<uuid:pk>/', SleepmatIntraActivityDetailView.as_view(), name='sleepmat-intraactivity-detail'),

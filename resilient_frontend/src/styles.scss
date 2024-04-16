@@ -35,11 +35,25 @@ $resilient_frontend-theme: mat.define-light-theme((
 // that you are using.
 @include mat.all-component-themes($resilient_frontend-theme);
 
-/* You can add global styles to this file, and also import other style files */
-/* You can add global styles to this file, and also import other style files */
-@tailwind base;
+
+@import "primeng/resources/themes/lara-light-blue/theme.css";
+@import "primeng/resources/primeng.css";
+@import "primeicons/primeicons.css";
+
+@tailwind base;    //We dont import base to avoid problems with primeng
 @tailwind components;
 @tailwind utilities;
+
+// @layer tailwind-base, primeng, tailwind-utilities;
+
+// @layer tailwind-base {
+//     @tailwind base;
+// }
+
+// @layer tailwind-utilities {
+//     @tailwind components;
+//     @tailwind utilities;
+// }
 
 .bg-image-gradient{
   background: linear-gradient(220.77deg, #232ED1 0%, #89D2DC 100%);
@@ -47,3 +61,90 @@ $resilient_frontend-theme: mat.define-light-theme((
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+@layer reset, primeng;
+
+@layer reset {
+  button {
+    &:focus {
+      box-shadow: none;
+    }
+  }
+}
+
+.dashboard-option-wrapper {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  height: 75vh;
+  width: 90vw;
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  align-items: center;
+  flex-grow: 1;
+  gap: 3vh;
+}
+
+.dashboard-option-wrapper > h1 {
+  font-size: x-large;
+  font-weight: bold;
+}
+
+.dashboard-option-header {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  gap: 1vw;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dashboard-option-header .search-bar {
+  width: 75%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dashboard-option-header .search-bar > input {
+  background-color: rgb(222, 222, 222);
+  border-radius: 0.75rem;
+  border: none;
+  outline-color: none;
+  font-size: 1.15rem;
+  padding: 0.625rem 1rem 0.625rem 3.5rem;
+  width: 100%;
+}
+
+.dashboard-option-header .search-bar-no-icon > input {
+  background-color: rgb(222, 222, 222);
+  border-radius: 0.75rem;
+  border: none;
+  outline-color: none;
+  font-size: 1.15rem;
+  padding: 0.625rem 0.625rem;
+  width: 100%;
+}
+
+.dashboard-option-header .add-button {
+  height: 44px;
+  justify-content: space-between;
+  border-radius: 0.75rem;
+  background-color: rgb(37, 46, 201);
+  width: 20vw;
+  // padding: 0 1.25rem 0 1.25rem;
+}
+
+.dashboard-option-header .add-button:active {
+  background-color: rgb(94, 139, 229) !important;
+}
+
+.dashboard-option-header .add-button:hover {
+  background-color: rgb(33, 99, 235);
+}
+
+.dashboard-option-body-table-header {
+  background-color: black;
+}
+

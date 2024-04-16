@@ -61,9 +61,9 @@ class ScanWatchSummary(models.Model):
 class SleepmatIntraActivity(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='sleepmat_intraactivity')
-    start_date = models.DateField()
+    start_date = models.FloatField() 
     end_date = models.DateField()
-    sleep_state = models.CharField(max_length=50)
+    sleep_state = models.IntegerField() 
     date_heart_rate = models.FloatField()
     heart_rate = models.FloatField()
     date_respiration_rate = models.FloatField()

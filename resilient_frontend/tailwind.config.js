@@ -7,6 +7,7 @@ module.exports = {
   theme: {
     extend: {},
   },
+  corePlugins: {    preflight: false,  },
   plugins: [require('@tailwindcss/forms'), animations],
 }
 

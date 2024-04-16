@@ -13,7 +13,6 @@ export class SignInComponent {
   ){}
 
   onClickSignIn(): void {
-    console.log('onClickSignIn');
     this._router.navigate(['dashboard']);
   }
 }

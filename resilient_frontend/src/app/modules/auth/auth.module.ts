@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthRoutingModule } from './auth-routing.module';
-import { LayoutModule } from '../../shared/layout/layout.module';
 import { SignInComponent } from './components/sign-in/sign-in.component';
 import { SignUpComponent } from './components/sign-up/sign-up.component';
 import { AuthComponent } from './auth.component';
@@ -15,7 +14,6 @@ import { AuthComponent } from './auth.component';
   imports: [
     CommonModule,
     AuthRoutingModule,
-    LayoutModule
   ]
 })
 export class AuthModule { }

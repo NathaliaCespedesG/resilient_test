@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../material/material.module';
 import { FooterComponent } from './components/footer/footer.component';
 import { HeaderComponent } from './components/header/header.component';
+import { PrimengModule } from '../primeng/primeng.module';
 
 
 
@@ -13,11 +14,13 @@ import { HeaderComponent } from './components/header/header.component';
   ],
   imports: [
     CommonModule,
-    MaterialModule
+    MaterialModule,
+    PrimengModule
   ],
   exports: [
     HeaderComponent,
-    FooterComponent
+    FooterComponent,
+    PrimengModule
   ]
 })
 export class LayoutModule { }
