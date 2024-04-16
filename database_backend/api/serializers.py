@@ -11,7 +11,12 @@ class UserSerializer(serializers.ModelSerializer):
         Validate that the username is not already in use.
         """
         if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError("This username is already in use. Please choose a different one.")
+            res = serializers.ValidationError({
+                "status_code": 403,
+                "message": "This username is already in use. Please choose a different one."
+            })
+            raise res
+
         return value
     
     def to_representation(self, instance):
