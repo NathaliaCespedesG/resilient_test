@@ -30,9 +30,7 @@ import db.database as database
 import resources.Graph_generation as graph
 # Module: PDF generation class to generate the reports 
 import resources.PDF_generation as pdf_gen
-# Module: Usage processing
-import resources.Usage_generation as usage_gen
-#import resources.
+
 
 
 
@@ -1104,9 +1102,9 @@ class Devices_OAuth2flow(object):
 	@staticmethod
 	def main(cls):
 		
-		M = cls(client_id = 'e64cb563bf44122144cd0702b02f69ad50d21aba0eb50ca443f69db5673ca2cc', 
-						 costumer_secret = 'c2b3bd8f8fa210533aa3e7ef54abd4654d2a44cfe4f33d9f3aff63b4ce0943c4',
-						 callback_uri = 'https://resilient.ukdri.care/',
+		M = cls(client_id = 'client id', 
+						 costumer_secret = 'costumer secret',
+						 callback_uri = 'url',
 						 report_type = 1,
 						 generation_type = None)
 		

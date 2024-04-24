@@ -10,6 +10,7 @@ import shutil
 from datetime import datetime
 import numpy as np
 import time
+import withings_devOp_credentials as dev_credentials
 
 
 class Resilient(object):
@@ -83,9 +84,9 @@ class Resilient(object):
                 id_report = self.id_available[i]
                 print(id_report)
                 
-                reports_resilient = reports.Devices_OAuth2flow(client_id = 'e64cb563bf44122144cd0702b02f69ad50d21aba0eb50ca443f69db5673ca2cc', 
-		                            costumer_secret = 'c2b3bd8f8fa210533aa3e7ef54abd4654d2a44cfe4f33d9f3aff63b4ce0943c4',
-		                            callback_uri = 'https://resilient.ukdri.care/',
+                reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
+		                            costumer_secret = dev_credentials.costumer_secret,
+		                            callback_uri = dev_credentials.callback_uri,
 		                            report_type = 0,
 			                        generation_type = 'all',
                                     id_participant = id_report,
@@ -109,9 +110,9 @@ class Resilient(object):
     
     def create_participant(self):
         
-        reports_resilient = reports.Devices_OAuth2flow(client_id = 'e64cb563bf44122144cd0702b02f69ad50d21aba0eb50ca443f69db5673ca2cc', 
-		                            costumer_secret = 'c2b3bd8f8fa210533aa3e7ef54abd4654d2a44cfe4f33d9f3aff63b4ce0943c4',
-		                            callback_uri = 'https://resilient.ukdri.care/',
+        reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
+		                            costumer_secret = dev_credentials.costumer_secret,
+		                            callback_uri = dev_credentials.callback_uri,
 		                            report_type = 0,
 			                        generation_type = 'create',
                                     id_participant = None,
@@ -327,7 +328,7 @@ class Resilient(object):
         
         
 a = Resilient()
-#a.individual_report_generation()
+a.individual_report_generation()
 #a.create_folder_reports()
 a.usage_reports()
 #a.merge_pdf()
