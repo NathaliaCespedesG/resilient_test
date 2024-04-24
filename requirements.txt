@@ -21,6 +21,6 @@ seaborn==0.13.2
 six==1.16.0
 types-python-dateutil==2.9.0.20240316
 tzdata==2024.1
--e git+https://github.com/NathaliaCespedesG/Withings_ScanWatch.git@e02039d596b9ce4a80fc97a885ae1bc8514a04f5#egg=UNKNOWN&subdirectory=python_withings_api
 zipp==3.18.1
 zope.interface==6.2
+-e git+https://github.com/NathaliaCespedesG/Withings_ScanWatch.git@e02039d596b9ce4a80fc97a885ae1bc8514a04f5#egg=UNKNOWN&subdirectory=python_withings_api

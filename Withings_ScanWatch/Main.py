@@ -302,7 +302,7 @@ class Resilient(object):
         formatted_watchlast_dates = [(' ' if date_str == 'nan' else datetime.strptime(date_str[:10], '%Y-%m-%d').strftime('%b %d')) for date_str in watch_last]
         formatted_scalelast_dates = [(' ' if date_str == 'nan' else datetime.strptime(date_str[:10], '%Y-%m-%d').strftime('%b %d')) for date_str in scale_last]
 
-
+        print(formatted_start_dates)
         usage_reports = usage_pdf.PDF_Usage(id_user = self.id_available,
                                             path = None,
                                             start_date = formatted_start_dates,
@@ -318,8 +318,8 @@ class Resilient(object):
                                             scale_last = formatted_scalelast_dates
                                             )
             
-            
-        #print(result_usage)
+
+    
 
 
                     
@@ -328,6 +328,6 @@ class Resilient(object):
         
 a = Resilient()
 #a.individual_report_generation()
-a.create_folder_reports()
+#a.create_folder_reports()
 a.usage_reports()
-a.merge_pdf()
+#a.merge_pdf()

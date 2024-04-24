@@ -1,125 +1,424 @@
+# This code allows to pass all the existing data (from csv files) to the db server in postgres
+
 import pandas as pd
 import os
 import requests
+import math
+from datetime import datetime, timezone
 #from database_backend.api.models import User
 
-# POST THE EXISTING USERS TO THE DATABASE
-def import_users_from_csv(users_path):
+class DatabaseServer_csv(object):
+
+    def __init__(self, path = None):
+
+        self.users_path = path
     
-    #User = models_api.User()
+    # POST THE EXISTING USERS TO THE DATABASE
+    def import_users_from_csv(self):
         
-    if os.path.exists(users_path):
-        # Open the CSV file in read mode
-        with open(users_path, 'r', newline='') as csv_file:
-            df = pd.read_csv(users_path, header = 0, delimiter=';')
-           
-
-
-    # Define values for the new columns
-    
-    role = 'participant'
-    password_hash = 'NONEYET'
-
-    custom_headers = ['username', 'role', 'password_hash']
-
-    # Add new columns with constum headers
-    df = pd.DataFrame(df, columns=['Id', 'Date of Registration'] + custom_headers)
-    df[custom_headers[0]] = df['Id'].values
-    df[custom_headers[1]] = role
-    df[custom_headers[2]] = password_hash
-
-    columns_to_remove = ['Id', 'Date of Registration']
-    df = df.drop(columns=columns_to_remove)
-
-    data = df.to_dict(orient='records')
-
-    for i in range (len(data)):
-        # Make POST request to Django server
-        url = 'http://127.0.0.1:8000/api/users/'
-        response = requests.post(url, json=data[i])
-        
-        if response.status_code == 200:
-            print('Data updated successfully')
-        else:
-            print('Failed to update data:', response.text)
-
-# GET ALL THE USERS
-
-def get_users():
-    url = 'http://127.0.0.1:8000/api/users'
-    response = requests.get(url)
-    # Checking the status code of the response
-    if response.status_code == 200:
-        # Successful response
-        print('GET request successful')
-        # Accessing the response data
-        data = response.json()  # Assuming the response is JSON data
-        #print(data)
-    else:
-        # Unsuccessful response
-        print('GET request failed:', response.status_code)
-        
-    # Create a new dictionary to store id and username
-    id_username_dict = {}
-    # Iterate through each user in the 'users' list
-    for user in data['users']:
-        # Add id and username to the new dictionary
-        id_username_dict[user['id']] = user['username']
-        #print(id_username_dict)
-    
-    change_created_at(users_path ='/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/Users.csv',
-                      user_dict= id_username_dict)
-
-#UPLOAD DEVICES FOR EACH USER
-    
-
-
-
-    
-
-
-
-
-
-#CHANGE A VALUE IN THE USERS TABLE
+        #User = models_api.User()
             
-def change_created_at(users_path, user_dict):
+        if os.path.exists(self.users_path):
+            # Open the CSV file in read mode
+            with open(self.users_path, 'r', newline='') as csv_file:
+                df = pd.read_csv(self.users_path, header = 0, delimiter=';')
+            
 
-    fit_dict = {}
-    result_dict = {}
-     
-    if os.path.exists(users_path):
-        # Open the CSV file in read mode
-        with open(users_path, 'r', newline='') as csv_file:
-            df = pd.read_csv(users_path, header = 0, delimiter=';')
-            fit_dict = df.to_dict(orient='records')
-            fit_dict = {entry['Id']: entry[' Date of Registration'] for entry in fit_dict}
-    
-    #print(fit_dict)
 
-    
-    # Iterate over the items in fit_dict
-    
-    for key, value in fit_dict.items():
-        # Check if the key in fit_dict is a key in user_dict
-        if key in user_dict.values():
-            # Find the corresponding key in user_dict
-            user_key = next(k for k, v in user_dict.items() if v == key)
-            # Add the key-value pair to the result_dict
-            result_dict[user_key] = value
-            url = 'http://127.0.0.1:8000/api/user/' + user_key + '/'
-            data = {'created_at': value}
-            response = requests.patch(url, json = data)
+        # Define values for the new columns
+        
+        role = 'participant'
+        password_hash = 'NONEYET'
+
+        custom_headers = ['username', 'role', 'password_hash']
+
+        # Add new columns with constum headers
+        df = pd.DataFrame(df, columns=['Id', 'Date of Registration'] + custom_headers)
+        df[custom_headers[0]] = df['Id'].values
+        self.id_available = df['Id'].values
+        df[custom_headers[1]] = role
+        df[custom_headers[2]] = password_hash
+
+        columns_to_remove = ['Id', 'Date of Registration']
+        df = df.drop(columns=columns_to_remove)
+
+        data = df.to_dict(orient='records')
+
+        '''
+
+        for i in range (len(data)):
+            # Make POST request to Django server
+            url = 'http://127.0.0.1:8000/api/users/'
+            response = requests.post(url, json=data[i])
+            
+            if response.status_code == 200:
+                print('Data updated successfully')
+            else:
+                print('Failed to update data:', response.text)
+        '''
+
+    # GET ALL THE USERS
+
+    def get_users(self):
+        url = 'http://127.0.0.1:8000/api/users'
+        response = requests.get(url)
+        # Checking the status code of the response
+        if response.status_code == 200:
+            # Successful response
+            print('GET request successful')
+            # Accessing the response data
+            self.user_data = response.json()  # Assuming the response is JSON data
+            #print(data)
+        else:
+            # Unsuccessful response
+            print('GET request failed:', response.status_code)
+            
+        # Create a new dictionary to store id and username
+        self.id_username_dict = {}
+        # Iterate through each user in the 'users' list
+        for user in self.user_data['users']:
+            # Add id and username to the new dictionary
+            self.id_username_dict[user['id']] = user['username']
+        
+        
+        #print(self.id_username_dict)
+
+    #UPLOAD DEVICES FOR EACH USER
+            
+    def upload_device_info(self):
+        url= 'http://127.0.0.1:8000/api/devices/'
+        current_users = {key: value for key, value in self.id_username_dict.items() if value in self.id_available }
+        
+        for i in range(len(self.id_available)):
+            path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/Devices.csv'
+           
+            if os.path.exists(path):
+                # Open the CSV file in read mode
+                with open(path, 'r', newline='') as csv_file:
+                    df = pd.read_csv(path, header = 0, delimiter=',')
+                    dict = df.to_dict(orient = 'records')
+                    
+
+                    for j in range(len(dict)):
+
+                        user_key = [key for key, val in current_users.items() if val == self.id_available[i]]
+
+                        print(self.id_available[i])    
+                    
+                        data ={
+                            "user": user_key[0],
+                            "device_hash": dict[j]['Hash_deviceid'],
+                            "device_type": {'Activity Tracker': 'scan_watch', 'Sleep Monitor': 'sleep_mat','Scale':'scale'}.get(dict[j]['Device'], 'default_value'),
+                            "mac_address": dict[j]['MAC_address'],
+                            "is_active": True
+                            }
+                        #print(data)
+                        response = requests.post(url, json=data)
+
+    def get_device_info(self):
+        
+        self.devices_dict = {}
+
+        for i in range(len(self.id_available)):
+            url = 'http://127.0.0.1:8000/api/devices/' + '?username=' + str(self.id_available[i])
+            response = requests.get(url)
             # Checking the status code of the response
             if response.status_code == 200:
                 # Successful response
-                print('PATCH request successful')
+                #print('GET request successful')
                 # Accessing the response data
-                data = response.json()  # Assuming the response is JSON data
-                print(data)
+                self.device_data = response.json()  # Assuming the response is JSON data
+                #print(self.device_data)
+                devices = self.organized_dict(self.device_data)
+                self.devices_dict[self.id_available[i]] = devices
+
+
             else:
                 # Unsuccessful response
-                print('PATCH request failed:', response.status_code)
+                print('GET request failed:', response.status_code)
+        
+        #print(self.devices_dict)
+
+    def upload_scale_summary_data(self):
+
+        url = 'http://127.0.0.1:8000/api/scales/'
+
+        for i in range(len(self.id_available)):
+            path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/Scale.csv'
+            scale_id = self.get_device_id(id_user = str(self.id_available[i]), devices_dict = self.devices_dict, device_type = 'scale')
+            print(scale_id)
+
+            if os.path.exists(path):
+                # Open the CSV file in read mode
+                with open(path, 'r', newline='') as csv_file:
+                    df = pd.read_csv(path, header = 0, delimiter=',')
+                    dict = df.to_dict(orient = 'records')
+
+                    #print(dict)
+
+                    if scale_id is not None:
+
+                        for j in range(len(dict)):
+                            date_s = dict[j]['date'][:-6]
+                            date_s = datetime.strptime(date_s, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+
+                            print(type(dict[j]['Muscle mass'])) 
+                            # Convert 'nan' values to None
+                            weight = 0 if math.isnan(float(dict[j]['Weight'])) else float(dict[j]['Weight']) 
+                            muscle_mass = 0 if math.isnan(float(dict[j]['Muscle mass'])) else float(dict[j]['Muscle mass'])
+                            bone_mass = 0 if math.isnan(float(dict[j]['Bone mass'])) else float(dict[j]['Bone mass'])
+                            fat_mass = 0 if math.isnan(float(dict[j]['Fat mass Weight'])) else float(dict[j]['Fat mass Weight'])
+
+                            print(muscle_mass)
+                   
+                            data ={
+                                "device": scale_id,
+                                "date": date_s,
+                                "weight": weight,
+                                "muscle_mass": muscle_mass,
+                                "bone_mass": bone_mass,
+                                'fat_mass': fat_mass, 
+                                }
+                            
+
+                            print(data)
+                            response = requests.post(url, json=data)
+    
+    def upload_scanwatch_summary_data(self):
+
+        url = 'http://127.0.0.1:8000/api/scanwatches/summary/'
+        for i in range(len(self.id_available)):
+            path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/ScanWatch_summary.csv'
+            watch_id = self.get_device_id(id_user = str(self.id_available[i]), devices_dict = self.devices_dict, device_type = 'scan_watch')
+            #print(scale_id)
+            if os.path.exists(path):
+                # Open the CSV file in read mode
+                with open(path, 'r', newline='') as csv_file:
+                    df = pd.read_csv(path, header = 0, delimiter=',')
+                    dict = df.to_dict(orient = 'records')
+                    #print(dict)
+                    if watch_id is not None:
+
+                        for j in range(len(dict)):
+                            date_s = dict[j]['date'][:-6]
+                            date_s = datetime.strptime(date_s, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+
+                            # Convert 'nan' values to None
+                            average_heart_rate = 0 if math.isnan(float(dict[j]['HR_Average'])) else float(dict[j]['HR_Average']) 
+                            calories = 0 if math.isnan(float(dict[j]['Calories'])) else float(dict[j]['Calories'])
+                            steps = 0 if math.isnan(float(dict[j]['Steps'])) else float(dict[j]['Steps'])
+                   
+                            data ={
+                                "device": watch_id,
+                                "date": date_s,
+                                "average_heart_rate": average_heart_rate,
+                                "calories": calories,
+                                "steps": steps
+                                }
+                            
+                            print(data)
+                            response = requests.post(url, json=data)
+
+
+    def upload_intra_scanwatch_summary_data(self):
+
+        url = 'http://127.0.0.1:8000/api/scanwatches/intra_activity/'
+        for i in range(len(self.id_available)):
+            path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/ScanWatch_intra_activity.csv'
+            watch_id = self.get_device_id(id_user = str(self.id_available[i]), devices_dict = self.devices_dict, device_type = 'scan_watch')
+            #print(scale_id)
+            if os.path.exists(path):
+                # Open the CSV file in read mode
+                with open(path, 'r', newline='') as csv_file:
+                    df = pd.read_csv(path, header = 0, delimiter=',')
+                    dict = df.to_dict(orient = 'records')
+                    #print(dict)
+                    if watch_id is not None:
+                        for j in range(len(dict)):
+                            heart_rate = 0 if math.isnan(float(dict[j]['Heart Rate'])) else float(dict[j]['Heart Rate']) 
+                            date_heart_rate = 0 if math.isnan(float(dict[j]['date HR'])) else float(dict[j]['date HR']) 
+                            steps = 0 if math.isnan(float(dict[j]['Steps'])) else float(dict[j]['Steps']) 
+                            date_steps = 0 if math.isnan(float(dict[j]['date Steps'])) else float(dict[j]['date Steps']) 
+                            calories = 0 if math.isnan(float(dict[j]['Calories'])) else float(dict[j]['Calories']) 
+                            date_calories = 0 if math.isnan(float(dict[j]['date Calories'])) else float(dict[j]['date Calories']) 
+                            data ={
+                                "device": watch_id,
+                                "heart_rate": heart_rate,
+                                "date_heart_rate": date_heart_rate,
+                                "steps": steps,
+                                "date_steps": date_steps,
+                                "calories": calories,
+                                "date_calories": date_calories
+                                }
+                            
+                            print(data)
+                            response = requests.post(url, json=data)
+        
+    
+    def upload_sleep_summary_data(self):
+
+        url = 'http://127.0.0.1:8000/api/sleepmats/summary/'
+        for i in range(len(self.id_available)):
+            path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/SleepMat_summary.csv'
+            sleep_id = self.get_device_id(id_user = str(self.id_available[i]), devices_dict = self.devices_dict, device_type = 'sleep_mat')
+            #print(scale_id)
+            if os.path.exists(path):
+                # Open the CSV file in read mode
+                with open(path, 'r', newline='') as csv_file:
+                    df = pd.read_csv(path, header = 0, delimiter=',')
+                    dict = df.to_dict(orient = 'records')
+                    print(df)
+                    #print(dict)
+                    if sleep_id is not None:
+
+                        for j in range(len(dict)):
+                            date_s = dict[j]['date'][:-6]
+                            date_s = datetime.strptime(date_s, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+
+                            # Convert 'nan' values to None
+                            breathing_disturbances = 0 if math.isnan(float(dict[j]['Breathing disturbances'])) else float(dict[j]['Breathing disturbances']) 
+                            deep_sleep_duration = 0 if math.isnan(float(dict[j]['Deep sleep duration'])) else float(dict[j]['Deep sleep duration'])
+                            duration_to_sleep = 0 if math.isnan(float(dict[j]['Duration to sleep'])) else float(dict[j]['Duration to sleep'])
+                            duration_to_wakeup = 0 if math.isnan(float(dict[j]['Duration to wakeup'])) else float(dict[j]['Duration to wakeup'])
+                            average_heart_rate = 0 if math.isnan(float(dict[j]['HR average'])) else float(dict[j]['HR average'])
+                            light_sleep_duration = 0 if math.isnan(float(dict[j]['Light sleep duration'])) else float(dict[j]['Light sleep duration'])
+                            rem_sleep_duration = 0 if math.isnan(float(dict[j]['Rem sleep duration'])) else float(dict[j]['Rem sleep duration'])
+                            average_rr = 0 if math.isnan(float(dict[j]['RR average'])) else float(dict[j]['RR average'])
+                            sleep_score = 0 if math.isnan(float(dict[j]['Sleep score'])) else float(dict[j]['Sleep score'])
+                            wakeup_count = 0 if math.isnan(float(dict[j]['Wake up count'])) else float(dict[j]['Wake up count'])
+                            wakeup_duration = 0 if math.isnan(float(dict[j]['Wake up duration'])) else float(dict[j]['Wake up duration'])
+                            
+                   
+                            data ={
+                                "device": sleep_id,
+                                "date": date_s,
+                                "breathing_disturbances" : breathing_disturbances,
+                                "deep_sleep_duration" : deep_sleep_duration,
+                                "duration_to_sleep" : duration_to_sleep,
+                                "duration_to_wakeup" : duration_to_wakeup,
+                                "average_heart_rate" : average_heart_rate,
+                                "light_sleep_duration" : light_sleep_duration,
+                                "rem_sleep_duration" : rem_sleep_duration,
+                                "average_rr" : average_rr,
+                                "sleep_score" : sleep_score,
+                                "wakeup_count" : wakeup_count,
+                                "wakeup_duration" : wakeup_duration,
+                                }
+                            
+                            print(data)
+                            response = requests.post(url, json=data)
+
+    def upload_intra_sleep_summary_data(self):
+
+        
+        url = 'http://127.0.0.1:8000/api/sleepmats/intraactivity/'
+        for i in range(len(self.id_available)):
+            path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/Sleepmat_intra_activity.csv'
+            sleep_id = self.get_device_id(id_user = str(self.id_available[i]), devices_dict = self.devices_dict, device_type = 'sleep_mat')
+            #print(scale_id)
+            if os.path.exists(path):
+                # Open the CSV file in read mode
+                with open(path, 'r', newline='') as csv_file:
+                    df = pd.read_csv(path, header = 0, delimiter=',')
+                    dict = df.to_dict(orient = 'records')
+                    #print(df)
+                    #print(dict)
+                    if sleep_id is not None:
+
+                        for j in range(len(dict)):
+                            # Convert 'nan' values to None
+                            start_date = 0 if math.isnan(float(dict[j]['startdate'])) else float(dict[j]['startdate']) 
+                            end_date = 0 if math.isnan(float(dict[j]['enddate'])) else float(dict[j]['enddate']) 
+                            sleep_state = int(dict[j]['Sleep state'])
+                            date_heart_rate = 0 if math.isnan(float(dict[j]['Heart Rate date'])) else float(dict[j]['Heart Rate date'])
+                            heart_rate = 0 if math.isnan(float(dict[j]['Heart Rate'])) else float(dict[j]['Heart Rate'])
+                            date_respiration_rate = 0 if math.isnan(float(dict[j]['Respiration rate date'])) else float(dict[j]['Respiration rate date'])
+                            respiration_rate = 0 if math.isnan(float(dict[j]['Respiration rate'])) else float(dict[j]['Respiration rate'])
+                            date_snoring = 0 if math.isnan(float(dict[j]['Snoring date'])) else float(dict[j]['Snoring date'])
+                            snoring = 0 if math.isnan(float(dict[j]['Snoring'])) else float(dict[j]['Snoring'])
+                            date_sdnn_1 = 0 if math.isnan(float(dict[j]['sdnn_1 date'])) else float(dict[j]['sdnn_1 date'])
+                            sdnn_1 = 0 if math.isnan(float(dict[j]['sdnn_1'])) else float(dict[j]['sdncln_1'])
+                            print(start_date)
+                            print(type(start_date))
+                   
+                            data ={
+                                "device": sleep_id,
+                                "start_date": start_date,
+                                "end_date":end_date, 
+                                "sleep_state": sleep_state, 
+                                "date_heart_rate": date_heart_rate, 
+                                "heart_rate": heart_rate,
+                                "date_respiration_rate": date_respiration_rate,
+                                "respiration_rate": respiration_rate,
+                                "date_snoring": date_snoring,
+                                "snoring" : snoring,
+                                "date_sdnn_1" : date_sdnn_1,
+                                "sdnn_1": sdnn_1
+                                }
+                            
+                            print(data)
+                            response = requests.post(url, json=data) 
+
+
+    def organized_dict(self, original_dict):
+        converted_dict = {}
+        for device in original_dict['devices']:
+            user = device['user']
+            device_type = device['device_type']
+            #print(device_type)
+            device_id = device['id']
+            if user not in converted_dict:
+                converted_dict[user] = {}
+            
+            converted_dict[user][device_type] = device_id
+                
+                
+        return(converted_dict)
+    
+    def get_device_id(self, id_user = None, devices_dict = None, device_type = None):
+
+        scale_value = None
+       #print(devices_dict)
+        
+        if id_user in devices_dict:
+            nested_dict = devices_dict[id_user]
+            #print(nested_dict)
+            for value in nested_dict.values():
+                if device_type in value:
+                    scale_value = value[device_type]
+                    break
+        
+        return(scale_value)
+
+            
+
+                        
+                        
+                    
+                    
+                    
+        
+
+
+
+    
+   
+path_user = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/Users.csv'
+db_csv = DatabaseServer_csv(path = path_user)
+db_csv.import_users_from_csv()
+db_csv.get_users()
+#db_csv.upload_device_info()
+db_csv.get_device_info()
+#db_csv.upload_scale_summary_data()
+#db_csv.upload_scanwatch_summary_data()
+#db_csv.upload_sleep_summary_data()
+db_csv.upload_intra_sleep_summary_data()
+#db_csv.upload_intra_scanwatch_summary_data()
+    
+
+
+
+
 
     
 
@@ -143,12 +442,7 @@ def change_created_at(users_path, user_dict):
 
 
             
-   
-path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/Users.csv'
-import_users_from_csv(path)
-#get_users()
-#change_created_at(path)
-    
+
 
         
       
