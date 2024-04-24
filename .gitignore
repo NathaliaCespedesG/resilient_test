@@ -1,5 +1,6 @@
 /Withings_ScanWatch/db/General
 /Withings_ScanWatch/Withings_reports
 /Withings_ScanWatch/usage_report.pdf
+/Withings_ScanWatch/withings_devOp_credentials.py
 venv/*
 .env

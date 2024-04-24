@@ -113,7 +113,7 @@ class PDF_Usage(object):
     def create_pdf(self):
         
         # Create a PDF document
-        pdf_filename = "table_with_images.pdf"
+        pdf_filename = "usage_report.pdf"
         doc = SimpleDocTemplate(pdf_filename, pagesize=letter)
         styles = getSampleStyleSheet()
         doc.build([Paragraph("", styles['Normal'])], onFirstPage=self.create_title_page)
