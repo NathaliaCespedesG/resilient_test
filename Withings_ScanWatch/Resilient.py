@@ -3,20 +3,32 @@ import sys
 import os 
 from os import path 
 import pandas as pd
-import Devices_OAuth2flow as reports
-import resources.PDF_usage_generation as usage_pdf
 from PyPDF2 import PdfMerger
 import shutil
 from datetime import datetime
 import numpy as np
 import time
+
+# Resources for PDF generating
+import Devices_OAuth2flow as reports
+import resources.PDF_usage_generation as usage_pdf
+
+# Developer credentials
 import withings_devOp_credentials as dev_credentials
+
+# Database API
+
+import db.database_django as database_api
 
 
 class Resilient(object):
 
     def __init__(self):
 
+
+        # Database calling
+
+        self.database_api = database_api.Database_API()
         # Types of generation
 
 
@@ -24,7 +36,9 @@ class Resilient(object):
 
         self.gen_type = input('Please indicate  the type of report you want to generate, all - one - create: ')
 
-        self.users_path()
+        # Database from CVS files instructions
+        #self.users_path()
+
         self.general = 'db/General'   
 
         #print(gen_type)
@@ -44,6 +58,7 @@ class Resilient(object):
             self.create_participant()
 
 
+    #This function uses the csv files 
     def users_path(self):
 
         #Current path for the Main class
@@ -67,10 +82,18 @@ class Resilient(object):
             self.id_available = None
             print(f"The file '{self.users_path}' does not exist.")
 
-    
+
+    def current_users(self):
+        
+        data = self.database_api.get_users()
+        usernames = [list(item.values())[0] for item in data]
+
+        return(usernames)
+
 
     def run_all_participants(self):
 
+        self.id_available = self.current_users()
         
         if self.id_available is not None:
             print(self.id_available[1])
@@ -319,12 +342,12 @@ class Resilient(object):
                                             scale_last = formatted_scalelast_dates
                                             )
         
-    @staticmethod
+    @classmethod
     def main(cls):
         a = cls()
         a.individual_report_generation()
         #a.create_folder_reports()
-        a.usage_reports()
+        #a.usage_reports()
         #a.merge_pdf()
 		
 

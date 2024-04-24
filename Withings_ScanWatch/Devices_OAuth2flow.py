@@ -26,6 +26,10 @@ import pandas as pd
 import data_utils.data_utils as data_utils
 # Module: Database libraries to save Users' data 
 import db.database as database
+#Module : Databasde Django api
+
+import db.database_django as database_api
+
 #Module: Graphics generation class
 import resources.Graph_generation as graph
 # Module: PDF generation class to generate the reports 
@@ -70,6 +74,8 @@ class Devices_OAuth2flow(object):
 
 		# Creates the database object
 		self.database = database.General(db_type = self.running_type)
+		#Create database object api
+		self.database_api = database_api.Database_API()
 
 		if self.report_type == 1:
 			self.dates()
@@ -95,13 +101,15 @@ class Devices_OAuth2flow(object):
 			self.id_user = id_participant
 		else:
 			self.id_user = input('Please provide the id for the user: ')
+			self.role = input('Please provide the role: ')
+			self.password = 'NoneYet'
 
-
+		# cvs files - database
 		self.database.SM.set_date_report(date = str(datetime.now()))
-
 		self.database.register(user = self.id_user)
 
-
+		# register participant - database API
+		self.database_api.register(user = self.id_user, role = self.role, password_hash = self.password)
 
 		#Create the credentials File
 		# This file has the authorization and refresh token which are
@@ -197,8 +205,14 @@ class Devices_OAuth2flow(object):
 		print("Refreshing token...")
 		self.api.refresh_token()
 		print("After Refreshing")
-		print( 'UserID', self.api.get_credentials().userid )
-		#assert orig_access_token != api.get_credentials().access_token
+		print( 'UserID', self.api.get_credentials().userid)
+
+		# Get id from API databse
+
+		self.db_id = self.database_api.get_unique_id(id_user = self.id_user)
+
+		print('***************************')
+		print(self.db_id)
 
 
 	def dates(self):
@@ -283,10 +297,14 @@ class Devices_OAuth2flow(object):
 		self.battery = {}
 		devices = self.api.user_get_device()
 		devices = devices['devices']
-		print(devices)
+		#print(devices)
+
+		filtered_data = [{'Device': d['type'], 'Hash_deviceid': d['hash_deviceid'], 'MAC_address': d['mac_address']} for d in devices]
+		
 		type_d = [i['type'] for i in devices]
 		hash_deviceid = [i['hash_deviceid'] for i in devices]
 		MAC_address = [i['mac_address'] for i in devices]
+
 
 
 		
@@ -302,8 +320,10 @@ class Devices_OAuth2flow(object):
 		
 
 
-
+		# Devices to csv database files
 		self.database.SM.load_SensorInfo(sensor = type_d, hash_deviceid = hash_deviceid, MAC_address = MAC_address)
+		# Devices to API database
+		self.database_api.upload_device_info(user = self.db_id, dict = filtered_data)
 
 	def create_nonce(self):
 

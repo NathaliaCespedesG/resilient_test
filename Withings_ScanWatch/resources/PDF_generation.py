@@ -447,7 +447,7 @@ class PDF_generation(object):
 		doc.build(elements)
 
 
-	@staticmethod
+	@classmethod
 	def main(cls):
 		
 		a = cls(day_hr = None, 
