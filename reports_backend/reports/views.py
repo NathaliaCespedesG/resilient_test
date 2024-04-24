@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework.decorators import api_view
-from Withings_ScanWatch.Main import Resilient
+from Withings_ScanWatch.Resilient import Resilient
 
 # Create your views here.
 # request -- response (reuest handler)

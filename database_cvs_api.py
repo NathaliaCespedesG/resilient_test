@@ -73,11 +73,9 @@ class DatabaseServer_csv(object):
             # Unsuccessful response
             print('GET request failed:', response.status_code)
             
-        # Create a new dictionary to store id and username
+        # Dictionary to store id and username
         self.id_username_dict = {}
-        # Iterate through each user in the 'users' list
         for user in self.user_data['users']:
-            # Add id and username to the new dictionary
             self.id_username_dict[user['id']] = user['username']
         
         
