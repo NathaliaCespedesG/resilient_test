@@ -1101,25 +1101,31 @@ class Devices_OAuth2flow(object):
 				print(f"Skipped: {file_name}")
 
 
+	@staticmethod
+	def main(cls):
+		
+		M = cls(client_id = 'e64cb563bf44122144cd0702b02f69ad50d21aba0eb50ca443f69db5673ca2cc', 
+						 costumer_secret = 'c2b3bd8f8fa210533aa3e7ef54abd4654d2a44cfe4f33d9f3aff63b4ce0943c4',
+						 callback_uri = 'https://resilient.ukdri.care/',
+						 report_type = 1,
+						 generation_type = None)
+		
+		M.get_user_credentials()
+		M.devices_info()
+		M.scale_data()
+		M.sleep()
+		M.sleep_daily()
+		M.activity_data_watch()
+		M.plot_creator()
+		M.doc_generation()
+		M.remove_images()
+		M.usage_levels()
+		#M.deactivate_raw_data()
+		#M.activate_raw_data()
+	
+	
+
+if __name__ == "__main__":
+    Devices_OAuth2flow.main()
 
 
-
-'''
-M = Devices_OAuth2flow(client_id = 'e64cb563bf44122144cd0702b02f69ad50d21aba0eb50ca443f69db5673ca2cc', 
-		       costumer_secret = 'c2b3bd8f8fa210533aa3e7ef54abd4654d2a44cfe4f33d9f3aff63b4ce0943c4',
-		       callback_uri = 'https://resilient.ukdri.care/',
-		       report_type = 1,
-			   generation_type = None)
-M.get_user_credentials()
-M.devices_info()
-M.scale_data()
-M.sleep()
-M.sleep_daily()
-M.activity_data_watch()
-M.plot_creator()
-M.doc_generation()
-M.remove_images()
-M.usage_levels()
-#M.deactivate_raw_data()
-#M.activate_raw_data()
-'''

@@ -48,6 +48,10 @@ class PDF_Usage(object):
         self.create_pdf()
 
 
+    def conditional_highlight(self,row):
+        return row[1] == "Low" or row[4] == "Low" or row[7] == "Low"
+
+
     def create_title_page(self, canvas, doc):
         
         styles = getSampleStyleSheet()
@@ -60,17 +64,17 @@ class PDF_Usage(object):
         #canvas.drawString(doc.leftMargin + 16.5 * cm , doc.height + 4.2* cm, text_year)
 
 		# Draw NEWS2 text
-        text_scale = 'Scale Usage: Date1 to Date2'
+        text_scale = 'Scale Usage: ' + str(self.start_date[0]) + ' - ' + str(self.end_date[0]) 
         canvas.setFont("Arial", 11)
-        canvas.drawString(doc.leftMargin + 12 * cm , doc.height + 2.3 * cm, text_scale)
+        canvas.drawString(doc.leftMargin + 12 * cm , doc.height + 1.6 * cm, text_scale)
         #Draw sd text
         canvas.setFont("Arial", 11)
-        text_watch = 'Watch Usage: Date1 to Date2'
-        canvas.drawString(doc.leftMargin + 12 * cm , doc.height + 2.8 * cm, text_watch)
+        text_watch = 'Watch Usage: ' + str(self.start_date[0]) + ' - ' + str(self.end_date[0]) 
+        canvas.drawString(doc.leftMargin + 12 * cm , doc.height + 2.2 * cm, text_watch)
         
           
-        text_sleep = 'Sleepmat Usage:Date 1 to Date2'
-        canvas.drawString(doc.leftMargin + 12 * cm , doc.height + 3.2* cm, text_sleep)
+        text_sleep = 'Sleepmat Usage: ' + str(self.start_date[0]) + ' - ' + str(self.end_date[0]) 
+        canvas.drawString(doc.leftMargin + 12 * cm , doc.height + 2.8* cm, text_sleep)
             
         #Add the Surrey logo project watermark
             
@@ -161,6 +165,8 @@ class PDF_Usage(object):
         table.setStyle(TableStyle([('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),
                                 ('BOX', (0,0), (-1,-1), 0.25, colors.black),
                                 ]))
+        spacing = 0.9*cm
+        spacer1 = Spacer(5, spacing)
         # Define a style with the desired font size
         
         styles = getSampleStyleSheet()
@@ -171,26 +177,43 @@ class PDF_Usage(object):
         for i in range(len(data)):
             for j in range(len(data[i])):
                 table.setStyle([('FONT', (j, i), (j, i), 'Arial', 10.5)])
+
+        # Conditional Highlighting styles
+
+        # Apply additional style to highlighted rows
+        for i, row in enumerate(data):
+            #print(row)
+            #print(self.conditional_highlight(row))
+            if self.conditional_highlight(row):
+                table.setStyle(TableStyle([('BACKGROUND', (0, i+1), (-1, i+1), colors.orange)]))
     
         
         # Add the table to the PDF document
-        doc.build([table])
+        doc.build([spacer1,table])
 
+    @classmethod
+    def main(cls):
+        
+        a = cls( path = None,
+            id_user = None,
+            start_date =None,
+            end_date = None,
+            sleepmat_usage = None,
+            sleepmat_battery = None,
+            sleepmat_last = None, 
+            watch_usage = None,
+            watch_battery = None,
+            watch_last = None,
+            scale_usage =None,
+            scale_battery = None,
+            scale_last = None)
+        
+        a.create_pdf([1,2,3,4,5,6,7,8], ['10 Feb', '10 Feb', '10 Feb', '10 Feb', '10 Feb', '10 Feb', '10 Feb'])
+    
 
-#a = PDF_Usage( path = None,
-                 #id_user = None,
-                 #start_date =None,
-                 #end_date = None,
-                 #sleepmat_usage = None,
-                 #sleepmat_battery = None,
-                 #sleepmat_last = None, 
-                 #watch_usage = None,
-                 #watch_battery = None,
-                 #watch_last = None,
-                 #scale_usage =None,
-                 #scale_battery = None,
-                 #scale_last = None)
-#a.create_pdf([1,2,3,4,5,6,7,8], ['10 Feb', '10 Feb', '10 Feb', '10 Feb', '10 Feb', '10 Feb', '10 Feb'])
+if __name__ == "__main__":
+    PDF_Usage.main()
+
 
         
 

@@ -447,15 +447,19 @@ class PDF_generation(object):
 		doc.build(elements)
 
 
-'''
-M = PDF_generation(day_hr = None, 
+	@staticmethod
+	def main(cls):
+		
+		a = cls(day_hr = None, 
 					night_hr = None, 
 					night_rr = None,
 					steps = None, 
 					sleep_duration = None, 
 					sleep_apnoea =None,
-					weight = None,)
+					weight = None)
+	
+	
 
+if __name__ == "__main__":
+    PDF_generation.main()
 
-
-'''
