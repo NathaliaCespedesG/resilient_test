@@ -318,6 +318,21 @@ class Resilient(object):
                                             scale_battery = result_usage[11],
                                             scale_last = formatted_scalelast_dates
                                             )
+        
+    @staticmethod
+    def main(cls):
+        a = cls()
+        a.individual_report_generation()
+        #a.create_folder_reports()
+        a.usage_reports()
+        #a.merge_pdf()
+		
+
+	
+	
+
+if __name__ == "__main__":
+    Resilient.main()
             
 
     
@@ -325,10 +340,4 @@ class Resilient(object):
 
                     
 
-        
-        
-a = Resilient()
-a.individual_report_generation()
-#a.create_folder_reports()
-a.usage_reports()
-#a.merge_pdf()
+    
