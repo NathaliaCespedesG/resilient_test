@@ -22,7 +22,8 @@ class Database_API(object):
                 }
         
         response = requests.post(url, json = data)
-        print(response.status_code)
+        if response.status_code == 400:
+            print('User already in the database')
 
     def get_users(self):
         

@@ -17,8 +17,8 @@ import resources.PDF_usage_generation as usage_pdf
 import withings_devOp_credentials as dev_credentials
 
 # Database API
-
 import db.database_django as database_api
+import db.database as database
 
 
 class Resilient(object):
@@ -26,13 +26,19 @@ class Resilient(object):
     def __init__(self):
 
 
-        # Database calling
 
-        self.database_api = database_api.Database_API()
         # Types of generation
 
 
         self.db_type =  input('Please indicate  the running mode, original - test:' )
+
+
+        # Database calling
+
+        self.database_api = database_api.Database_API()
+        self.database = database.General(db_type = self.db_type)
+
+        # Report Type
 
         self.gen_type = input('Please indicate  the type of report you want to generate, all - one - create: ')
 
@@ -48,15 +54,42 @@ class Resilient(object):
     
     def individual_report_generation(self):
 
+        users = self.current_users()
 
         if self.gen_type == 'all':
+
+            self.id_available = users
             
             self.run_all_participants()
 
         elif self.gen_type == 'create' :
 
-            self.create_participant()
+            id = input('Please provide the id for the user: ')
+            
+            if id in users:
+                print("Participant already in the database")
+            else:
+                self.id_available = id
+                #register participant - csv API
+                self.database.register(user = self.id_available)
+                # register participant - database API
+                self.role = input('Please provide the role: ')
+                self.password = 'NoneYet'
+                self.database_api.register(user = self.id_user, role = self.role, password_hash = self.password)
 
+                self.create_participant(user = id)
+                
+
+        elif self.gen_type == 'one':
+
+            id = input('Please provide the id for the user: ')
+
+            if id in users:
+
+                self.id_available = users
+                self.run_all_participants()
+            else:
+                print("Participant not in the database")
 
     #This function uses the csv files 
     def users_path(self):
@@ -93,25 +126,18 @@ class Resilient(object):
 
     def run_all_participants(self):
 
-        self.id_available = self.current_users()
         
         if self.id_available is not None:
             print(self.id_available[1])
             
             total_participants = len(self.id_available)
-            print(total_participants)
-
-
             for i in range (total_participants):
 
                 id_report = self.id_available[i]
-                print(id_report)
-                
                 reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
 		                            costumer_secret = dev_credentials.costumer_secret,
 		                            callback_uri = dev_credentials.callback_uri,
 		                            report_type = 0,
-			                        generation_type = 'all',
                                     id_participant = id_report,
                                     running_type = self.db_type)
 
@@ -131,21 +157,20 @@ class Resilient(object):
             
 
     
-    def create_participant(self):
+    def create_participant(self, user = None):
         
         reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
 		                            costumer_secret = dev_credentials.costumer_secret,
 		                            callback_uri = dev_credentials.callback_uri,
 		                            report_type = 0,
-			                        generation_type = 'create',
-                                    id_participant = None,
+                                    id_participant = user,
                                     running_type = self.db_type)
 
         reports_resilient.get_user_credentials()
+        reports_resilient.register_devices()
         reports_resilient.devices_info()
         reports_resilient.scale_data()
         reports_resilient.sleep()
-        print('Sleep daily')
         reports_resilient.sleep_daily()
         reports_resilient.activity_data_watch()
         reports_resilient.plot_creator()
@@ -154,6 +179,7 @@ class Resilient(object):
         reports_resilient.remove_images()
         reports_resilient.usage_levels()
         reports_resilient.db_cleaning()
+
     
     def sort_files(self, files):
         return sorted(files, key=lambda x: x[3]) 

@@ -58,7 +58,6 @@ class Devices_OAuth2flow(object):
 					   costumer_secret: None, 
 					   callback_uri: None,
 					   report_type: None,
-					   generation_type: None,
 					   id_participant: None,
 					   running_type: None):
 
@@ -67,8 +66,14 @@ class Devices_OAuth2flow(object):
 		self.running_type = running_type
 		# Report type
 		self.report_type = report_type
-		#Generation type
-		self.generation_type = generation_type
+		
+		# Inputs: client_id, consumer_secret, callback_uri
+		# Take into account that this inputs will be created after you
+		# create your developer account
+
+		self.client_id = client_id
+		self.costumer_secret = costumer_secret
+		self.callback_uri = callback_uri
 
 
 
@@ -80,36 +85,14 @@ class Devices_OAuth2flow(object):
 		if self.report_type == 1:
 			self.dates()
 
-		
-
-		#time.sleep(0.5)
-
 		# Creates the data utils object
 		self.data_utils = data_utils.Data_Handler()
 		
-		# Inputs: client_id, consumer_secret, callback_uri
-		# Take into account that this inputs will be created after you
-		# create your developer account
-
-		self.client_id = client_id
-		self.costumer_secret = costumer_secret
-		self.callback_uri = callback_uri
+	
 
 		#Create an ID for each user
 
-		if self.generation_type == 'all':
-			self.id_user = id_participant
-		else:
-			self.id_user = input('Please provide the id for the user: ')
-			self.role = input('Please provide the role: ')
-			self.password = 'NoneYet'
-
-		# cvs files - database
-		self.database.SM.set_date_report(date = str(datetime.now()))
-		self.database.register(user = self.id_user)
-
-		# register participant - database API
-		self.database_api.register(user = self.id_user, role = self.role, password_hash = self.password)
+		self.id_user = id_participant
 
 		#Create the credentials File
 		# This file has the authorization and refresh token which are
@@ -125,15 +108,11 @@ class Devices_OAuth2flow(object):
 		#Path to credentials from each users
 
 		self.final_path = path.abspath(path.join(self.base_path, self.additional_path, self.id_user, credentials_path))
-
 		#Path to Users.csv file
-
 		self.users_path = path.abspath(path.join(self.base_path, self.db_path, users_db))
 
 		if self.report_type == 0:
 			self.dates_SPC_charts()
-
-		#time.sleep(0.5)
 
 		self.CREDENTIALS_FILE: Final = self.final_path
 		
@@ -297,16 +276,6 @@ class Devices_OAuth2flow(object):
 		self.battery = {}
 		devices = self.api.user_get_device()
 		devices = devices['devices']
-		#print(devices)
-
-		filtered_data = [{'Device': d['type'], 'Hash_deviceid': d['hash_deviceid'], 'MAC_address': d['mac_address']} for d in devices]
-		
-		type_d = [i['type'] for i in devices]
-		hash_deviceid = [i['hash_deviceid'] for i in devices]
-		MAC_address = [i['mac_address'] for i in devices]
-
-
-
 		
 		# Creating a dictionary with type_id as keys and battery as values
 		self.battery = {device['type']: device['battery'] for device in devices}
@@ -320,6 +289,17 @@ class Devices_OAuth2flow(object):
 		
 
 
+	def register_devices(self):
+		# This function register the device information. 
+		devices = self.api.user_get_device()
+		devices = devices['devices']
+		#print(devices)
+
+		filtered_data = [{'Device': d['type'], 'Hash_deviceid': d['hash_deviceid'], 'MAC_address': d['mac_address']} for d in devices]
+		
+		type_d = [i['type'] for i in devices]
+		hash_deviceid = [i['hash_deviceid'] for i in devices]
+		MAC_address = [i['mac_address'] for i in devices]
 		# Devices to csv database files
 		self.database.SM.load_SensorInfo(sensor = type_d, hash_deviceid = hash_deviceid, MAC_address = MAC_address)
 		# Devices to API database
@@ -1125,8 +1105,8 @@ class Devices_OAuth2flow(object):
 		M = cls(client_id = 'client id', 
 						 costumer_secret = 'costumer secret',
 						 callback_uri = 'url',
-						 report_type = 1,
-						 generation_type = None)
+						 report_type = 1
+				)
 		
 		M.get_user_credentials()
 		M.devices_info()
