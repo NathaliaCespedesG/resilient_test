@@ -84,6 +84,7 @@ class Database_API(object):
     def get_device_info(self, user = None):
         url = 'http://127.0.0.1:8000/api/devices/' + '?username=' + user
         response = requests.get(url)
+        self.devices_dict = {}
         # Checking the status code of the response
         if response.status_code == 200:
                 print('GET request successful')
@@ -91,11 +92,53 @@ class Database_API(object):
                 self.device_data = response.json()  # Assuming the response is JSON data
                 #print(self.device_data)
                 devices = self.organized_dict(self.device_data)
-                self.devices_dict[user] = devices
                 
         else:
             # Unsuccessful response
             print('GET request failed:', response.status_code)
+        
+        return(devices)
+    
+    def organized_dict(self, original_dict):
+        converted_dict = {}
+        for device in original_dict['devices']:
+            user = device['user']
+            device_type = device['device_type']
+            #print(device_type)
+            device_id = device['id']
+            if user not in converted_dict:
+                converted_dict[user] = {}
+            
+            converted_dict[user][device_type] = device_id
+                
+                
+        return(converted_dict)
+    
+    def upload_scanwatch_summary_data(self, ):
+
+        url = 'http://127.0.0.1:8000/api/scanwatches/summary/'
+     
+        if watch_id is not None:
+
+            for j in range(len(dict)):
+                date_s = dict[j]['date'][:-6]
+                date_s = datetime.strptime(date_s, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+
+                # Convert 'nan' values to None
+                average_heart_rate = 0 if math.isnan(float(dict[j]['HR_Average'])) else float(dict[j]['HR_Average']) 
+                calories = 0 if math.isnan(float(dict[j]['Calories'])) else float(dict[j]['Calories'])
+                steps = 0 if math.isnan(float(dict[j]['Steps'])) else float(dict[j]['Steps'])
+        
+                data ={
+                    "device": watch_id,
+                    "date": date_s,
+                    "average_heart_rate": average_heart_rate,
+                    "calories": calories,
+                    "steps": steps
+                    }
+                
+                print(data)
+                response = requests.post(url, json=data) 
 
 
 

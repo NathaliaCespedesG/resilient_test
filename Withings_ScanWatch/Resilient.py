@@ -45,16 +45,12 @@ class Resilient(object):
         # Database from CVS files instructions
         #self.users_path()
 
-        self.general = 'db/General'   
-
-        #print(gen_type)
-
-       
-
+        self.general = 'db/General'
     
     def individual_report_generation(self):
 
         users = self.current_users()
+        print(users)
 
         if self.gen_type == 'all':
 
@@ -64,12 +60,12 @@ class Resilient(object):
 
         elif self.gen_type == 'create' :
 
-            id = input('Please provide the id for the user: ')
+            id_user = input('Please provide the id for the user: ')
             
             if id in users:
                 print("Participant already in the database")
             else:
-                self.id_available = id
+                self.id_available = id_user
                 #register participant - csv API
                 self.database.register(user = self.id_available)
                 # register participant - database API
@@ -82,17 +78,18 @@ class Resilient(object):
 
         elif self.gen_type == 'one':
 
-            id = input('Please provide the id for the user: ')
+            self.id_available = [] 
 
-            if id in users:
-
-                self.id_available = users
+            id_user = input('Please provide the id for the user: ')
+        
+            if id_user in users:
+                self.id_available.append(id_user)
                 self.run_all_participants()
             else:
                 print("Participant not in the database")
 
     #This function uses the csv files 
-    def users_path(self):
+    def read_users_path(self):
 
         #Current path for the Main class
         self.current_path = os.getcwd()
@@ -128,7 +125,7 @@ class Resilient(object):
 
         
         if self.id_available is not None:
-            print(self.id_available[1])
+            print(self.id_available)
             
             total_participants = len(self.id_available)
             for i in range (total_participants):

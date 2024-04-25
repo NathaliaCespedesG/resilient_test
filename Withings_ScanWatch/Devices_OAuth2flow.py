@@ -111,6 +111,18 @@ class Devices_OAuth2flow(object):
 		#Path to Users.csv file
 		self.users_path = path.abspath(path.join(self.base_path, self.db_path, users_db))
 
+
+		# Get info from the database
+
+		# Get id from API databse
+
+		self.db_id = self.database_api.get_unique_id(id_user = self.id_user)
+		self.database.SM.set_User({"registered" : True, "id": self.id_user})
+
+		print('***************************')
+		print(self.db_id)
+
+
 		if self.report_type == 0:
 			self.dates_SPC_charts()
 
@@ -186,12 +198,7 @@ class Devices_OAuth2flow(object):
 		print("After Refreshing")
 		print( 'UserID', self.api.get_credentials().userid)
 
-		# Get id from API databse
-
-		self.db_id = self.database_api.get_unique_id(id_user = self.id_user)
-
-		print('***************************')
-		print(self.db_id)
+		
 
 
 	def dates(self):
@@ -217,33 +224,29 @@ class Devices_OAuth2flow(object):
 
 	def dates_SPC_charts(self):
 
-		#self.database.SM.set_date_report(date = datetime.now())
-
+		#Registration date from API
+		registration_date = self.db_id['users'][0]['created_at']
+		print(registration_date)
 
 		df = pd.read_csv(self.users_path , header = 0, delimiter=';')
-		#df.columns = df.columns.str.lower()
-		#print(df.columns)
 		filtered_df = df[df['Id'] == self.id_user]
-
-		if not filtered_df.empty:
-			date_of_registration = filtered_df[' Date of Registration'].iloc[0]
-			print(f"Date of registration for ID {self.id_user}: {date_of_registration}")
-		else:
-			print(f"No records found for ID {self.id_user}")
+		
+		#if not filtered_df.empty:
+			#date_of_registration = filtered_df[' Date of Registration'].iloc[0]
+			#print(f"Date of registration for ID {self.id_user}: {date_of_registration}")
+		#else:
+			#print(f"No records found for ID {self.id_user}")
 
 		#calculate the number of days between the register day and the current date
+		date_of_registration =  datetime.strptime(registration_date, '%Y-%m-%d')
 
-		date_of_registration =  datetime.strptime(date_of_registration, '%Y-%m-%d')
-		
 		#Setting the initial date - considaring current day
-		
 		self.ending_day_c = self.data_utils.initial_day()
 
+		
 		# Calculate the difference in days
 		days_difference = ((datetime.now()- timedelta(days=self.ending_day_c)) - date_of_registration).days
 
-		#print('Days difference **************************')
-		#print(days_difference)
 		if days_difference > 90:
 			self.starting_day_c = -(90 - self.ending_day_c)
 		else:
@@ -262,6 +265,10 @@ class Devices_OAuth2flow(object):
 
 		self.ending_dates = arrow.utcnow().shift(days = self.ending_day_c)
 		self.ending_dates_table = self.ending_dates.format('D MMM ')
+
+		#Create folders for week report
+		self.database.SM.set_date_report(date = datetime.now().strftime('%Y-%m-%d'))
+		self.database.SM.create_session()
 
 
 		
@@ -286,6 +293,11 @@ class Devices_OAuth2flow(object):
 
 
 		print("battery from devices", self.battery)
+
+		#Get codes for the devices
+
+		devices_api = self.database_api.get_device_info(user = self.id_user)
+		print(devices_api)
 		
 
 
@@ -893,6 +905,11 @@ class Devices_OAuth2flow(object):
 		
 		
 		self.database.SM.close_all_cvs_files()
+
+
+	def db_api_filling(self):
+		pass
+
 
 	def db_cleaning(self):
 		self.database.SM.cleaning_cvs_files(cvs_from ='Scan_summary')
