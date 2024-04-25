@@ -25,16 +25,17 @@ class General(object):
 		# Update user status
 		self.UserStatus = {"registered" : False, "id":""}
 
-		#Create session manager
-
 		self.SM = SM.DatabaseManager(ProjectHandler = self.database_path, UserStatus = self.UserStatus,  db_type = self.db_type)
 
+
+		#Create session manager
 		self.TherapyStatus = {"user": "none", "mode":0}
 
 
 	def register(self, user = None):
 		#Function to register the patient in the DB
 		self.UserStatus = self.SM.register_user(id_user = user)
+		
 
 		#self.TherapyStatus['user'] = self.UserStatus['name']
 
