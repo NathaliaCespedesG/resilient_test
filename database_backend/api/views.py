@@ -175,8 +175,8 @@ class ReportListCreateView(generics.ListCreateAPIView):
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
         return Response({"reports": serializer.data})
-
-class UsageDetailView(generics.RetrieveUpdateDestroyAPIView):
+    
+class ReportDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
 
@@ -195,6 +195,6 @@ class UsageListCreateView(generics.ListCreateAPIView):
         serializer = self.get_serializer(queryset, many=True)
         return Response({"usages": serializer.data})
 
-class ReportDetailView(generics.RetrieveUpdateDestroyAPIView):
+class UsageDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer

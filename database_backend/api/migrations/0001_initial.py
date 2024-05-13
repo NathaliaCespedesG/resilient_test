@@ -51,7 +51,7 @@ class Migration(migrations.Migration):
             name='Scale',
             fields=[
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('date', models.DateTimeField()),
+                ('date', models.DateField()),
                 ('weight', models.FloatField()),
                 ('muscle_mass', models.FloatField()),
                 ('bone_mass', models.FloatField()),

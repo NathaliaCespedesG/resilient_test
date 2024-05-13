@@ -62,7 +62,7 @@ class SleepmatIntraActivity(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='sleepmat_intraactivity')
     start_date = models.FloatField() 
-    end_date = models.DateField()
+    end_date = models.FloatField()
     sleep_state = models.IntegerField() 
     date_heart_rate = models.FloatField()
     heart_rate = models.FloatField()
@@ -93,6 +93,7 @@ class Report(models.Model):
     id =  models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reports')
     path = models.CharField(max_length=300)
+    type = models.CharField(max_length=20, default='aggegated') # e.g., 'weekly', 'global'
     start_date = models.DateField()
     end_date = models.DateField()
     created_at = models.DateField(auto_now_add=True)
@@ -101,7 +102,7 @@ class Report(models.Model):
     def save(self, *args, **kwargs):
         # Update the `updated_at` field before saving the record
         self.updated_at = timezone.now()
-        super(User, self).save(*args, **kwargs)
+        super(Report, self).save(*args, **kwargs)
 
 class Usage(models.Model):
     id =  models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -122,5 +123,5 @@ class Usage(models.Model):
     def save(self, *args, **kwargs):
         # Update the `updated_at` field before saving the record
         self.updated_at = timezone.now()
-        super(User, self).save(*args, **kwargs)
+        super(Usage, self).save(*args, **kwargs)
     
