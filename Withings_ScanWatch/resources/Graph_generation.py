@@ -132,6 +132,11 @@ class Graph_generator(object):
 
 	def plot_scatter(self, x, y, k, j, name):
 
+		print('FROMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM')
+		print(x)
+		print(y)
+		print(k)
+		print(j)
 
 		fig, ax = plt.subplots()
 
@@ -150,6 +155,7 @@ class Graph_generator(object):
 		
 		# k, start_date and end_date are arroe types (e.g.,  <Arrow [2023-08-27T01:00:00+01:00]>)
 		k = [value for index, value in enumerate(k) if index not in index_1]
+		k = np.array([np.datetime64(date.datetime) for date in k])
 
 
 		plt.clf()
@@ -175,7 +181,9 @@ class Graph_generator(object):
 			# Smooth lines
 			date_avg, val_avg = self.weekly_average(k, j)
 			#print('**************************************WEEKLY************************************************************')
-			k_s,j_s = self.smooth_lines(k,j)
+			#k_s,j_s = self.smooth_lines(k,j)
+			k_s = k
+			j_s = j
 			#print(k_s)
 
 			if self.report_type == 1:
@@ -284,6 +292,9 @@ class Graph_generator(object):
 					max_thresh = np.nanmean(j_s) + np.nanstd(j_s)
 					min_thresh = np.nanmean(j_s) - np.nanstd(j_s)
 					aver_thresh = np.nanmean(j_s)
+					print('hjoifhjidddddddddddddddd')
+					print(k)
+					print(j)
 					sns.lineplot(x = k, y = j, color = "cornflowerblue", linestyle =':', label = label_scatter)
 					sns.lineplot(x = date_avg, y = val_avg, color = "darkblue",linestyle = '-', label = label_lineplot)
 					# Threshold calculations
@@ -322,10 +333,10 @@ class Graph_generator(object):
 		
 		plt.savefig(name + 'Scatter.png', dpi = 500)
 
-		plt.close()
+		#plt.close()
 
 		# Display the plot
-		#plt.show()
+		plt.show()
 
 
 	def plot_min_max_av(self,x_values,y_average,y_min,y_max,device,type_d):
@@ -456,7 +467,9 @@ class Graph_generator(object):
 		#date_strings = [dt.strftime('%Y-%m-%d') for dt in weight_date_avg]
 
 		# Smooth lines
-		x_s,y_s = self.smooth_lines(date_weight,weight)
+		#x_s,y_s = self.smooth_lines(date_weight,weight)
+		x_s = date_weight
+		y_s = weight
 		#y_s = [round(elem) for elem in y_s]
 		x_s2,z_s = self.smooth_lines(date_muscle_mass,muscle_mass)
 		x_s3,w_s = self.smooth_lines(date_bone_mass,bone_mass)
@@ -468,8 +481,11 @@ class Graph_generator(object):
 		max_thresh = np.mean(y_s) + np.std(y_s)
 		min_thresh = np.mean(y_s) - np.std(y_s)
 		aver_thresh = np.mean(y_s)
-
-
+		print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
+		print(y_s)
+		print(max_thresh)
+		print(min_thresh)
+		print(aver_thresh)
 		plt.clf()
 
 		#plt.gca().set_xticks(weight)
@@ -651,10 +667,10 @@ class Graph_generator(object):
 		#plt.grid(axis = "x")
 		
 		plt.savefig('Steps_curvedbar', dpi = 500)
-		plt.close()
+		#plt.close()
 
 		# Display the plot
-		#plt.show()
+		plt.show()
 
 	def plot_stacked_bar(self,x,y,z,o):
 

@@ -3,6 +3,7 @@ import os
 import requests
 import math
 from datetime import datetime, timezone
+import arrow
 #from database_backend.api.models import User
 
 
@@ -114,7 +115,7 @@ class Database_API(object):
                 
         return(converted_dict)
     
-    def upload_scanwatch_summary_data(self, ):
+    def upload_scanwatch_summary_data(self):
 
         url = 'http://127.0.0.1:8000/api/scanwatches/summary/'
      
@@ -138,7 +139,88 @@ class Database_API(object):
                     }
                 
                 print(data)
-                response = requests.post(url, json=data) 
+                response = requests.post(url, json=data)
+
+
+    def get_scanwatch_summary_data(self,user = None, start_date = None, end_date = None):
+        
+        url = 'http://127.0.0.1:8000/api/scanwatches/summary/' + '?username=' + user
+        
+        response = requests.get(url)
+        scanwatch_dict = {}
+        # Checking the status code of the response
+        if response.status_code == 200:
+                print('GET request successful')
+                # Accessing the response data
+                scanwatch_dict = response.json()  # Assuming the response is JSON data
+                #print(scanwatch_dict)
+                
+        else:
+            # Unsuccessful response
+            print('GET request failed:', response.status_code)
+
+        # Filter data based on start_date and end_date
+        filtered_data = {'scanwatches_summary': [item for item in scanwatch_dict['scanwatches_summary'] if end_date <= arrow.get(item['date']).datetime <= start_date]}
+        
+        return(filtered_data)
+    
+    def get_scanwatch_intra_activity_data(self, user = None, start_date = None, end_date = None):
+
+        url = 'http://127.0.0.1:8000/api/scanwatches/intra_activity/' + '?username=' + user
+        response = requests.get(url)
+        scanwatch_intra_dict = {}
+        # Checking the status code of the response
+        if response.status_code == 200:
+                print('GET request successful')
+                # Accessing the response data
+                scanwatch_intra_dict = response.json()  # Assuming the response is JSON data
+                #print(scanwatch_dict)
+                
+        else:
+            # Unsuccessful response
+            print('GET request failed:', response.status_code)
+
+        # Filter data based on start_date and end_date
+        filtered_data = [{'date_heart_rate': item['date_heart_rate'], 'heart_rate': item['heart_rate']} for item in scanwatch_intra_dict["scanwatches_intraactivity"] if start_date <= item['date_heart_rate'] <= end_date]
+
+        #print(filtered_data)
+        
+        return(filtered_data)
+    
+    def get_sleep_summary_data(self, user = None, start_date = None, end_date = None):
+
+        url = 'http://127.0.0.1:8000/api/sleepmats/intraactivity/' + '?username=' + user
+        response = requests.get(url)
+        sleep_summary_dict = {}
+        # Checking the status code of the response
+        if response.status_code == 200:
+                print('GET request successful')
+                # Accessing the response data
+                sleep_summary_dict = response.json()  # Assuming the response is JSON data
+                print('yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy')
+                print(sleep_summary_dict)
+                
+        else:
+            # Unsuccessful response
+            print('GET request failed:', response.status_code)
+
+        # Filter data based on start_date and end_date
+        #filtered_data = [{'date_heart_rate': item['date_heart_rate'], 'heart_rate': item['heart_rate']} for item in scanwatch_intra_dict["scanwatches_intraactivity"] if start_date <= item['date_heart_rate'] <= end_date]
+
+        #print(filtered_data)
+        
+        return(filtered_data)
+
+
+
+        
+    
+
+
+
+
+
+
 
 
 

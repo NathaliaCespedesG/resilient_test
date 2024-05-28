@@ -183,9 +183,9 @@ class PDF_Usage(object):
         # Apply additional style to highlighted rows
         for i, row in enumerate(data):
             #print(row)
-            #print(self.conditional_highlight(row))
+            print(self.conditional_highlight(row))
             if self.conditional_highlight(row):
-                table.setStyle(TableStyle([('BACKGROUND', (0, i+1), (-1, i+1), colors.orange)]))
+                table.setStyle(TableStyle([('BACKGROUND', (0, i), (-1, i), colors.orange)]))
     
         
         # Add the table to the PDF document
