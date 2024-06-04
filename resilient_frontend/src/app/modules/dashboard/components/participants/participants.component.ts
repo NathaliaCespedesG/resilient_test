@@ -29,8 +29,9 @@ export class ParticipantsComponent implements OnInit {
   ) {
 
     this.roles = [
-      {name: 'PARTICIPANT'},
-      {name: 'TEST'}
+      {name: 'study-participant'},
+      {name: 'study-partner-participant'},
+      {name: 'test'}
     ];
 
     this.selectedRole = this.roles[0];
@@ -65,6 +66,7 @@ export class ParticipantsComponent implements OnInit {
 
   onUsernameInputChange(): void {
     this.isDuplicateUsername = false;
+    this.isAddParticipantSuccessful = false;
   }
 
   showAddParticipantModal(): void {
