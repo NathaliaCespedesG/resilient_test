@@ -155,7 +155,7 @@ class Graph_generator(object):
 		
 		# k, start_date and end_date are arroe types (e.g.,  <Arrow [2023-08-27T01:00:00+01:00]>)
 		k = [value for index, value in enumerate(k) if index not in index_1]
-		k = np.array([np.datetime64(date.datetime) for date in k])
+		#only db k = np.array([np.datetime64(date.datetime) for date in k])
 
 
 		plt.clf()
@@ -336,7 +336,7 @@ class Graph_generator(object):
 		#plt.close()
 
 		# Display the plot
-		plt.show()
+		#plt.show()
 
 
 	def plot_min_max_av(self,x_values,y_average,y_min,y_max,device,type_d):
@@ -453,10 +453,12 @@ class Graph_generator(object):
 		date_fat_mass = [value for index, value in enumerate(date_fat_mass) if index not in index_3]
 		date_hydration = [value for index, value in enumerate(date_hydration) if index not in index_4]
 
-		#print('SCALEEEEEEEEEEEEEEEE')
+		print('SCALEEEEEEEEEEEEEEEE froooooooooooooooooooooooooom')
 
-		#print(weight)
-		#print(date_weight)
+		print(weight)
+		print(date_weight)
+
+		#print(HOLA)
 
 		weight_date_avg, weight_avg = self.weekly_average(date_weight, weight)
 		mm_date_avg , mm_avg = self.weekly_average(date_muscle_mass, muscle_mass)
@@ -670,7 +672,7 @@ class Graph_generator(object):
 		#plt.close()
 
 		# Display the plot
-		plt.show()
+		#plt.show()
 
 	def plot_stacked_bar(self,x,y,z,o):
 
@@ -851,5 +853,5 @@ class Graph_generator(object):
 
 		# Display the plot
 		plt.legend(handles= handles, labels = labels, loc = "upper right", frameon=False)
-		plt.show()
+		#plt.show()
 		plt.close()

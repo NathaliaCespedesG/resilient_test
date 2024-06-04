@@ -189,7 +189,7 @@ class Database_API(object):
     
     def get_sleep_summary_data(self, user = None, start_date = None, end_date = None):
 
-        url = 'http://127.0.0.1:8000/api/sleepmats/intraactivity/' + '?username=' + user
+        url = 'http://127.0.0.1:8000/api/sleepmats/summary/' + '?username=' + user
         response = requests.get(url)
         sleep_summary_dict = {}
         # Checking the status code of the response
@@ -197,19 +197,45 @@ class Database_API(object):
                 print('GET request successful')
                 # Accessing the response data
                 sleep_summary_dict = response.json()  # Assuming the response is JSON data
-                print('yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy')
-                print(sleep_summary_dict)
                 
         else:
             # Unsuccessful response
             print('GET request failed:', response.status_code)
 
         # Filter data based on start_date and end_date
-        #filtered_data = [{'date_heart_rate': item['date_heart_rate'], 'heart_rate': item['heart_rate']} for item in scanwatch_intra_dict["scanwatches_intraactivity"] if start_date <= item['date_heart_rate'] <= end_date]
+        filtered_data = [{'date': item['date'],
+                          'breathing_disturbances': item['breathing_disturbances'],
+                          'deep_sleep_duration': item['deep_sleep_duration'],
+                          'duration_to_sleep': item['duration_to_sleep'],
+                          'duration_to_wakeup': item['duration_to_wakeup'],
+                          'average_heart_rate': item['average_heart_rate'],
+                          'light_sleep_duration': item['light_sleep_duration'],
+                          'rem_sleep_duration': item['rem_sleep_duration'],
+                          'average_rr': item['average_rr'],
+                          'sleep_score': item['sleep_score'],
+                          'wakeup_count': item['wakeup_count'],
+                          'wakeup_duration': item['wakeup_duration']
+                          } for item in sleep_summary_dict["sleepmats_summary"] if start_date <= arrow.get(item['date']).datetime <= end_date]
 
-        #print(filtered_data)
         
         return(filtered_data)
+    
+    def get_sleep_intra_activity_data(self, user = None, start_date = None, end_date = None):
+        
+        url = 'http://127.0.0.1:8000/api/sleepmat/intraactivity/' + '?username=' + user
+        response = requests.get(url)
+        sleep_intra_day_dict = {}
+        # Checking the status code of the response
+        if response.status_code == 200:
+                print('GET request successful')
+                # Accessing the response data
+                sleep_intra_day_dict = response.json()  # Assuming the response is JSON data
+                
+        else:
+            # Unsuccessful response
+            print('GET request failed:', response.status_code)
+
+        print(sleep_intra_day_dict)
 
 
 
