@@ -30,15 +30,10 @@ import db.database as database
 
 import db.database_django as database_api
 
-#Module : Databasde Django api
-
-import db.database_django as database_api
-
 #Module: Graphics generation class
 import resources.Graph_generation as graph
 # Module: PDF generation class to generate the reports 
 import resources.PDF_generation as pdf_gen
-
 
 
 
@@ -242,54 +237,36 @@ class Devices_OAuth2flow(object):
 		#Registration date from API
 		registration_date = self.db_id['users'][0]['created_at']
 		print(registration_date)
-		#Registration date from API
-		registration_date = self.db_id['users'][0]['created_at']
-		print(registration_date)
 
 		df = pd.read_csv(self.users_path , header = 0, delimiter=';')
 		filtered_df = df[df['Id'] == self.id_user]
 		
 		#if not filtered_df.empty:
 			#date_of_registration = filtered_df[' Date of Registration'].iloc[0]
-		
-		#if not filtered_df.empty:
-			#date_of_registration = filtered_df[' Date of Registration'].iloc[0]
 			#print(f"Date of registration for ID {self.id_user}: {date_of_registration}")
-		#else:
-			#print(f"No records found for ID {self.id_user}")
 		#else:
 			#print(f"No records found for ID {self.id_user}")
 
 		#calculate the number of days between the register day and the current date
 		date_of_registration =  datetime.strptime(registration_date, '%Y-%m-%d')
-		date_of_registration =  datetime.strptime(registration_date, '%Y-%m-%d')
 
-		#Setting the initial date - considaring current day
-		self.ending_day_c = self.data_utils.initial_day()
-
-		
 		#Setting the initial date - considaring current day
 		self.ending_day_c = self.data_utils.initial_day()
 
 		
 		# Calculate the difference in days
 		days_difference = ((datetime.now()- timedelta(days=self.ending_day_c)) - date_of_registration).days
-		days_difference = ((datetime.now()- timedelta(days=self.ending_day_c)) - date_of_registration).days
 
 		if days_difference > 90:
 			self.starting_day_c = -(90 - self.ending_day_c)
-			self.starting_day_c = -(90 - self.ending_day_c)
 		else:
 			self.starting_day_c = - days_difference
-			self.starting_day_c = - days_difference
 
-		self.ending_day_p = self.data_utils.initial_day()
 		self.ending_day_p = self.data_utils.initial_day()
 		self.starting_day_p = self.ending_day_p - 6
 
 		# Dates
 		self.initial_dates = arrow.utcnow().shift(days = self.starting_day_c)
-		#print(self.initial_dates)
 		#print(self.initial_dates)
 		self.initial_dates_rep = self.initial_dates.format('D-MMM-YYYY')
 		#print('Initial_Dates from main', self.initial_dates)
@@ -298,10 +275,6 @@ class Devices_OAuth2flow(object):
 
 		self.ending_dates = arrow.utcnow().shift(days = self.ending_day_c)
 		self.ending_dates_table = self.ending_dates.format('D MMM ')
-
-		#Create folders for week report
-		self.database.SM.set_date_report(date = datetime.now().strftime('%Y-%m-%d'))
-		self.database.SM.create_session()
 
 		#Create folders for week report
 		self.database.SM.set_date_report(date = datetime.now().strftime('%Y-%m-%d'))
@@ -318,31 +291,6 @@ class Devices_OAuth2flow(object):
 		
 		expected_model_ids = {'Sleep Monitor', 'Activity Tracker', 'Scale'}
 		self.battery = {}
-		
-		expected_model_ids = {'Sleep Monitor', 'Activity Tracker', 'Scale'}
-		self.battery = {}
-		devices = self.api.user_get_device()
-		devices = devices['devices']
-		
-		# Creating a dictionary with type_id as keys and battery as values
-		self.battery = {device['type']: device['battery'] for device in devices}
-		
-		for model_id in expected_model_ids:
-			if model_id not in self.battery:
-				self.battery[model_id] = None
-
-
-		print("battery from devices", self.battery)
-
-		#Get codes for the devices
-
-		devices_api = self.database_api.get_device_info(user = self.id_user)
-		print(devices_api)
-		
-
-
-	def register_devices(self):
-		# This function register the device information. 
 		devices = self.api.user_get_device()
 		devices = devices['devices']
 		
@@ -371,17 +319,11 @@ class Devices_OAuth2flow(object):
 
 		filtered_data = [{'Device': d['type'], 'Hash_deviceid': d['hash_deviceid'], 'MAC_address': d['mac_address']} for d in devices]
 		
-
-		filtered_data = [{'Device': d['type'], 'Hash_deviceid': d['hash_deviceid'], 'MAC_address': d['mac_address']} for d in devices]
-		
 		type_d = [i['type'] for i in devices]
 		hash_deviceid = [i['hash_deviceid'] for i in devices]
 		MAC_address = [i['mac_address'] for i in devices]
 		# Devices to csv database files
-		# Devices to csv database files
 		self.database.SM.load_SensorInfo(sensor = type_d, hash_deviceid = hash_deviceid, MAC_address = MAC_address)
-		# Devices to API database
-		self.database_api.upload_device_info(user = self.db_id, dict = filtered_data)
 		# Devices to API database
 		self.database_api.upload_device_info(user = self.db_id, dict = filtered_data)
 
@@ -566,7 +508,7 @@ class Devices_OAuth2flow(object):
 			mean = 0
 
 			self.get_sleep_1 = self.api.sleep_get(data_fields=GetSleepField,startdate=arrow.utcnow().shift(days= week_days[i]).replace(hour=13, minute=0, second=0), enddate=arrow.utcnow().shift(days = week_days[i]+1).replace(hour=13, minute=0, second=0),)
-			#print(self.get_sleep_1)
+			print(self.get_sleep_1)
 
 			
 			try:
@@ -643,19 +585,6 @@ class Devices_OAuth2flow(object):
 		self.sleephf_startdate = sum(self.sleephf_startdate ,[])
 		self.sleephf_enddate = sum(self.sleephf_enddate,[])
 		self.sleephf_states = sum(self.sleephf_states,[])
-
-		#Data from the database API
-		end_date = arrow.utcnow().shift(days=self.starting_day_c)
-		end_date = end_date.datetime
-		start_date = arrow.utcnow()
-		start_date = start_date.datetime
-		print(end_date)
-		data = self.database_api.get_sleep_intra_activity_data(user = self.id_user, start_date= end_date, end_date= start_date)
-
-
-
-		# Aggregated data from Withings Service + db
-		
 
 
 		# Backup funtion in case sleep summary service is not updating the average of hr and rr per night
@@ -748,28 +677,9 @@ class Devices_OAuth2flow(object):
 		start_date = start_date.datetime
 		
 		#Data from the database API
-		data = self.database_api.get_sleep_summary_data(user = self.id_user, start_date= end_date, end_date= start_date)
+		data = self.database_api.get_sleep_summary_data(user = self.id_user, start_date= start_date, end_date= end_date)
+		#data = [{key: value for key, value in entry.items() if key != 'id'} for entry in data['scanwatches_summary']]
 		print('DATAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA from service')
-		# Extracting dates and steps into separate arrays
-		dates = [entry['date'] for entry in data]
-		breathing_disturbances = [entry['breathing_disturbances'] for entry in data]
-		deep_sleep_duration = [entry['deep_sleep_duration'] for entry in data]
-		duration_to_sleep = [entry['duration_to_sleep'] for entry in data]
-		duration_to_wakeup = [entry['duration_to_wakeup'] for entry in data]
-		average_heart_rate = [entry['average_heart_rate'] for entry in data]
-		light_sleep_duration = [entry['light_sleep_duration'] for entry in data]
-		rem_sleep_duration = [entry['rem_sleep_duration'] for entry in data]
-		average_rr = [entry['average_rr'] for entry in data]
-		sleep_score = [entry['sleep_score'] for entry in data]
-		wakeup_count = [entry['wakeup_count'] for entry in data]
-		wakeup_duration = [entry['wakeup_duration'] for entry in data]
-
-		print(breathing_disturbances)
-		
-		# Aggregated data Withings service + db info
-		#sleep_dates_agg = dates + self.current_dates_ss
-		#sleep_time_agg =  
-		
 
 
 		
@@ -794,9 +704,6 @@ class Devices_OAuth2flow(object):
 		#print('***********************************')
 		#print(self.activity_data['date'])
 		#print(self.activity_data['heart_rate'])
-		#print('***********************************')
-		#print(self.activity_data['date'])
-		#print(self.activity_data['heart_rate'])
 		self.activity_data['date'], self.activity_data['heart_rate'] =self.data_utils.data_cleaning(self.activity_data['date'],self.activity_data['heart_rate'])
 		self.activity_data['calories'] = [x.totalcalories for x in self.meas_activity.activities]
 		self.activity_data['date'], self.activity_data['calories'] = self.data_utils.data_cleaning(self.activity_data['date'],self.activity_data['calories'])
@@ -811,12 +718,9 @@ class Devices_OAuth2flow(object):
 		#print('From daily agreggated service')
 		#print(self.activity_data['date'])
 		#print(self.activity_data['heart_rate'])
-		#print(self.activity_data['date'])
-		#print(self.activity_data['heart_rate'])
 		#print(self.activity_data['steps'])
 
 		self.intra_activitydata(type_time = "current")
-
 
 		#Previous Week
 		self.pre_activity_data['heart_rate'] = [x.hr_average for x in self.prev_meas_activity.activities]
@@ -835,14 +739,9 @@ class Devices_OAuth2flow(object):
 		self.steps_watch = []
 		self.calories_watch = []
 		self.dates_hr = []
-		self.steps_watch = []
-		self.calories_watch = []
-		self.dates_hr = []
 		dates = []
 		self.dates_steps = []
-		self.dates_steps = []
 		dates_s = []
-		self.dates_calories = []
 		self.dates_calories = []
 		dates_c = []
 		HR = []
@@ -864,33 +763,16 @@ class Devices_OAuth2flow(object):
 			week_days.append(week_days[-1]+1)
 			#print(week_days)
 
-		try:
-			week_days.append(week_days[-1]+1)
-			#print(week_days)
-
-			total = abs(starting_day) - abs(ending_day)
 			total = abs(starting_day) - abs(ending_day)
 
 
 			for i in range (len(week_days)):
-			for i in range (len(week_days)):
 
-				#print('date 1', arrow.utcnow().shift(days= week_days[i]).replace(hour=0, minute=0, second=0))
-				#print('date2', arrow.utcnow().shift(days = week_days[i]+1).replace(hour=0, minute=0, second=0) )
 				#print('date 1', arrow.utcnow().shift(days= week_days[i]).replace(hour=0, minute=0, second=0))
 				#print('date2', arrow.utcnow().shift(days = week_days[i]+1).replace(hour=0, minute=0, second=0) )
 
 
 
-				self.meas_intraactivity = self.api.measure_get_intraactivity(startdate= arrow.utcnow().shift(days= week_days[i]).replace(hour=0, minute=0, second=0), enddate=arrow.utcnow().shift(days = week_days[i]+1).replace(hour=0, minute=0, second=0))
-				dates = [key for key, sub_dict in self.meas_intraactivity['series'].items() if 'heart_rate' in sub_dict]
-				watch_data = [sub_dict['heart_rate'] for sub_dict in self.meas_intraactivity['series'].values() if 'heart_rate' in sub_dict]
-				dates_s = [key for key, sub_dict in self.meas_intraactivity['series'].items() if 'steps' in sub_dict]
-				step_watch_data = [sub_dict['steps'] for sub_dict in self.meas_intraactivity['series'].values() if 'steps' in sub_dict]
-				dates_c = [key for key, sub_dict in self.meas_intraactivity['series'].items() if 'calories' in sub_dict]
-				calories_watch_data = [sub_dict['calories'] for sub_dict in self.meas_intraactivity['series'].values() if 'calories' in sub_dict]
-				
-				dates, watch_data = self.data_utils.hr_filtering(dates, watch_data)
 				self.meas_intraactivity = self.api.measure_get_intraactivity(startdate= arrow.utcnow().shift(days= week_days[i]).replace(hour=0, minute=0, second=0), enddate=arrow.utcnow().shift(days = week_days[i]+1).replace(hour=0, minute=0, second=0))
 				dates = [key for key, sub_dict in self.meas_intraactivity['series'].items() if 'heart_rate' in sub_dict]
 				watch_data = [sub_dict['heart_rate'] for sub_dict in self.meas_intraactivity['series'].values() if 'heart_rate' in sub_dict]
@@ -911,32 +793,10 @@ class Devices_OAuth2flow(object):
 				self.dates_calories.append(dates_c)
 				self.calories_watch.append(calories_watch_data)
 				time.sleep(2.5)
-				dates_to_test[i] = dates
-				hr_to_test[i] = watch_data
-				self.dates_hr.append(dates)
-				#print(np.mean(watch_data))
-				self.HR_watch.append(watch_data)
-				self.dates_steps.append(dates_s)
-				self.steps_watch.append(step_watch_data)
-				self.dates_calories.append(dates_c)
-				self.calories_watch.append(calories_watch_data)
-				time.sleep(2.5)
 
 		
 			#self.small_test(dates_to_test)
-		
-			#self.small_test(dates_to_test)
 
-			self.HR_watch = sum(self.HR_watch,[])
-			self.steps_watch = sum(self.steps_watch,[])
-			self.calories_watch = sum(self.calories_watch,[])
-			#dates_db_a = sum(dates_db_a, [])
-			self.dates_hr = sum(self.dates_hr,[])
-			self.dates_hr_1 = [int(x) for x in self.dates_hr]
-			self.dates_steps = sum(self.dates_steps,[])
-			#dates_steps = [int(x) for x in dates_steps]
-			self.dates_calories = sum(self.dates_calories,[])
-			#dates_calories = [int(x) for x in dates_calories]
 			self.HR_watch = sum(self.HR_watch,[])
 			self.steps_watch = sum(self.steps_watch,[])
 			self.calories_watch = sum(self.calories_watch,[])
@@ -954,22 +814,11 @@ class Devices_OAuth2flow(object):
 				self.hr_based_sleep = self.data_utils.hr_average_basedon_sleep(dates = dates_to_test, HR = hr_to_test, startdates = start_dates_hr, enddates = end_dates_hr )
 				self.final_hr = self.data_utils.backup_data(value2 = self.activity_data['heart_rate'], value1 = self.hr_based_sleep)
 				
-			if type_time == "current":
-				start_dates_hr = self.wakeup_hours
-				end_dates_hr = self.fellasleep_hours
-				self.hr_based_sleep = self.data_utils.hr_average_basedon_sleep(dates = dates_to_test, HR = hr_to_test, startdates = start_dates_hr, enddates = end_dates_hr )
-				self.final_hr = self.data_utils.backup_data(value2 = self.activity_data['heart_rate'], value1 = self.hr_based_sleep)
-				
 
 				#self.database.SM.load_intra_activity(hr = self.HR_watch, time = self.dates_hr, time_steps = self.dates_steps, steps = self.steps_watch, time_calories = self.dates_calories, calories = self.calories_watch)
 				#self.database.SM.load_ScanWatch(hr = self.final_hr, calories = self.activity_data['calories'], steps = self.activity_data['steps'],  time = self.activity_data['date'] )
-				#self.database.SM.load_intra_activity(hr = self.HR_watch, time = self.dates_hr, time_steps = self.dates_steps, steps = self.steps_watch, time_calories = self.dates_calories, calories = self.calories_watch)
-				#self.database.SM.load_ScanWatch(hr = self.final_hr, calories = self.activity_data['calories'], steps = self.activity_data['steps'],  time = self.activity_data['date'] )
 
 
-			if type_time == "prev":
-				start_dates_hr = self.wakeup_hours_prev
-				end_dates_hr = self.fellasleep_hours_prev
 			if type_time == "prev":
 				start_dates_hr = self.wakeup_hours_prev
 				end_dates_hr = self.fellasleep_hours_prev
@@ -985,26 +834,6 @@ class Devices_OAuth2flow(object):
 					#self.hr_based_sleep_prev = self.pre_activity_data['heart_rate']	
 			
 				return(self.final_hr_prev)
-				if start_dates_hr == []:
-					print('No data for the week')
-					self.final_hr_prev = []
-				else:
-					#print(start_dates_hr)
-					#print(dates_to_test)
-					self.hr_based_sleep_prev = self.data_utils.hr_average_basedon_sleep(dates = dates_to_test, HR = hr_to_test, startdates = start_dates_hr, enddates = end_dates_hr )
-					self.final_hr_prev = self.data_utils.backup_data(value2 = self.pre_activity_data['heart_rate'], value1 = self.hr_based_sleep_prev)
-					#self.hr_based_sleep_prev = self.pre_activity_data['heart_rate']	
-			
-				return(self.final_hr_prev)
-
-		except IndexError:
-
-			print('No dates for heart rate')
-
-			self.dates_hr_1 = []
-			self.HR_watch = []
-			self.final_hr = []
-
 
 		except IndexError:
 
@@ -1023,7 +852,6 @@ class Devices_OAuth2flow(object):
 	def scale_data(self):
 
 		self.scale_data = {}
-		self.scale_data = {}
 		prev_scale_data = {}
 		self.monthly_scale_data = {}
 
@@ -1033,8 +861,6 @@ class Devices_OAuth2flow(object):
 
 		self.meas_current = self.api.measure_get_meas(startdate=arrow.utcnow().shift(days= self.starting_day_c).replace(hour=23, minute=59, second=59), enddate = arrow.utcnow().shift(days= self.ending_day_c).replace(hour=23, minute=59, second=59), lastupdate = None)
 		self.meas_monthly = self.api.measure_get_meas(startdate = arrow.utcnow().shift(days= self.starting_day_c), enddate = arrow.utcnow().shift(days= self.ending_day_c).replace(hour=23, minute=59, second=59), lastupdate = None)
-		self.meas_current = self.api.measure_get_meas(startdate=arrow.utcnow().shift(days= self.starting_day_c).replace(hour=23, minute=59, second=59), enddate = arrow.utcnow().shift(days= self.ending_day_c).replace(hour=23, minute=59, second=59), lastupdate = None)
-		self.meas_monthly = self.api.measure_get_meas(startdate = arrow.utcnow().shift(days= self.starting_day_c), enddate = arrow.utcnow().shift(days= self.ending_day_c).replace(hour=23, minute=59, second=59), lastupdate = None)
 
 		#Current week values
 		self.scale_data['date'] = [arrow.get(x.date) for x in self.meas_current.measuregrps]
@@ -1042,22 +868,14 @@ class Devices_OAuth2flow(object):
 		print('SCALEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 		self.last_scale = self.scale_data['date']
 		print(self.scale_data['date'])
-		self.scale_data['date'] = [arrow.get(x.date) for x in self.meas_current.measuregrps]
-		self.scale_data['measures'] = [x.measures for x in self.meas_current.measuregrps]
-		print('SCALEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
-		self.last_scale = self.scale_data['date']
-		print(self.scale_data['date'])
 		#print(scale_data['measures'])
-		self.weight, self.muscle_mass, self.bone_mass, self.fat_mass, hydration = self.data_utils.scale_data_extractor(self.scale_data['measures'])
 		self.weight, self.muscle_mass, self.bone_mass, self.fat_mass, hydration = self.data_utils.scale_data_extractor(self.scale_data['measures'])
 		#print('weight values', self.weight)
 		#Cleaning data for the table
 		self.scale_data['date'], self.weight = self.data_utils.data_cleaning(self.scale_data['date'],self.weight)
-		self.scale_data['date'], self.weight = self.data_utils.data_cleaning(self.scale_data['date'],self.weight)
 		#print('date', scale_data['date'])
 		#print('weight', self.weight)
 
-		
 		
 
 		#Monthly values
@@ -1079,10 +897,8 @@ class Devices_OAuth2flow(object):
 	
 		self.weight_m, muscle_mass_m, bone_mass_m, fat_mass_m, hydration_m = self.data_utils.scale_data_extractor(self.monthly_scale_data['measures'])
 
-		
-		print('***************************************')
-		print('monthly_scale_data', self.monthly_scale_data['date'])
-		print('weight m', self.weight_m)
+		#print('monthly_scale_data', self.monthly_scale_data['date'])
+		#print('weight m', self.weight_m)
 
 
 		#Cleaning data for the table
@@ -1098,7 +914,6 @@ class Devices_OAuth2flow(object):
 		self.monthly_scale_data['date_h'], self.hydration_m = self.data_utils.data_cleaning(self.monthly_scale_data['date'], hydration_m)
 
 		#self.database.SM.load_Scale(time = self.scale_data['date'], weight = self.weight, muscle_mass = self.muscle_mass, bone_mass = self.bone_mass, fat_mass = self.fat_mass)
-		#self.database.SM.load_Scale(time = self.scale_data['date'], weight = self.weight, muscle_mass = self.muscle_mass, bone_mass = self.bone_mass, fat_mass = self.fat_mass)
 
 		#print('WEIGHT', self.weight_m)
 		#print('monthly_scale_data', self.monthly_scale_data['date'])
@@ -1107,7 +922,6 @@ class Devices_OAuth2flow(object):
 
 		sleephf_data = {}
 
-		self.sleeps_data = {}
 		self.sleeps_data = {}
 
 		sleepbu_data = {}
@@ -1129,24 +943,10 @@ class Devices_OAuth2flow(object):
 
 		#print('SLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEP')
 		#print(self.ending_day_c)
-		#print('SLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEP')
-		#print(self.ending_day_c)
 		self.sleep_summary = self.api.sleep_get_summary(data_fields=GetSleepSummaryField, startdateymd=arrow.utcnow().shift(days = self.starting_day_c),enddateymd=arrow.utcnow().shift(days = self.ending_day_c), lastupdate = None)
 		self.prev_sleep_summary = self.api.sleep_get_summary(data_fields=GetSleepSummaryField, startdateymd=arrow.utcnow().shift(days = self.starting_day_p),enddateymd=arrow.utcnow().shift(days= self.ending_day_p), lastupdate = None)
 		
 		#print(self.sleep_summary)
-		self.sleeps_data['date'] = [arrow.get(x.date) for x in self.sleep_summary.series]
-		#print('SLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEP')
-		#print(sleeps_data['date'] )
-		try:
-			self.last_sleep = self.sleeps_data['date'][-1]
-
-		except:
-			self.last_sleep = None
-			print('No sleep data available')
-		self.sleeps_data['start_date'] = [arrow.get(x.startdate) for x in self.sleep_summary.series]
-		self.sleeps_data['end_date'] = [arrow.get(x.enddate) for x in self.sleep_summary.series]
-		self.sleeps_data['data'] = [x.data for x in self.sleep_summary.series]
 		self.sleeps_data['date'] = [arrow.get(x.date) for x in self.sleep_summary.series]
 		#print('SLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEP')
 		#print(sleeps_data['date'] )
@@ -1189,29 +989,7 @@ class Devices_OAuth2flow(object):
 		self.sleeps_data['awake in bed'] =  np.subtract(self.sleeps_data['total timeinbed'],self.sleeps_data['total sleep time'])
 		self.sleeps_data['apnea'] =  [x.apnea_hypopnea_index for x in self.sleeps_data['data']]
 		self.sleeps_data['out of bed count'] = [x.out_of_bed_count for x in self.sleeps_data['data']]
-		self.sleeps_data['breathing disturbances'] = [x.breathing_disturbances_intensity for x in self.sleeps_data['data']]
-		self.sleeps_data['deep sleep duration'] = [x.deepsleepduration for x in self.sleeps_data['data']]
-		self.sleeps_data['duration to sleep'] = [x.durationtosleep for x in self.sleeps_data['data']]
-		self.sleeps_data['duration to wakeup'] = [x.durationtowakeup for x in self.sleeps_data['data']]
-		self.sleeps_data['hr average'] = [x.hr_average for x in self.sleeps_data['data']]
-		self.sleeps_data['hr_min'] = [x.hr_min for x in self.sleeps_data['data']]
-		self.sleeps_data['hr_max'] = [x.hr_max for x in self.sleeps_data['data']]
-		self.sleeps_data['rr_min'] = [x.rr_min for x in self.sleeps_data['data']]
-		self.sleeps_data['rr_max'] = [x.rr_max for x in self.sleeps_data['data']]
-		self.sleeps_data['light sleep duration'] = [x.lightsleepduration for x in self.sleeps_data['data']]
-		self.sleeps_data['rem sleep duration'] = [x.remsleepduration for x in self.sleeps_data['data']]
-		self.sleeps_data['rr average'] = [x.rr_average for x in self.sleeps_data['data']]
-		self.sleeps_data['sleep score'] = [x.sleep_score for x in self.sleeps_data['data']]
-		self.sleeps_data['wake up count'] = [x.wakeupcount for x in self.sleeps_data['data']]
-		self.sleeps_data['total sleep time'] = [x.total_sleep_time for x in self.sleeps_data['data']]
-		self.sleeps_data['total timeinbed'] = [x.total_timeinbed for x in self.sleeps_data['data']]
-		self.sleeps_data['waso'] = [x.waso for x in self.sleeps_data['data']]
-		self.sleeps_data['wake up duration'] = [x.wakeupduration for x in self.sleeps_data['data']]
-		self.sleeps_data['awake in bed'] =  np.subtract(self.sleeps_data['total timeinbed'],self.sleeps_data['total sleep time'])
-		self.sleeps_data['apnea'] =  [x.apnea_hypopnea_index for x in self.sleeps_data['data']]
-		self.sleeps_data['out of bed count'] = [x.out_of_bed_count for x in self.sleeps_data['data']]
 
-		self.sleeps_data['total sleep time']=[x/3600 for x in self.sleeps_data['total sleep time']]
 		self.sleeps_data['total sleep time']=[x/3600 for x in self.sleeps_data['total sleep time']]
 			
 		# Previous week values
@@ -1223,27 +1001,20 @@ class Devices_OAuth2flow(object):
 
 
 
-
 		#Unique values calculation (The values for the variables are the ones taken between the biggest difference from start date and end date)
 
-		self.current_dates_ss, self.current_heart_rate, _ = self.data_utils.unique_values_sleep(self.sleeps_data['date'], self.sleeps_data['start_date'], self.sleeps_data['end_date'], self.sleeps_data['hr average']) 
 		self.current_dates_ss, self.current_heart_rate, _ = self.data_utils.unique_values_sleep(self.sleeps_data['date'], self.sleeps_data['start_date'], self.sleeps_data['end_date'], self.sleeps_data['hr average']) 
 		previous_dates_ss, self.prev_heart_rate, _ = self.data_utils.unique_values_sleep(prev_sleeps_data['date'], prev_sleeps_data['start_date'], prev_sleeps_data['end_date'], prev_sleeps_data['hr average'])
 		
 		self.current_dates_ss, self.current_rr, _ = self.data_utils.unique_values_sleep(self.sleeps_data['date'], self.sleeps_data['start_date'], self.sleeps_data['end_date'], self.sleeps_data['rr average']) 
-		
-		self.current_dates_ss, self.current_rr, _ = self.data_utils.unique_values_sleep(self.sleeps_data['date'], self.sleeps_data['start_date'], self.sleeps_data['end_date'], self.sleeps_data['rr average']) 
 		previous_dates_ss, self.prev_rr, _ = self.data_utils.unique_values_sleep(prev_sleeps_data['date'], prev_sleeps_data['start_date'], prev_sleeps_data['end_date'], prev_sleeps_data['rr average'])
-		
 		
 
 
 		#Values  of total time in bed, awake in bed conversion to hours /3600 
 		#sleeps_data['total sleep time']=[x/3600 for x in sleeps_data['total sleep time']]
 		self.sleeps_data['awake in bed']=[x/3600 for x in self.sleeps_data['awake in bed']]
-		self.sleeps_data['awake in bed']=[x/3600 for x in self.sleeps_data['awake in bed']]
 		prev_sleeps_data['total sleep time']=[x/3600 for x in prev_sleeps_data['total sleep time']]
-		
 		
 
 
@@ -1272,18 +1043,13 @@ class Devices_OAuth2flow(object):
 		
 		# Unique values Total Sleep Time - Graph and Table
 		self.current_dates_ss, self.current_sleep_time, _ = self.data_utils.unique_values_sleep(self.sleeps_data['date'], self.sleeps_data['start_date'], self.sleeps_data['end_date'], self.sleeps_data['total sleep time']) 
-		self.current_dates_ss, self.current_sleep_time, _ = self.data_utils.unique_values_sleep(self.sleeps_data['date'], self.sleeps_data['start_date'], self.sleeps_data['end_date'], self.sleeps_data['total sleep time']) 
 		self.previous_dates_ss, self.prev_sleep_time, _ = self.data_utils.unique_values_sleep(prev_sleeps_data['date'], prev_sleeps_data['start_date'], prev_sleeps_data['end_date'], prev_sleeps_data['total sleep time'])
-		
 		
 		# Unique values Awake in bed - Out of bed count (This values are only used in the graph)
 		self.current_dates_ab, self.current_awake_bed, _ = self.data_utils.unique_values_sleep(self.sleeps_data['date'], self.sleeps_data['start_date'], self.sleeps_data['end_date'], self.sleeps_data['awake in bed']) 
 		self.current_dates_ab, self.current_out_bed, _ = self.data_utils.unique_values_sleep(self.sleeps_data['date'], self.sleeps_data['start_date'], self.sleeps_data['end_date'], self.sleeps_data['out of bed count']) 
-		self.current_dates_ab, self.current_awake_bed, _ = self.data_utils.unique_values_sleep(self.sleeps_data['date'], self.sleeps_data['start_date'], self.sleeps_data['end_date'], self.sleeps_data['awake in bed']) 
-		self.current_dates_ab, self.current_out_bed, _ = self.data_utils.unique_values_sleep(self.sleeps_data['date'], self.sleeps_data['start_date'], self.sleeps_data['end_date'], self.sleeps_data['out of bed count']) 
 
 		# Unique values for Sleep Apnoea - Graph and Table
-		self.current_dates_ss, self.current_apnea, _ = self.data_utils.unique_values_sleep(self.sleeps_data['date'], self.sleeps_data['start_date'], self.sleeps_data['end_date'], self.sleeps_data['apnea']) 
 		self.current_dates_ss, self.current_apnea, _ = self.data_utils.unique_values_sleep(self.sleeps_data['date'], self.sleeps_data['start_date'], self.sleeps_data['end_date'], self.sleeps_data['apnea']) 
 		self.current_dates_ss, self.current_apnea = self.data_utils.data_cleaning(self.current_dates_ss, self.current_apnea)
 
@@ -1293,11 +1059,7 @@ class Devices_OAuth2flow(object):
 		self.previous_dates_ss, self.prev_apnea = self.data_utils.data_cleaning(self.previous_dates_ss, self.prev_apnea)
 
 	
-	
 		#print('Sleep Apnoea', self.current_apnea)	
-		#self.database.SM.load_SleepMat(time = self.sleeps_data['date'], bd = self.sleeps_data['breathing disturbances'], dsd = self.sleeps_data['deep sleep duration'], dts = self.sleeps_data['duration to sleep'],
-									#dtw = self.sleeps_data['duration to wakeup'], hr = self.sleeps_data['hr average'], lsd = self.sleeps_data['light sleep duration'], rsd = self.sleeps_data['rem sleep duration'], 
-									#rr = self.sleeps_data['rr average'], ss = self.sleeps_data['sleep score'], wpc = self.sleeps_data['wake up count'], wpd = self.sleeps_data['wake up duration'])
 		#self.database.SM.load_SleepMat(time = self.sleeps_data['date'], bd = self.sleeps_data['breathing disturbances'], dsd = self.sleeps_data['deep sleep duration'], dts = self.sleeps_data['duration to sleep'],
 									#dtw = self.sleeps_data['duration to wakeup'], hr = self.sleeps_data['hr average'], lsd = self.sleeps_data['light sleep duration'], rsd = self.sleeps_data['rem sleep duration'], 
 									#rr = self.sleeps_data['rr average'], ss = self.sleeps_data['sleep score'], wpc = self.sleeps_data['wake up count'], wpd = self.sleeps_data['wake up duration'])
@@ -1342,11 +1104,6 @@ class Devices_OAuth2flow(object):
 		sleephf_state = []
 		data = []
 		data_hr = []
-		self.data_snoring = []
-		self.data_sdnn = []
-		self.data_startdate = []
-		self.data_enddate = []
-		self.data_states = []
 		self.data_snoring = []
 		self.data_sdnn = []
 		self.data_startdate = []
@@ -1405,15 +1162,9 @@ class Devices_OAuth2flow(object):
 				sleephf_state = [x['state'] for x in self.get_sleep_1['series']]
 
 				#print('good data')
-				#print('good data')
 				#Arrays with all the values from each measurement
 				data.append(sleephf_data)
 				data_hr.append(sleephf_data_hr)
-				self.data_snoring.append(sleephf_data_snoring)
-				self.data_sdnn.append(sleephf_data_sdnn)
-				self.data_startdate.append(sleephf_startdate)
-				self.data_enddate.append(sleephf_enddate)
-				self.data_states.append(sleephf_state)
 				self.data_snoring.append(sleephf_data_snoring)
 				self.data_sdnn.append(sleephf_data_sdnn)
 				self.data_startdate.append(sleephf_startdate)
@@ -1445,15 +1196,9 @@ class Devices_OAuth2flow(object):
 		data_hr = sum(data_hr,[])
 		self.dates_hr_sleep = [i for s in [d.keys() for d in data_hr] for i in s]
 		self.dates_hr_sleep = [int(x) for x in self.dates_hr_sleep]
-		self.dates_hr_sleep = [i for s in [d.keys() for d in data_hr] for i in s]
-		self.dates_hr_sleep = [int(x) for x in self.dates_hr_sleep]
 		self.HR = [i for s in [d.values() for d in data_hr] for i in s]
 
 		#This data respresent Snoring 'snoring' in the withings structute
-		self.data_snoring = sum(self.data_snoring,[])
-		self.dates_snoring = [i for s in [d.keys() for d in self.data_snoring] for i in s]
-		self.dates_snoring = [int(x) for x in self.dates_snoring]
-		self.snoring = [i for s in [d.values() for d in self.data_snoring] for i in s]
 		self.data_snoring = sum(self.data_snoring,[])
 		self.dates_snoring = [i for s in [d.keys() for d in self.data_snoring] for i in s]
 		self.dates_snoring = [int(x) for x in self.dates_snoring]
@@ -1466,15 +1211,8 @@ class Devices_OAuth2flow(object):
 		self.dates_sdnn = [i for s in [d.keys() for d in self.data_sdnn] for i in s]
 		self.dates_sdnn = [int(x) for x in self.dates_sdnn]
 		self.sdnn_1 = [i for s in [d.values() for d in self.data_sdnn] for i in s]
-		self.data_sdnn = sum(self.data_sdnn,[])
-		self.dates_sdnn = [i for s in [d.keys() for d in self.data_sdnn] for i in s]
-		self.dates_sdnn = [int(x) for x in self.dates_sdnn]
-		self.sdnn_1 = [i for s in [d.values() for d in self.data_sdnn] for i in s]
 
 		#Start dates
-		self.data_startdate = sum(self.data_startdate,[])
-		self.data_enddate = sum(self.data_enddate,[])
-		self.data_states = sum(self.data_states,[])
 		self.data_startdate = sum(self.data_startdate,[])
 		self.data_enddate = sum(self.data_enddate,[])
 		self.data_states = sum(self.data_states,[])
@@ -1490,8 +1228,6 @@ class Devices_OAuth2flow(object):
 
 		#self.database.SM.load_intra_sleep(start_date = self.data_startdate, end_date = self.data_enddate, ss = self.data_states, hr = self.HR, hr_date = self.dates_hr_sleep,
 										#rr = self.RR, rr_date = self.dates_rr, snoring = self.snoring, snoring_date = self.dates_snoring, sdnn_1 = self.sdnn_1, sdnn_1_date = self.dates_sdnn)
-		#self.database.SM.load_intra_sleep(start_date = self.data_startdate, end_date = self.data_enddate, ss = self.data_states, hr = self.HR, hr_date = self.dates_hr_sleep,
-										#rr = self.RR, rr_date = self.dates_rr, snoring = self.snoring, snoring_date = self.dates_snoring, sdnn_1 = self.sdnn_1, sdnn_1_date = self.dates_sdnn)
 
 
 	#The following function is to generate the images for the PDF files
@@ -1499,7 +1235,6 @@ class Devices_OAuth2flow(object):
 	def plot_creator(self, type = None):
 
 
-		#print(self.ending_dates)
 		#print(self.ending_dates)
 		self.graph = graph.Graph_generator(start_date =self.initial_dates,
 										   end_date = self.ending_dates,
@@ -1509,12 +1244,10 @@ class Devices_OAuth2flow(object):
 		self.graph.plot_bar(self.activity_data['date'],self.activity_data['steps'])
 		self.graph.plot_scatter(x = self.dates_hr_1, y = self.HR_watch, k = self.activity_data['date'], j = self.final_hr, name = "HR_ScanWatch")
 		self.graph.plot_continous(self.monthly_scale_data['date'],self.weight_m, self.monthly_scale_data['date_mm'], self.muscle_mass_m, self.monthly_scale_data['date_bm'],self.bone_mass_m,
-		self.graph.plot_continous(self.monthly_scale_data['date'],self.weight_m, self.monthly_scale_data['date_mm'], self.muscle_mass_m, self.monthly_scale_data['date_bm'],self.bone_mass_m,
 								  self.monthly_scale_data['date_fm'], self.fat_mass_m, self.monthly_scale_data['date_h'], self.hydration_m, self.scale_starting_date, self.scale_ending_date, "Scale")
 		self.graph.plot_stacked_bar(x = self.current_dates_ss, y = self.current_sleep_time,
 									z = self.current_awake_bed, o = self.current_out_bed)
 		self.graph.plot_scatter(x = self.dates_rr, y = self.RR , k = self.current_dates_ss, j = self.rr_mean_bu, name = "RR")
-		self.graph.plot_scatter(x = self.dates_hr_sleep, y = self.HR , k = self.current_dates_ss,  j = self.hr_mean_bu, name = "HR")
 		self.graph.plot_scatter(x = self.dates_hr_sleep, y = self.HR , k = self.current_dates_ss,  j = self.hr_mean_bu, name = "HR")
 
 	def plot_creatorV2(self):
@@ -1524,39 +1257,14 @@ class Devices_OAuth2flow(object):
 										   report_type = self.report_type)
 		self.graph.plot_bar(self.activity_data['date'],self.activity_data['steps'])
 		self.graph.plot_scatter(x = self.intra_activity_watch['dates_HR'], y = self.intra_activity_watch['Heart Rate'], k = self.activity_data['date'], j = self.activity_data['heart rate'], name = "HR_ScanWatch")
-		#Stacked BAR necesita muchos cambios en db
-		#self.graph.plot_stacked_bar(x = self.current_dates_ss, y = self.current_sleep_time,
-									#z = self.current_awake_bed, o = self.current_out_bed)
-		self.graph.plot_scatter(x = self.dates_rr, y = self.RR , k = self.current_dates_ss, j = self.rr_mean_bu, name = "RR")
-		#self.graph.plot_scatter(x = self.dates_hr_sleep, y = self.HR , k = self.current_dates_ss,  j = self.hr_mean_bu, name = "HR")
+		self.graph.plot_stacked_bar(x = self.current_dates_ss, y = self.current_sleep_time,
+									z = self.current_awake_bed, o = self.current_out_bed)
 	
 	#The following function is to fill the database with the values from the devices (modules called: db)
 	def db_filling(self):
 
 		self.database.SM.load_intra_activity(hr = self.HR_watch, time = self.dates_hr, time_steps = self.dates_steps, steps = self.steps_watch, time_calories = self.dates_calories, calories = self.calories_watch)
-		self.database.SM.load_intra_activity(hr = self.HR_watch, time = self.dates_hr, time_steps = self.dates_steps, steps = self.steps_watch, time_calories = self.dates_calories, calories = self.calories_watch)
 		self.database.SM.load_ScanWatch(hr = self.activity_data['heart_rate'], calories = self.activity_data['calories'], steps = self.activity_data['steps'],  time = self.activity_data['date'] )
-		self.database.SM.load_Scale(time = self.scale_data['date'], weight = self.weight, muscle_mass = self.muscle_mass, bone_mass = self.bone_mass, fat_mass = self.fat_mass)
-		self.database.SM.load_SleepMat(time = self.sleeps_data['date'], bd = self.sleeps_data['breathing disturbances'], dsd = self.sleeps_data['deep sleep duration'], dts = self.sleeps_data['duration to sleep'],
-									dtw = self.sleeps_data['duration to wakeup'], hr = self.sleeps_data['hr average'], lsd = self.sleeps_data['light sleep duration'], rsd = self.sleeps_data['rem sleep duration'], 
-									rr = self.sleeps_data['rr average'], ss = self.sleeps_data['sleep score'], wpc = self.sleeps_data['wake up count'], wpd = self.sleeps_data['wake up duration'])
-		self.database.SM.load_intra_sleep(start_date = self.data_startdate, end_date = self.data_enddate, ss = self.data_states, hr = self.HR, hr_date = self.dates_hr_sleep,
-										rr = self.RR, rr_date = self.dates_rr, snoring = self.snoring, snoring_date = self.dates_snoring, sdnn_1 = self.sdnn_1, sdnn_1_date = self.dates_sdnn)
-		
-		
-		self.database.SM.close_all_cvs_files()
-
-
-	def db_api_filling(self):
-		pass
-
-
-	def db_cleaning(self):
-		self.database.SM.cleaning_cvs_files(cvs_from ='Scan_summary')
-		self.database.SM.cleaning_cvs_files(cvs_from ='Sleep_summary')
-		self.database.SM.cleaning_cvs_files(cvs_from ='Scale')
-		self.database.SM.cleaning_cvs_files(cvs_from ='Intra_watch')
-		self.database.SM.cleaning_cvs_files(cvs_from ='Intra_sleep')
 		self.database.SM.load_Scale(time = self.scale_data['date'], weight = self.weight, muscle_mass = self.muscle_mass, bone_mass = self.bone_mass, fat_mass = self.fat_mass)
 		self.database.SM.load_SleepMat(time = self.sleeps_data['date'], bd = self.sleeps_data['breathing disturbances'], dsd = self.sleeps_data['deep sleep duration'], dts = self.sleeps_data['duration to sleep'],
 									dtw = self.sleeps_data['duration to wakeup'], hr = self.sleeps_data['hr average'], lsd = self.sleeps_data['light sleep duration'], rsd = self.sleeps_data['rem sleep duration'], 
@@ -1595,22 +1303,12 @@ class Devices_OAuth2flow(object):
 			#print(self.current_apnea)
 			#print(self.prev_apnea)
 			self.AP_Sleep_table = ([self.current_apnea, self.prev_apnea, []])
-			self.HR_Sleep_table = ([self.hr_mean_bu, self.prev_heart_rate, []])
-			self.RR_Sleep_table = ([self.rr_mean_bu, self.prev_rr, []])
-			self.ST_Sleep_table = ([self.current_sleep_time, self.prev_sleep_time, []])
-			#print('********************************************')
-			#print(self.current_apnea)
-			#print(self.prev_apnea)
-			self.AP_Sleep_table = ([self.current_apnea, self.prev_apnea, []])
 
 			#Scale
-			self.Weight_table = (self.weight, [],[])
 			self.Weight_table = (self.weight, [],[])
 
 			#ScanWatch
 			self.prev_hr = self.intra_activitydata(type_time = 'prev')
-			self.HR_table = ([self.final_hr, self.prev_hr, []]) 
-			self.Steps_table = ([self.activity_data['steps'], self.pre_activity_data['steps'], []])
 			self.HR_table = ([self.final_hr, self.prev_hr, []]) 
 			self.Steps_table = ([self.activity_data['steps'], self.pre_activity_data['steps'], []])
 
@@ -1622,22 +1320,15 @@ class Devices_OAuth2flow(object):
 			self.current_sleep_rr = self.data_utils.values_dates_intersection(dates = self.current_dates_ss, start_date = arrow.utcnow().shift(days = self.starting_day_p) , end_date = arrow.utcnow().shift(days = self.ending_day_p), values = self.rr_mean_bu)
 			self.current_sleep_time_1 = self.data_utils.values_dates_intersection(dates = self.current_dates_ss, start_date = arrow.utcnow().shift(days = self.starting_day_p) , end_date = arrow.utcnow().shift(days = self.ending_day_p), values = self.current_sleep_time)
 			self.current_apnea_1 = self.data_utils.values_dates_intersection(dates = self.current_dates_ss, start_date = arrow.utcnow().shift(days = self.starting_day_p) , end_date = arrow.utcnow().shift(days = self.ending_day_p), values = self.current_apnea)
-			self.current_weight = self.data_utils.values_dates_intersection(dates = self.monthly_scale_data['date'], start_date = arrow.utcnow().shift(days = self.starting_day_p).replace(hour=0, minute=0, second=0), end_date = arrow.utcnow().shift(days = self.ending_day_p + 1), values = self.weight_m)
+			self.current_weight = self.data_utils.values_dates_intersection(dates = self.monthly_scale_data['date'], start_date = arrow.utcnow().shift(days = self.starting_day_p).replace(hour=0, minute=0, second=0), end_date = arrow.utcnow().shift(days = self.ending_day_p).replace(hour=23, minute=59, second=59), values = self.weight_m)
 			print("FROM Developing section")
-			print(self.monthly_scale_data['date'])
-			end_date = arrow.utcnow().shift(days = self.ending_day_p).replace(hour=23, minute=59, second=59)
-			print(end_date)
 			print(self.current_weight)
-		
-		
 			self.current_daily_hr = self.data_utils.values_dates_intersection(dates = self.activity_data['date'], start_date = arrow.utcnow().shift(days = self.starting_day_p) , end_date = arrow.utcnow().shift(days = self.ending_day_p), values = self.final_hr)
 			self.current_steps = self.data_utils.values_dates_intersection(dates = self.activity_data['date'], start_date = arrow.utcnow().shift(days = self.starting_day_p) , end_date = arrow.utcnow().shift(days = self.ending_day_p), values = self.activity_data['steps'])
 
 			#Sleep
 			self.HR_Sleep_table = ([self.current_sleep_hr, self.hr_mean_bu, []])
 			self.RR_Sleep_table = ([self.current_sleep_rr, self.rr_mean_bu, []])
-			self.ST_Sleep_table = ([self.current_sleep_time_1, self.current_sleep_time,[]])
-			self.AP_Sleep_table = ([self.current_apnea_1,self.current_apnea,[]])
 			self.ST_Sleep_table = ([self.current_sleep_time_1, self.current_sleep_time,[]])
 			self.AP_Sleep_table = ([self.current_apnea_1,self.current_apnea,[]])
 
@@ -1654,7 +1345,6 @@ class Devices_OAuth2flow(object):
 
 	def usage_levels(self):
 		print('Here in usages')
-		print('Here in usages')
 
 		#Date selection according to the type of the report
 		if self.report_type == 1:
@@ -1666,72 +1356,7 @@ class Devices_OAuth2flow(object):
 			sleep_u = self.hr_mean_bu
 			watch_u = self.activity_data['steps']
 			scale_u = self.weight
-		#Date selection according to the type of the report
-		if self.report_type == 1:
-			start_date = arrow.utcnow().shift(days = self.starting_day_c) 
-			end_date = arrow.utcnow().shift(days = self.ending_day_c)
-			start_date_scale = arrow.utcnow().shift(days = self.starting_day_p-8) 
 
-			# Data from sensors for report type = 1
-			sleep_u = self.hr_mean_bu
-			watch_u = self.activity_data['steps']
-			scale_u = self.weight
-
-		if self.report_type == 0:
-			start_date = arrow.utcnow().shift(days = self.starting_day_p) 
-			end_date = arrow.utcnow().shift(days = self.ending_day_p)
-
-
-			start_date_scale = arrow.utcnow().shift(days = self.starting_day_p-8) 
-
-			#print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
-			#print(start_date_scale)
-
-			#Values from last week for scanwatch and sleepmat
-			sleep_u = self.current_sleep_hr
-			watch_u = self.current_daily_hr
-
-			#print(watch_u)
-			#print(self.final_hr)
-
-			#Values for the last two weeks of scale to calculate the usage 
-			scale_u = self.data_utils.values_dates_intersection(dates = self.monthly_scale_data['date'], start_date = start_date_scale, end_date = end_date, values = self.weight_m)
-	
-
-		# Usage
-	
-		usage = self.data_utils.usage_understanding(start_date = start_date, end_date = end_date,  start_date_scale = start_date_scale,  sleep_u = sleep_u, watch_u = watch_u, scale_u = scale_u)
-		
-		#Battery 
-		self.battery_report = self.battery
-
-		#Last date of usage
-
-		try:
-			watch_last_usage =  self.activity_data['date'][-1]
-		except IndexError:
-			watch_last_usage =  None
-
-		try:
-			scale_last_usage =  self.last_scale[0]
-		except IndexError:
-			scale_last_usage =  None
-		
-		try:
-			sleep_last_usage =  self.last_sleep
-		except IndexError:
-			sleep_last_usage =  None
-
-		
-
-		self.last_day_use = {'Watch': watch_last_usage, 'Scale': scale_last_usage, 'Sleep': sleep_last_usage} 
-		print(usage)
-		print(self.last_day_use)
-		print(self.battery)
-
-
-		self.database.SM.load_usage( user_id = self.id_user, start_date = start_date, end_date = end_date, sleep_usage = usage['Sleep Mat'], sleep_battery = self.battery['Sleep Monitor'], sleep_lastday = self.last_day_use['Sleep'], watch_usage = usage['Watch'],
-									 watch_battery = self.battery['Activity Tracker'], watch_lastday = self.last_day_use['Watch'], scale_usage = usage['Scale'], scale_battery = self.battery['Scale'], scale_lastday = self.last_day_use['Scale'])
 		if self.report_type == 0:
 			start_date = arrow.utcnow().shift(days = self.starting_day_p) 
 			end_date = arrow.utcnow().shift(days = self.ending_day_p)
@@ -1860,34 +1485,6 @@ class Devices_OAuth2flow(object):
 				print(f"Removed: {file_name}")
 			else:
 				print(f"Skipped: {file_name}")
-
-
-	@staticmethod
-	def main(cls):
-		
-		M = cls(client_id = 'client id', 
-						 costumer_secret = 'costumer secret',
-						 callback_uri = 'url',
-						 report_type = 1
-				)
-		
-		M.get_user_credentials()
-		M.devices_info()
-		M.scale_data()
-		M.sleep()
-		M.sleep_daily()
-		M.activity_data_watch()
-		M.plot_creator()
-		M.doc_generation()
-		M.remove_images()
-		M.usage_levels()
-		#M.deactivate_raw_data()
-		#M.activate_raw_data()
-	
-	
-
-if __name__ == "__main__":
-    Devices_OAuth2flow.main()
 
 
 	@staticmethod

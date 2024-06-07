@@ -19,7 +19,6 @@ from matplotlib.patches import FancyBboxPatch
 from scipy.interpolate import make_interp_spline
 from matplotlib.ticker import MaxNLocator
 from itertools import chain
-from itertools import chain
 
 class Graph_generator(object):
 
@@ -87,7 +86,6 @@ class Graph_generator(object):
 
 
 		#print(weekly_data)
-		#print(weekly_data)
 
 
 		weekly_average = {
@@ -95,14 +93,11 @@ class Graph_generator(object):
 		for week_start, values in weekly_data.items()}
 
 		#print(weekly_average)
-		#print(weekly_average)
 
 		# Extract keys and values from the weekly_average dictionary
 		week_avg_dates = list(weekly_average.keys())
 		week_avg_weights = list(weekly_average.values())
 		
-		#print(week_avg_dates)
-		#print(week_avg_weights)
 		#print(week_avg_dates)
 		#print(week_avg_weights)
 		
@@ -160,7 +155,7 @@ class Graph_generator(object):
 		
 		# k, start_date and end_date are arroe types (e.g.,  <Arrow [2023-08-27T01:00:00+01:00]>)
 		k = [value for index, value in enumerate(k) if index not in index_1]
-		#only db k = np.array([np.datetime64(date.datetime) for date in k])
+		#k = np.array([np.datetime64(date.datetime) for date in k])
 
 
 		plt.clf()
@@ -216,7 +211,6 @@ class Graph_generator(object):
 					plt.ylabel("Heart Rate (bpm)", fontsize = 11, fontdict = self.font)
 				
 		
-		
 				sns.scatterplot( x= x, y = y, color = "cornflowerblue", label = label_scatter)
 				sns.lineplot(x = k_s, y = j_s, color = "darkblue",label = label_lineplot)
 
@@ -232,11 +226,6 @@ class Graph_generator(object):
 						#circle.set_zorder(5)
 						#plt.gca().add_patch(circle)
 						plt.text(t, t1-(0.1* fig_size[1]), math.floor(t1), size = 11.5,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='white', edgecolor='white'))				
-				try:
-					plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date)
-				except TypeError as e:
-					print("TypeError caught:", e)
-
 				try:
 					plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date)
 				except TypeError as e:
@@ -267,14 +256,6 @@ class Graph_generator(object):
 							# Handle the ValueError
 							print("Caught ValueError:", e)
 							print("The sequence is empty. Provide a non-empty sequence.")
-					if j:
-						try:
-							plt.yticks(np.arange(min(y), max(y) + 0.5, 0.5))
-							
-						except ValueError as e:
-							# Handle the ValueError
-							print("Caught ValueError:", e)
-							print("The sequence is empty. Provide a non-empty sequence.")
 
 
 
@@ -289,11 +270,6 @@ class Graph_generator(object):
 						j = np.array(j)
 						j_ticks = j[~np.isnan(j)]
 						plt.yticks(range(int(np.min(j_ticks)), int(np.max(j_ticks )) + 1, 5))
-					if j:
-						print(j)
-						j = np.array(j)
-						j_ticks = j[~np.isnan(j)]
-						plt.yticks(range(int(np.min(j_ticks)), int(np.max(j_ticks )) + 1, 5))
 
 							
 				elif name == 'HR_ScanWatch':
@@ -302,11 +278,6 @@ class Graph_generator(object):
 					label_lineplot = "Day Heart Rate Weekly Average"
 					plt.gca().set_title('Day Heart Rate', fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
 					plt.ylabel("Heart Rate (bpm)", fontsize = 11, fontdict = self.font)
-					if j:
-						print(j)
-						j = np.array(j)
-						j_ticks = j[~np.isnan(j)]
-						plt.yticks(range(int(np.min(j_ticks)), int(np.max(j_ticks )) + 1, 5))
 					if j:
 						print(j)
 						j = np.array(j)
@@ -338,7 +309,6 @@ class Graph_generator(object):
 					plt.gca().xaxis.set_major_locator((MaxNLocator(nbins=7)))
 					plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
 					
-					#plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(days = -7), self.end_date.shift(days = 2 ))
 					#plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(days = -7), self.end_date.shift(days = 2 ))
 
 					for index in range(len(date_avg)):
@@ -454,7 +424,6 @@ class Graph_generator(object):
 		plt.gca().spines['right'].set_visible(False)
 		plt.savefig(device+"_"+type_d, dpi = 500)
 		plt.close()
-		plt.close()
 
 		#plt.show()
 
@@ -484,12 +453,10 @@ class Graph_generator(object):
 		date_fat_mass = [value for index, value in enumerate(date_fat_mass) if index not in index_3]
 		date_hydration = [value for index, value in enumerate(date_hydration) if index not in index_4]
 
-		print('SCALEEEEEEEEEEEEEEEE froooooooooooooooooooooooooom')
+		#print('SCALEEEEEEEEEEEEEEEE')
 
-		print(weight)
-		print(date_weight)
-
-		#print(HOLA)
+		#print(weight)
+		#print(date_weight)
 
 		weight_date_avg, weight_avg = self.weekly_average(date_weight, weight)
 		mm_date_avg , mm_avg = self.weekly_average(date_muscle_mass, muscle_mass)
@@ -534,8 +501,6 @@ class Graph_generator(object):
 			if len(date_weight) < 2:
 				sns.scatterplot( x= date_weight, y = weight, label = "Weight readings", color = "darkblue")
 			else:
-				#print('******************************************************')
-				#print(date_weight)
 				#print('******************************************************')
 				#print(date_weight)
 				sns.lineplot(x = date_weight, y = weight, label = "Weight readings", color = "cornflowerblue", linestyle=':', linewidth = 2)
@@ -603,14 +568,11 @@ class Graph_generator(object):
 		plt.savefig(device, dpi = 500)
 		#plt.show()
 		plt.close()
-		plt.close()
 
 	def plot_bar(self,x,y):
 
 		# Create a scatter plot
 		sns.set_style("whitegrid",{ "grid.linewidth":0.5, "grid.color": ".8", "grid.linestyle": ":", "ytick.left": True})
-
-		plt.clf()
 
 		plt.clf()
 
@@ -662,40 +624,28 @@ class Graph_generator(object):
 
 					print('********************************************')
 					print(y)
-
-					print('********************************************')
-					print(y)
 					
 					max_thresh = np.nanmean(y) + np.nanstd(y)
 					print(max_thresh)
-					print(max_thresh)
 					min_thresh = np.nanmean(y) - np.nanstd(y)
 					print(min_thresh)
-					print(min_thresh)
 					aver_thresh = np.nanmean(y)
-					print(aver_thresh)
 					print(aver_thresh)
 
 					sns.lineplot(x = x, y = y, color = "cornflowerblue", linestyle = ':', label = "Steps")
 					sns.lineplot(x = date_avg, y = val_avg, color = "darkblue", linestyle = '-')
 					self.v_date = arrow.get(date_avg[-1])
-					self.v_date = arrow.get(date_avg[-1])
 					# Threshold calculations
 					plt.axhline(y=max_thresh, color='darkorange', linestyle='--', label= 'Upper limit', linewidth = 1)
 					plt.text(self.v_date.shift(days= 1), max_thresh, f'{max_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
-					plt.text(self.v_date.shift(days= 1), max_thresh, f'{max_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
 					plt.axhline(y=min_thresh, color='darkorange', linestyle='--', label= 'Lower limit', linewidth = 1)
 					plt.text(self.v_date.shift(days= 1), min_thresh, f'{min_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
-					plt.text(self.v_date.shift(days= 1), min_thresh, f'{min_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
 					plt.axhline(y=aver_thresh, color='mediumseagreen', linestyle='-', label= 'Average', linewidth = 2)
-					plt.text(self.v_date.shift(days= 1), aver_thresh, f'{aver_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='mediumseagreen'))
 					plt.text(self.v_date.shift(days= 1), aver_thresh, f'{aver_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='mediumseagreen'))
 
 					plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
 					plt.gca().xaxis.set_major_locator((MaxNLocator(nbins=7)))
 					plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
-					#plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(days = -7), self.end_date.shift(days = 2 ))
-					
 					#plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(days = -7), self.end_date.shift(days = 2 ))
 					
 
@@ -783,14 +733,10 @@ class Graph_generator(object):
 				date_avg, val_avg = self.weekly_average(x_u,o_u)
 				print('HELLOOOOOOOOOOOOOO')
 				print(val_avg)
-				print('HELLOOOOOOOOOOOOOO')
-				print(val_avg)
 				sns.lineplot(x = date_avg, y = val_avg, color = "lavender", markersize = 14, label = "Times out of bed weekly average",  linestyle='--', linewidth = 2 )
 				for index in range(len(date_avg)):
 					plt.text(date_avg[index], val_avg[index], math.floor(val_avg[index]), size = 11,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lavender', edgecolor='white'))
 				#plt.text(x_u[index], l_u[index], math.floor(l_u[index]), size = 11.5, color = "black", ha = 'center', va = 'center', zorder = 11 )
-				max_value_stacked = max(chain(y, z, val_avg))
-				plt.ylim(top= max_value_stacked + 2)
 				max_value_stacked = max(chain(y, z, val_avg))
 				plt.ylim(top= max_value_stacked + 2)
 			# Add labels, title, and legend
@@ -798,14 +744,12 @@ class Graph_generator(object):
 			plt.grid(axis = "x")
 			plt.ylim(bottom = -1)
 			
-			
 			plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
 			plt.ylabel('Hours', fontsize = 11, fontdict = self.font)
 			plt.gca().set_title('Sleep Summary', fontsize = 14, loc = 'left',pad = 30, fontweight=600, fontdict = self.font)
 			#plt.gca().xaxis.set_major_locator(mdates.WeekdayLocator())
 			plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
 			plt.gca().xaxis.set_major_locator((MaxNLocator(nbins=7)))
-			#plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(days = -7), self.end_date)
 			#plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(days = -7), self.end_date)
 			# Set the locator for x-axis labels
 			plt.gca().spines['top'].set_visible(False)
