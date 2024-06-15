@@ -8,6 +8,7 @@ import { DevicesComponent } from './components/devices/devices.component';
 import { MaterialModule } from '../../shared/material/material.module';
 import { PrimengModule } from '../../shared/primeng/primeng.module';
 import { FormsModule } from '@angular/forms';
+import { ParticipantSummaryComponent } from './components/participant-summary/participant-summary.component';
 
 
 
@@ -17,6 +18,7 @@ import { FormsModule } from '@angular/forms';
     ParticipantsComponent,
     ReportsComponent,
     DevicesComponent,
+    ParticipantSummaryComponent,
   ],
   imports: [
     CommonModule,

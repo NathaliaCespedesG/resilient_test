@@ -24,4 +24,10 @@ export class RequestsService {
     return this.http.get<Users>(usersUrl);
   }
 
+  getDevicesByUsername(username: string): Observable<any>{
+    const devicesUrl = this.baseUrl + 'devices/?username=' + username;
+
+    return this.http.get<any>(devicesUrl);
+  }
+
 }

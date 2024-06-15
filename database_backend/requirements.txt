@@ -6,3 +6,4 @@ django-filter
 django_extensions
 python-decouple 
 django-cors-headers
+gunicorn

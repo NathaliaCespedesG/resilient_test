@@ -11,6 +11,7 @@ import { SliderModule } from 'primeng/slider';
 import { DialogModule } from 'primeng/dialog';
 import {ProgressSpinnerModule} from 'primeng/progressspinner';
 import {DynamicDialogModule} from 'primeng/dynamicdialog';
+import {SelectButtonModule} from 'primeng/selectbutton';
 
 @NgModule({
   declarations: [],
@@ -26,7 +27,8 @@ import {DynamicDialogModule} from 'primeng/dynamicdialog';
     SliderModule,
     DialogModule,
     ProgressSpinnerModule,
-    DynamicDialogModule
+    DynamicDialogModule,
+    SelectButtonModule
   ],
   exports: [
     ButtonModule,
@@ -39,7 +41,8 @@ import {DynamicDialogModule} from 'primeng/dynamicdialog';
     SliderModule,
     DialogModule,
     ProgressSpinnerModule,
-    DynamicDialogModule
+    DynamicDialogModule,
+    SelectButtonModule
   ]
 })
 export class PrimengModule { }
