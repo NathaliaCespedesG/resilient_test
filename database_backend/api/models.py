@@ -34,7 +34,7 @@ class Device(models.Model):
 class Scale(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='scales')
-    date = models.DateField()
+    date = models.DateTimeField()
     weight = models.FloatField()
     muscle_mass = models.FloatField()
     bone_mass = models.FloatField()
@@ -57,6 +57,8 @@ class ScanWatchSummary(models.Model):
     average_heart_rate = models.FloatField()
     calories = models.FloatField()
     steps = models.FloatField()
+    hr_max = models.FloatField(null=True, blank=True)
+    hr_min = models.FloatField(null=True, blank=True)
 
 class SleepmatIntraActivity(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -88,6 +90,11 @@ class SleepmatSummary(models.Model):
     sleep_score = models.FloatField()
     wakeup_count = models.FloatField()
     wakeup_duration = models.FloatField()
+    total_sleep_time = models.FloatField(null=True, blank=True)
+    total_time_in_bed = models.FloatField(null=True, blank=True)
+    awake_in_bed = models.FloatField(null=True, blank=True)
+    apnea = models.FloatField(null=True, blank=True)
+    out_of_bed_count = models.FloatField(null=True, blank=True)
 
 class Report(models.Model):
     id =  models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

@@ -1,28 +1,21 @@
 from django.http import JsonResponse
-from django.shortcuts import render
-from rest_framework.decorators import api_view
-from Withings_ScanWatch.Resilient import Resilient
+from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
-# Create your views here.
-# request -- response (reuest handler)
-resilient_generator = Resilient()
+import json
 
-@api_view(['GET'])
+@method_decorator(csrf_exempt, name='dispatch')
+class ReceiveUrlView(View):
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            # Process the data here
+            # For demonstration, we'll just print it and send it back in the response
+            print(data)
+            return JsonResponse({'status': 'success', 'data': data})
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
 
-class IndividualReportView:
-    
-    def get(self, request, user_id):
-
-        report = resilient_generator.individual_report_generation()
-
-        return JsonResponse(report)
-    
-@api_view(['GET'])
-class AllReportsView: 
-
-    def get(self, request):
-
-        reports = resilient_generator.individual_report_generation()
-        # Urls
-        return JsonResponse(reports)
-
+    def get(self, request, *args, **kwargs):
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)

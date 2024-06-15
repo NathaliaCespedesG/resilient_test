@@ -60,6 +60,8 @@ class Devices_OAuth2flow(object):
 					   report_type: None,
 					   id_participant: None,
 					   running_type: None):
+		
+		print(costumer_secret)
 
 
 		#Running type
@@ -92,7 +94,9 @@ class Devices_OAuth2flow(object):
 
 		#Create an ID for each user
 
-		self.id_user = id_participant
+		self.id_user = str(id_participant)
+		print('999999999999999999999999999999999')
+		print(self.id_user)
 
 		#Create the credentials File
 		# This file has the authorization and refresh token which are
@@ -123,15 +127,17 @@ class Devices_OAuth2flow(object):
 		print(self.db_id)
 
 
-		if self.report_type == 0:
-			self.dates_SPC_charts()
-
+		
 		self.CREDENTIALS_FILE: Final = self.final_path
 		
 	def create_auth_url(self):
 
 		# This function is to create the URL which will be used by the
-		# user to authorize the acquisition of the data		 
+		# user to authorize the acquisition of the data
+		print('isusssssssssssssssssssssssssssssse')
+		print(self.client_id)
+		print(self.costumer_secret)
+		print(self.callback_uri)
 
 		self.auth = WithingsAuth(
 
@@ -144,7 +150,6 @@ class Devices_OAuth2flow(object):
 				AuthScope.USER_METRICS,
 				AuthScope.USER_INFO,
 				AuthScope.USER_SLEEP_EVENTS,
-				AuthScope.USER_RAW_DATA,
 				)
 			)
 
@@ -197,6 +202,11 @@ class Devices_OAuth2flow(object):
 		self.api.refresh_token()
 		print("After Refreshing")
 		print( 'UserID', self.api.get_credentials().userid)
+
+
+		if self.report_type == 0:
+			self.dates_SPC_charts()
+
 
 		
 
@@ -326,8 +336,354 @@ class Devices_OAuth2flow(object):
 		self.nonce = signature['body']['nonce']
 		#print('nonce', self.nonce)
 
+	#Functions to acquire watch values
+	def intra_activitydata_watch_v2(self):
+
+		dates_hr_watch = []
+		hr_watch = []
+		dates_steps_watch = []
+		steps_watch = []
+		dates_calories_watch = []
+		calories_watch = []
+		dates_to_test = {}
+		hr_to_test = {}
 
 
+		self.dates_HR_watch_agg = []
+		self.hr_watch_agg = []
+		self.dates_step_watch_agg = []
+		self.steps_watch_agg = []
+		self.dates_cal_watch_agg = []
+		self.cal_watch_agg = []
+		self.intra_activity_watch = {} 
+
+		#Variables to extract intra activity values
+
+		starting_day = self.ending_day_c - 7
+		ending_day = self.ending_day_c
+
+		week_days = list(range(starting_day, ending_day))
+
+		week_days.append(week_days[-1]+1)
+		
+		total = abs(starting_day) - abs(ending_day)
+		
+		for i in range (len(week_days)):
+			
+			self.meas_intraactivity = self.api.measure_get_intraactivity(startdate= arrow.utcnow().shift(days= week_days[i]).replace(hour=0, minute=0, second=0), enddate=arrow.utcnow().shift(days = week_days[i]+1).replace(hour=0, minute=0, second=0))
+			measurement_intra_activity = {timestamp: {key: value for key, value in self.meas_intraactivity['series'][timestamp].items() if key not in ['model_id', 'deviceid', 'model']} for timestamp in self.meas_intraactivity['series']}
+			dates_hr_watch = [key for key, sub_dict in measurement_intra_activity.items() if 'heart_rate' in sub_dict]
+			hr_watch = [sub_dict['heart_rate'] for sub_dict in measurement_intra_activity.values() if 'heart_rate' in sub_dict]
+
+			dates_steps_watch = [key for key, sub_dict in measurement_intra_activity.items() if 'steps' in sub_dict]
+			steps_watch = [sub_dict['steps'] for sub_dict in measurement_intra_activity.values() if 'steps' in sub_dict]
+
+			dates_calories_watch = [key for key, sub_dict in measurement_intra_activity.items() if 'calories' in sub_dict]
+			calories_watch = [sub_dict['calories'] for sub_dict in measurement_intra_activity.values() if 'calories' in sub_dict]
+
+			dates_hr_watch, hr_watch = self.data_utils.hr_filtering(dates_hr_watch, hr_watch)
+
+			dates_to_test[i] = dates_hr_watch
+			hr_to_test[i] = hr_watch
+			self.dates_HR_watch_agg.append(dates_hr_watch)
+			self.hr_watch_agg.append(hr_watch)
+			self.dates_step_watch_agg.append(dates_steps_watch)
+			self.steps_watch_agg.append(steps_watch)
+			self.dates_cal_watch_agg.append(dates_calories_watch)
+			self.cal_watch_agg.append(calories_watch)
+
+		
+		#Heart rate values from watch after processing
+		self.dates_HR_watch_agg = sum(self.dates_HR_watch_agg ,[])
+		self.hr_watch_agg = sum(self.hr_watch_agg,[])
+		#Step values after processing
+		self.dates_step_watch_agg = sum(self.dates_step_watch_agg,[])
+		self.steps_watch_agg = sum(self.steps_watch_agg,[])
+		#Calories values after processing
+		self.dates_cal_watch_agg = sum(self.dates_cal_watch_agg,[])
+		self.cal_watch_agg = sum(self.cal_watch_agg,[])
+
+
+		start_dates_hr = self.wakeup_hours
+		end_dates_hr = self.fellasleep_hours
+		print(start_dates_hr)
+		print(end_dates_hr)
+		self.hr_based_sleep = self.data_utils.hr_average_basedon_sleep(dates = dates_to_test, HR = hr_to_test, startdates = start_dates_hr, enddates = end_dates_hr )
+		
+		
+		#Databased dates
+		end_date = arrow.utcnow().shift(days = starting_day).replace(hour=0, minute=0, second=0)
+		end_date = end_date.timestamp()
+		start_date = arrow.utcnow().shift(days = starting_day - 90).replace(hour=0, minute=0, second=0)
+		start_date = start_date.timestamp()
+		agreggated_hr_watch = self.database_api.get_scanwatch_intra_activity_data(user = self.id_user, start_date = start_date, end_date = end_date)
+		print('AQUUUUUUUUUUUUUUUUUUUUUUUUIIII')
+		print(agreggated_hr_watch)
+		dates_HR_db = []
+		heart_rates_db = []
+		for entry in agreggated_hr_watch :
+			dates_HR_db.append(entry['date_heart_rate'])
+			heart_rates_db.append(entry['heart_rate'])		
+		
+
+		#Intraactivity data from the watch (from sleep service + db)
+		
+		self.intra_activity_watch['dates_HR'] = self.dates_HR_watch_agg + dates_HR_db
+		self.intra_activity_watch['Heart Rate'] = self.hr_watch_agg + heart_rates_db
+
+			
+		#print(dates_hr_watch)
+		#print(hr_watch)
+
+
+	
+	def activity_data_watch_v2(self):
+		# This function returns the activity data + database values. Please refer
+		# to the withings API documentation to see what type of data
+		# you can get from this service.
+
+		end_date = arrow.utcnow().shift(days=self.starting_day_c)
+		end_date = end_date.datetime
+		start_date = arrow.utcnow()
+		start_date = start_date.datetime
+		self.activity_data = {}
+
+		print(end_date)
+		print(start_date)
+		
+		#Data from the database API
+		data = self.database_api.get_scanwatch_summary_data(user = self.id_user, start_date= start_date, end_date= end_date)
+		data = [{key: value for key, value in entry.items() if key != 'id'} for entry in data['scanwatches_summary']]
+		print('DATAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA from service')
+		# Extracting dates and steps into separate arrays
+		dates_db = [entry['date'] for entry in data]
+		dates_db = [arrow.get(date, 'YYYY-MM-DD') for date in dates_db]
+		steps_db = [entry['steps'] for entry in data]
+		hr_db = [entry['average_heart_rate'] for entry in data]
+		self.meas_activity  =  self.api.measure_get_activity(startdateymd = arrow.utcnow().shift(days=self.ending_day_c - 7), enddateymd = arrow.utcnow().shift(days= self.ending_day_c))
+		# Extracting data from Withings API - summary
+		result = [{'date': activity.date, 'average_heart_rate': activity.hr_average, 'calories': activity.calories, 'steps': activity.steps} for activity in self.meas_activity.activities]
+		date_activity = [entry['date'] for entry in result]
+		summary_heart_rate = [entry['average_heart_rate'] for entry in result]
+		summary_steps = [entry['steps'] for entry in result]
+		
+
+		self.final_hr = self.data_utils.backup_data(value2 = summary_heart_rate, value1 = self.hr_based_sleep)		
+
+		#Agreggated Steps (Withings + db)
+		#Steps
+		self.activity_data['date'] = date_activity + dates_db
+		#self.activity_data['date'] = np.array([np.datetime64(date.datetime) for date in self.activity_data['date']])
+		self.activity_data['steps'] = summary_steps + steps_db
+		# Heart Rate
+		self.activity_data['heart rate'] = self.final_hr + hr_db
+
+	def intra_sleep_v2(self):
+
+		sleep_data_rr = []
+		sleep_data_hr = []
+		self.sleephf_snoring = []
+		self.sleephf_sdnn = []
+		self.sleephf_startdate = []
+		self.sleephf_enddate = []
+		self.sleephf_states =[]
+		mean_rr = []
+		mean_hr = []
+
+
+
+		starting_day = self.ending_day_c - 7
+		ending_day = self.ending_day_c
+
+		week_days = list(range(starting_day, ending_day))
+		week_days.append(-1)
+
+		for i in range (len(week_days)):
+			sleephf_data = []
+			all_rr_values = []
+			all_values_hr = []
+			count_hr = 0
+			mean_1 = 0
+			count_rr = 0
+			mean = 0
+
+			self.get_sleep_1 = self.api.sleep_get(data_fields=GetSleepField,startdate=arrow.utcnow().shift(days= week_days[i]).replace(hour=13, minute=0, second=0), enddate=arrow.utcnow().shift(days = week_days[i]+1).replace(hour=13, minute=0, second=0),)
+			print(self.get_sleep_1)
+
+			
+			try:
+				#Respiration rate
+				sleephf_data_rr = [x['rr'] for x in self.get_sleep_1['series']]
+				all_rr_values = [value for data_dict in sleephf_data_rr for value in data_dict.values()]
+				count_rr = len(all_rr_values)  # Get the count of values
+				mean_rr_day= sum(all_rr_values) / count_rr if count_rr > 0 else None
+				#Heart rate 
+				sleephf_data_hr = [x['hr'] for x in self.get_sleep_1['series']]
+				all_values_hr = [value for data_dict in sleephf_data_hr for value in data_dict.values()]
+				count_hr = len(all_values_hr)  # Get the count of values
+				mean_hr_day = sum(all_values_hr) / count_hr if count_hr > 0 else None
+				#snoring
+				hf_snoring = [x['snoring'] for x in self.get_sleep_1['series']]
+				#sdnn_1
+				hf_sdnn = [x['sdnn_1'] for x in self.get_sleep_1['series']]
+				#start_date
+				hf_startdate = [x['startdate'] for x in self.get_sleep_1['series']]
+				#end_date
+				hf_enddate = [x['enddate'] for x in self.get_sleep_1['series']]
+				#state
+				hf_state = [x['state'] for x in self.get_sleep_1['series']]
+
+				#Arrays with all the values from each measurement
+				sleep_data_rr.append(sleephf_data_rr)
+				sleep_data_hr.append(sleephf_data_hr)
+				self.sleephf_snoring.append(hf_snoring)
+				self.sleephf_sdnn.append(hf_sdnn)
+				self.sleephf_startdate.append(hf_startdate)
+				self.sleephf_enddate.append(hf_enddate)
+				self.sleephf_states.append(hf_state)
+
+				
+				mean_rr.append((mean_rr_day))
+				mean_hr.append((mean_hr_day))
+
+			except:
+				mean_rr.append(float('nan'))
+				mean_hr.append(float('nan'))
+				print("Missing sleep data")
+
+
+		# This data represent Respiration Rate 'rr' in the withings structure
+
+		sleep_data_rr = sum(sleep_data_rr,[])
+		self.dates_rr = [i for s in [d.keys() for d in sleep_data_rr] for i in s]
+		self.dates_rr = [int(x) for x in self.dates_rr]
+		self.rr_sleephf = [i for s in [d.values() for d in sleep_data_rr] for i in s]
+
+
+		# This data represent Heart Rate 'hr' in the withings structure
+
+		sleep_data_hr = sum(sleep_data_hr,[])
+		self.dates_hr_sleep = [i for s in [d.keys() for d in sleep_data_hr] for i in s]
+		self.dates_hr_sleep = [int(x) for x in self.dates_hr_sleep]
+		self.hr_sleephf = [i for s in [d.values() for d in sleep_data_hr] for i in s]
+
+		#This data respresent Snoring 'snoring' in the withings structute
+		self.sleephf_snoring= sum(self.sleephf_snoring,[])
+		self.dates_snoring = [i for s in [d.keys() for d in self.sleephf_snoring] for i in s]
+		self.dates_snoring = [int(x) for x in self.dates_snoring]
+		self.snoring_sleephf = [i for s in [d.values() for d in self.sleephf_snoring] for i in s]
+
+
+		#This data respresent Heart rate variability 'sdnn_1' in the withings structute
+
+		self.sleephf_sdnn = sum(self.sleephf_sdnn,[])
+		self.dates_sdnn = [i for s in [d.keys() for d in self.sleephf_sdnn] for i in s]
+		self.dates_sdnn = [int(x) for x in self.dates_sdnn]
+		self.sdnn_1_sleephf = [i for s in [d.values() for d in self.sleephf_sdnn] for i in s]
+
+		#Start dates
+		self.sleephf_startdate = sum(self.sleephf_startdate ,[])
+		self.sleephf_enddate = sum(self.sleephf_enddate,[])
+		self.sleephf_states = sum(self.sleephf_states,[])
+
+
+		# Backup funtion in case sleep summary service is not updating the average of hr and rr per night
+		#self.rr_mean_bu = self.data_utils.backup_data(value1 = mean_rr, value2 = self.current_rr)
+		#self.hr_mean_bu = self.data_utils.backup_data(value1 = mean_hr, value2 = self.current_heart_rate)
+		#print(self.hr_mean_bu)
+
+	
+
+	
+	def sleep_v2(self):
+		sleepbu_data = {} 
+		self.sleeps_data = {}
+		self.sleep_summary = self.api.sleep_get_summary(data_fields=GetSleepSummaryField, startdateymd=arrow.utcnow().shift(days = self.ending_day_c - 7),enddateymd=arrow.utcnow().shift(days = self.ending_day_c), lastupdate = None)
+		self.sleeps_data['date'] = [arrow.get(x.date) for x in self.sleep_summary.series]
+		try:
+			self.last_sleep = self.sleeps_data['date'][-1]
+
+		except:
+			self.last_sleep = None
+			print('No sleep data available')
+		
+		self.sleeps_data['start_date'] = [arrow.get(x.startdate) for x in self.sleep_summary.series]
+		self.sleeps_data['end_date'] = [arrow.get(x.enddate) for x in self.sleep_summary.series]
+		self.sleeps_data['data'] = [x.data for x in self.sleep_summary.series]
+		
+		print('***********************************************************')
+		print(self.sleeps_data)
+
+		#Sleep service all the values for the
+		
+		self.sleeps_data['breathing disturbances'] = [x.breathing_disturbances_intensity for x in self.sleeps_data['data']]
+		self.sleeps_data['deep sleep duration'] = [x.deepsleepduration for x in self.sleeps_data['data']]
+		self.sleeps_data['duration to sleep'] = [x.durationtosleep for x in self.sleeps_data['data']]
+		self.sleeps_data['duration to wakeup'] = [x.durationtowakeup for x in self.sleeps_data['data']]
+		self.sleeps_data['hr average'] = [x.hr_average for x in self.sleeps_data['data']]
+		self.sleeps_data['hr_min'] = [x.hr_min for x in self.sleeps_data['data']]
+		self.sleeps_data['hr_max'] = [x.hr_max for x in self.sleeps_data['data']]
+		self.sleeps_data['rr_min'] = [x.rr_min for x in self.sleeps_data['data']]
+		self.sleeps_data['rr_max'] = [x.rr_max for x in self.sleeps_data['data']]
+		self.sleeps_data['light sleep duration'] = [x.lightsleepduration for x in self.sleeps_data['data']]
+		self.sleeps_data['rem sleep duration'] = [x.remsleepduration for x in self.sleeps_data['data']]
+		self.sleeps_data['rr average'] = [x.rr_average for x in self.sleeps_data['data']]
+		self.sleeps_data['sleep score'] = [x.sleep_score for x in self.sleeps_data['data']]
+		self.sleeps_data['wake up count'] = [x.wakeupcount for x in self.sleeps_data['data']]
+		self.sleeps_data['total sleep time'] = [x.total_sleep_time for x in self.sleeps_data['data']]
+		self.sleeps_data['total timeinbed'] = [x.total_timeinbed for x in self.sleeps_data['data']]
+		self.sleeps_data['waso'] = [x.waso for x in self.sleeps_data['data']]
+		self.sleeps_data['wake up duration'] = [x.wakeupduration for x in self.sleeps_data['data']]
+		self.sleeps_data['awake in bed'] =  np.subtract(self.sleeps_data['total timeinbed'],self.sleeps_data['total sleep time'])
+		self.sleeps_data['apnea'] =  [x.apnea_hypopnea_index for x in self.sleeps_data['data']]
+		self.sleeps_data['out of bed count'] = [x.out_of_bed_count for x in self.sleeps_data['data']]
+
+		#Values  of total time in bed, awake in bed conversion to hours /3600 
+		self.sleeps_data['total sleep time']=[x/3600 for x in self.sleeps_data['total sleep time']]
+		self.sleeps_data['awake in bed']=[x/3600 for x in self.sleeps_data['awake in bed']]
+
+		#Unique values calculation (The values for the variables are the ones taken between the biggest difference from start date and end date)
+
+		self.current_dates_ss, self.current_heart_rate, _ = self.data_utils.unique_values_sleep(self.sleeps_data['date'], self.sleeps_data['start_date'], self.sleeps_data['end_date'], self.sleeps_data['hr average']) 	
+		self.current_dates_ss, self.current_rr, _ = self.data_utils.unique_values_sleep(self.sleeps_data['date'], self.sleeps_data['start_date'], self.sleeps_data['end_date'], self.sleeps_data['rr average']) 
+		
+		#Woke up and fell asleep times
+		#This is to calculate the woke up and fell asleep times 
+		sleep_summary_backup = self.api.sleep_get_summary(data_fields=GetSleepSummaryField, startdateymd=arrow.utcnow().shift(days =  self.ending_day_c - 7),enddateymd=arrow.utcnow().shift(days = self.ending_day_c + 1), lastupdate = None)
+		sleepbu_data['date'] = [arrow.get(x.date) for x in sleep_summary_backup.series]
+		sleepbu_data['start_date'] = [arrow.get(x.startdate) for x in sleep_summary_backup.series]
+		sleepbu_data['end_date'] = [arrow.get(x.enddate) for x in sleep_summary_backup.series]
+		sleepbu_data['data'] = [x.data for x in sleep_summary_backup.series]
+		sleepbu_data['night_events'] = [x.night_events for x in sleepbu_data['data']]
+		current_dates_ne, current_events, positions = self.data_utils.unique_values_sleep(sleepbu_data['date'], sleepbu_data['start_date'], sleepbu_data['end_date'], sleepbu_data['night_events'])
+		self.daily_dates(startdate = sleepbu_data['start_date'], enddate = sleepbu_data['end_date'], positions = positions)		
+		
+		# Unique values Total Sleep Time - Graph and Table
+		self.current_dates_ss, self.current_sleep_time, _ = self.data_utils.unique_values_sleep(self.sleeps_data['date'], self.sleeps_data['start_date'], self.sleeps_data['end_date'], self.sleeps_data['total sleep time']) 	
+		
+		# Unique values Awake in bed - Out of bed count (This values are only used in the graph)
+		self.current_dates_ab, self.current_awake_bed, _ = self.data_utils.unique_values_sleep(self.sleeps_data['date'], self.sleeps_data['start_date'], self.sleeps_data['end_date'], self.sleeps_data['awake in bed']) 
+		self.current_dates_ab, self.current_out_bed, _ = self.data_utils.unique_values_sleep(self.sleeps_data['date'], self.sleeps_data['start_date'], self.sleeps_data['end_date'], self.sleeps_data['out of bed count']) 
+
+		# Unique values for Sleep Apnoea - Graph and Table
+		self.current_dates_ss, self.current_apnea, _ = self.data_utils.unique_values_sleep(self.sleeps_data['date'], self.sleeps_data['start_date'], self.sleeps_data['end_date'], self.sleeps_data['apnea']) 
+		self.current_dates_ss, self.current_apnea = self.data_utils.data_cleaning(self.current_dates_ss, self.current_apnea)
+		
+		#Db Values 
+
+		end_date = arrow.utcnow().shift(days=self.starting_day_c)
+		end_date = end_date.datetime
+		start_date = arrow.utcnow()
+		start_date = start_date.datetime
+		
+		#Data from the database API
+		data = self.database_api.get_sleep_summary_data(user = self.id_user, start_date= start_date, end_date= end_date)
+		#data = [{key: value for key, value in entry.items() if key != 'id'} for entry in data['scanwatches_summary']]
+		print('DATAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA from service')
+
+
+		
+		
 	def activity_data_watch(self): 
 
 		# This function returns the activity data. Please refer
@@ -713,6 +1069,10 @@ class Devices_OAuth2flow(object):
 
 	def daily_dates(self, startdate = None, enddate = None, positions = None):
 
+		#POSITIOOOONS
+		print('POSIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIITIONS')
+		print(positions)
+
 		start_dates = [startdate[i] for i in positions]
 		end_dates = [enddate[i] for i in positions]
 
@@ -890,8 +1250,17 @@ class Devices_OAuth2flow(object):
 		self.graph.plot_scatter(x = self.dates_rr, y = self.RR , k = self.current_dates_ss, j = self.rr_mean_bu, name = "RR")
 		self.graph.plot_scatter(x = self.dates_hr_sleep, y = self.HR , k = self.current_dates_ss,  j = self.hr_mean_bu, name = "HR")
 
-	#The following function is to fill the database with the values from the devices (modules called: db)
+	def plot_creatorV2(self):
 
+		self.graph = graph.Graph_generator(start_date =self.initial_dates,
+										   end_date = self.ending_dates,
+										   report_type = self.report_type)
+		self.graph.plot_bar(self.activity_data['date'],self.activity_data['steps'])
+		self.graph.plot_scatter(x = self.intra_activity_watch['dates_HR'], y = self.intra_activity_watch['Heart Rate'], k = self.activity_data['date'], j = self.activity_data['heart rate'], name = "HR_ScanWatch")
+		self.graph.plot_stacked_bar(x = self.current_dates_ss, y = self.current_sleep_time,
+									z = self.current_awake_bed, o = self.current_out_bed)
+	
+	#The following function is to fill the database with the values from the devices (modules called: db)
 	def db_filling(self):
 
 		self.database.SM.load_intra_activity(hr = self.HR_watch, time = self.dates_hr, time_steps = self.dates_steps, steps = self.steps_watch, time_calories = self.dates_calories, calories = self.calories_watch)
@@ -951,7 +1320,9 @@ class Devices_OAuth2flow(object):
 			self.current_sleep_rr = self.data_utils.values_dates_intersection(dates = self.current_dates_ss, start_date = arrow.utcnow().shift(days = self.starting_day_p) , end_date = arrow.utcnow().shift(days = self.ending_day_p), values = self.rr_mean_bu)
 			self.current_sleep_time_1 = self.data_utils.values_dates_intersection(dates = self.current_dates_ss, start_date = arrow.utcnow().shift(days = self.starting_day_p) , end_date = arrow.utcnow().shift(days = self.ending_day_p), values = self.current_sleep_time)
 			self.current_apnea_1 = self.data_utils.values_dates_intersection(dates = self.current_dates_ss, start_date = arrow.utcnow().shift(days = self.starting_day_p) , end_date = arrow.utcnow().shift(days = self.ending_day_p), values = self.current_apnea)
-			self.current_weight = self.data_utils.values_dates_intersection(dates = self.monthly_scale_data['date'], start_date = arrow.utcnow().shift(days = self.starting_day_p).replace(hour=0, minute=0, second=0), end_date = arrow.utcnow().shift(days = self.ending_day_p + 1).replace(hour=23, minute=59, second=59), values = self.weight_m)
+			self.current_weight = self.data_utils.values_dates_intersection(dates = self.monthly_scale_data['date'], start_date = arrow.utcnow().shift(days = self.starting_day_p).replace(hour=0, minute=0, second=0), end_date = arrow.utcnow().shift(days = self.ending_day_p).replace(hour=23, minute=59, second=59), values = self.weight_m)
+			print("FROM Developing section")
+			print(self.current_weight)
 			self.current_daily_hr = self.data_utils.values_dates_intersection(dates = self.activity_data['date'], start_date = arrow.utcnow().shift(days = self.starting_day_p) , end_date = arrow.utcnow().shift(days = self.ending_day_p), values = self.final_hr)
 			self.current_steps = self.data_utils.values_dates_intersection(dates = self.activity_data['date'], start_date = arrow.utcnow().shift(days = self.starting_day_p) , end_date = arrow.utcnow().shift(days = self.ending_day_p), values = self.activity_data['steps'])
 

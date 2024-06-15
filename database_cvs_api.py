@@ -274,17 +274,17 @@ class DatabaseServer_csv(object):
                             date_s = datetime.strptime(date_s, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
 
                             # Convert 'nan' values to None
-                            breathing_disturbances = 0 if math.isnan(float(dict[j]['Breathing disturbances'])) else float(dict[j]['Breathing disturbances']) 
-                            deep_sleep_duration = 0 if math.isnan(float(dict[j]['Deep sleep duration'])) else float(dict[j]['Deep sleep duration'])
-                            duration_to_sleep = 0 if math.isnan(float(dict[j]['Duration to sleep'])) else float(dict[j]['Duration to sleep'])
-                            duration_to_wakeup = 0 if math.isnan(float(dict[j]['Duration to wakeup'])) else float(dict[j]['Duration to wakeup'])
-                            average_heart_rate = 0 if math.isnan(float(dict[j]['HR average'])) else float(dict[j]['HR average'])
-                            light_sleep_duration = 0 if math.isnan(float(dict[j]['Light sleep duration'])) else float(dict[j]['Light sleep duration'])
-                            rem_sleep_duration = 0 if math.isnan(float(dict[j]['Rem sleep duration'])) else float(dict[j]['Rem sleep duration'])
-                            average_rr = 0 if math.isnan(float(dict[j]['RR average'])) else float(dict[j]['RR average'])
-                            sleep_score = 0 if math.isnan(float(dict[j]['Sleep score'])) else float(dict[j]['Sleep score'])
-                            wakeup_count = 0 if math.isnan(float(dict[j]['Wake up count'])) else float(dict[j]['Wake up count'])
-                            wakeup_duration = 0 if math.isnan(float(dict[j]['Wake up duration'])) else float(dict[j]['Wake up duration'])
+                            breathing_disturbances = -1 if math.isnan(float(dict[j]['Breathing disturbances'])) else float(dict[j]['Breathing disturbances']) 
+                            deep_sleep_duration = -1 if math.isnan(float(dict[j]['Deep sleep duration'])) else float(dict[j]['Deep sleep duration'])
+                            duration_to_sleep = -1 if math.isnan(float(dict[j]['Duration to sleep'])) else float(dict[j]['Duration to sleep'])
+                            duration_to_wakeup = -1 if math.isnan(float(dict[j]['Duration to wakeup'])) else float(dict[j]['Duration to wakeup'])
+                            average_heart_rate = -1 if math.isnan(float(dict[j]['HR average'])) else float(dict[j]['HR average'])
+                            light_sleep_duration = -1 if math.isnan(float(dict[j]['Light sleep duration'])) else float(dict[j]['Light sleep duration'])
+                            rem_sleep_duration = -1 if math.isnan(float(dict[j]['Rem sleep duration'])) else float(dict[j]['Rem sleep duration'])
+                            average_rr = -1 if math.isnan(float(dict[j]['RR average'])) else float(dict[j]['RR average'])
+                            sleep_score = -1 if math.isnan(float(dict[j]['Sleep score'])) else float(dict[j]['Sleep score'])
+                            wakeup_count = -1 if math.isnan(float(dict[j]['Wake up count'])) else float(dict[j]['Wake up count'])
+                            wakeup_duration = -1 if math.isnan(float(dict[j]['Wake up duration'])) else float(dict[j]['Wake up duration'])
                             
                    
                             data ={
@@ -325,17 +325,17 @@ class DatabaseServer_csv(object):
 
                         for j in range(len(dict)):
                             # Convert 'nan' values to None
-                            start_date = 0 if math.isnan(float(dict[j]['startdate'])) else float(dict[j]['startdate']) 
-                            end_date = 0 if math.isnan(float(dict[j]['enddate'])) else float(dict[j]['enddate']) 
-                            sleep_state = int(dict[j]['Sleep state'])
-                            date_heart_rate = 0 if math.isnan(float(dict[j]['Heart Rate date'])) else float(dict[j]['Heart Rate date'])
-                            heart_rate = 0 if math.isnan(float(dict[j]['Heart Rate'])) else float(dict[j]['Heart Rate'])
-                            date_respiration_rate = 0 if math.isnan(float(dict[j]['Respiration rate date'])) else float(dict[j]['Respiration rate date'])
-                            respiration_rate = 0 if math.isnan(float(dict[j]['Respiration rate'])) else float(dict[j]['Respiration rate'])
-                            date_snoring = 0 if math.isnan(float(dict[j]['Snoring date'])) else float(dict[j]['Snoring date'])
-                            snoring = 0 if math.isnan(float(dict[j]['Snoring'])) else float(dict[j]['Snoring'])
-                            date_sdnn_1 = 0 if math.isnan(float(dict[j]['sdnn_1 date'])) else float(dict[j]['sdnn_1 date'])
-                            sdnn_1 = 0 if math.isnan(float(dict[j]['sdnn_1'])) else float(dict[j]['sdncln_1'])
+                            start_date = -1 if math.isnan(float(dict[j]['startdate'])) else float(dict[j]['startdate']) 
+                            end_date = -1 if math.isnan(float(dict[j]['enddate'])) else float(dict[j]['enddate']) 
+                            sleep_state = -1 if math.isnan(float(dict[j]['Sleep state'])) else int(dict[j]['Sleep state']) 
+                            date_heart_rate = -1 if math.isnan(float(dict[j]['Heart Rate date'])) else float(dict[j]['Heart Rate date'])
+                            heart_rate = -1 if math.isnan(float(dict[j]['Heart Rate'])) else float(dict[j]['Heart Rate'])
+                            date_respiration_rate = -1 if math.isnan(float(dict[j]['Respiration rate date'])) else float(dict[j]['Respiration rate date'])
+                            respiration_rate = -1 if math.isnan(float(dict[j]['Respiration rate'])) else float(dict[j]['Respiration rate'])
+                            date_snoring = -1 if math.isnan(float(dict[j]['Snoring date'])) else float(dict[j]['Snoring date'])
+                            snoring = -1 if math.isnan(float(dict[j]['Snoring'])) else float(dict[j]['Snoring'])
+                            date_sdnn_1 = -1 if math.isnan(float(dict[j]['sdnn_1 date'])) else float(dict[j]['sdnn_1 date'])
+                            sdnn_1 = -1 if math.isnan(float(dict[j]['sdnn_1'])) else float(dict[j]['sdnn_1'])
                             print(start_date)
                             print(type(start_date))
                    

@@ -46,6 +46,7 @@ class Resilient(object):
         #self.users_path()
 
         self.general = 'db/General'
+        self.current_path = os.getcwd()
     
     def individual_report_generation(self):
 
@@ -62,18 +63,19 @@ class Resilient(object):
 
             id_user = input('Please provide the id for the user: ')
             
-            if id in users:
+            if id_user in users:
                 print("Participant already in the database")
             else:
                 self.id_available = id_user
                 #register participant - csv API
+                self.database.SM.set_date_report(date = datetime.now().strftime('%Y-%m-%d'))
                 self.database.register(user = self.id_available)
                 # register participant - database API
                 self.role = input('Please provide the role: ')
                 self.password = 'NoneYet'
-                self.database_api.register(user = self.id_user, role = self.role, password_hash = self.password)
+                self.database_api.register(user = self.id_available, role = self.role, password_hash = self.password)
 
-                self.create_participant(user = id)
+                self.create_participant(user = id_user)
                 
 
         elif self.gen_type == 'one':
@@ -128,7 +130,7 @@ class Resilient(object):
             print(self.id_available)
             
             total_participants = len(self.id_available)
-            for i in range (total_participants):
+            for i in range (15, total_participants):
 
                 id_report = self.id_available[i]
                 reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
@@ -143,15 +145,23 @@ class Resilient(object):
                 reports_resilient.scale_data()
                 reports_resilient.sleep()
                 reports_resilient.sleep_daily()
+                ###################################
+                #reports_resilient.intra_sleep_v2()
+                #reports_resilient.sleep_v2()
+                #reports_resilient.intra_activitydata_watch_v2()
+                #reports_resilient.activity_data_watch_v2()
+                #reports_resilient.plot_creatorV2()
+                #print(HOLA)
+                ###########################################
                 reports_resilient.activity_data_watch()
                 reports_resilient.plot_creator()
+                #print(HOLA)
                 reports_resilient.db_filling()
                 reports_resilient.doc_generation()
                 reports_resilient.usage_levels()
                 reports_resilient.remove_images()
                 reports_resilient.db_cleaning()
 
-            
 
     
     def create_participant(self, user = None):
@@ -166,7 +176,6 @@ class Resilient(object):
         reports_resilient.get_user_credentials()
         reports_resilient.register_devices()
         reports_resilient.devices_info()
-        reports_resilient.scale_data()
         reports_resilient.sleep()
         reports_resilient.sleep_daily()
         reports_resilient.activity_data_watch()
@@ -236,6 +245,8 @@ class Resilient(object):
         folder_path =  'Withings_reports'
         self.general = 'db/General'
         #source_folder = path.abspath(path.join(self.current_path,
+        users = self.current_users()
+        self.id_available = users
 
         
         if os.path.exists(folder_path):
@@ -369,9 +380,9 @@ class Resilient(object):
     def main(cls):
         a = cls()
         a.individual_report_generation()
-        #a.create_folder_reports()
-        #a.usage_reports()
-        #a.merge_pdf()
+        a.create_folder_reports()
+        a.usage_reports()
+        a.merge_pdf()
 		
 
 	

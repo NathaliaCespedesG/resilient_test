@@ -99,7 +99,7 @@ class PDF_generation(object):
 		else:
 
 			val1 = [value for value in val1 if value is not None and value != 0 and not math.isnan(value)]
-			self.mean_val1 = round(np.mean(val1))
+			self.mean_val1 = math.floor(np.mean(val1))
 			#self.mean_val1 = str("{:.2f}".format(self.mean_val1))
 			#self.mean_val11 = str(int(self.mean_val1))
 			self.sd_val1 = (np.std(val1))
@@ -138,7 +138,7 @@ class PDF_generation(object):
 
 		else:
 			val2 = [value for value in val2 if value is not None and value != 0 and not math.isnan(value)]
-			self.mean_val2 = round(np.mean(val2))
+			self.mean_val2 = math.floor(np.mean(val2))
 			#self.mean_val2 = str("{:.2f}".format(self.mean_val2))
 			#self.mean_val2 = str(int(self.mean_val2))
 			self.sd_val2 = (np.std(val2))
@@ -175,8 +175,8 @@ class PDF_generation(object):
 		else:
 			val3 = [value for value in val3 if value is not None and value != 0 and not math.isnan(value)]
 			self.mean_val3 = (np.mean(val3))
-			self.mean_val3 = str(round(self.mean_val3))
-			self.sd_val3 = str(round(np.std(val3)))
+			self.mean_val3 = str(math.floor(self.mean_val3))
+			self.sd_val3 = str((np.std(val3)))
 			self.var_3 = self.mean_val3 + " ± "+ self.sd_val3
 			#self.var_2 = self.mean_val2
 
@@ -198,14 +198,14 @@ class PDF_generation(object):
 			print('Empty values: No sd sd_comparisson')
 
 		else:
-			if round(np.mean(val1)) > round(np.mean(val2)) + 2 * round(np.std(val2)):
+			if (np.mean(val1)) > (np.mean(val2)) + 2 * (np.std(val2)):
 				highlight_styles.append(('BACKGROUND', (col, row), (col, row), colors.lightsalmon))
-			if round(np.mean(val1)) < round(np.mean(val2)) - 2 * round(np.std(val2)):
+			if (np.mean(val1)) < (np.mean(val2)) - 2 * (np.std(val2)):
 				highlight_styles.append(('BACKGROUND', (col, row), (col, row), colors.lightsalmon))
 			# Comparison with 1 SD difference
-			if round(np.mean(val1)) > round(np.mean(val2)) + 1 * round(np.std(val2)):
+			if (np.mean(val1)) > (np.mean(val2)) + 1 * (np.std(val2)):
 				highlight_styles.append(('BACKGROUND', (col, row), (col, row), colors.gold))
-			if round(np.mean(val1)) < round(np.mean(val2)) - 1 * round(np.std(val2)):
+			if (np.mean(val1)) < (np.mean(val2)) - 1 * (np.std(val2)):
 				highlight_styles.append(('BACKGROUND', (col, row), (col, row), colors.gold))
 
 
@@ -348,6 +348,8 @@ class PDF_generation(object):
 		steps_c, steps_p, steps_m = self.averages_data(self.steps[0],self.steps[1], self.steps[2], type_d = 'steps' )
 		sd_c,sd_p, sd_m = self.averages_data(self.sleep_duration[0],self.sleep_duration[1], self.sleep_duration[2], type_d = 'sd')
 		sa_c,sa_p, sa_m  = self.averages_data(self.sleep_apnoea[0],self.sleep_apnoea[1],self.sleep_apnoea[2], type_d = 'sa')
+		print('Froooooooom graph')
+		print(self.weight)
 		w_c, w_p, w_m = self.averages_data(self.weight[0], self.weight[1], self.weight[2], type_d = 'weight')
 
 

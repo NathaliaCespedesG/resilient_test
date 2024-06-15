@@ -20,7 +20,7 @@ class Data_Handler(object):
 	def initial_day(self):
 		#Function to calculat the ending date (latest date for acquisition) for the request with the Withings API
 		
-		today = datetime.today()
+		today = datetime.today() - timedelta(weeks=1)
 		days_difference = today.isoweekday() % 7
 		return (-days_difference)
 
