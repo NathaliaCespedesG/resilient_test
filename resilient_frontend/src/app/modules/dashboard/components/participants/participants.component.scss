@@ -92,3 +92,187 @@
 ::ng-deep.p-sortable-column-icon {
   color: white;
 }
+
+::ng-deep.p-dialog.confirm-dialog .p-dialog-header{
+  padding-bottom: 2vh !important;
+}
+
+
+::ng-deep.p-dialog.confirm-dialog .p-dialog-content{
+  padding-bottom: 0;
+
+  span {
+    margin: 0 !important;
+  }
+}
+
+::ng-deep.p-dialog.summary-dialog .p-dialog-header{
+  padding-bottom: 0;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+::ng-deep.p-dialog.summary-dialog .p-dialog-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 2vh;
+  overflow-y: auto;
+  overflow-x: hidden ;
+
+  p{
+    margin-bottom: 0;
+  }
+
+  .devices{
+    display: flex;
+    flex-direction: column;
+    gap: 2vh;
+    width: 100%;
+
+    .device-summary.active {
+      border: #2634D1 solid 0.15rem ;
+    }
+
+    .device-summary.inactive {
+      border: #0D1317 solid 1px;
+    }
+
+    .device-summary {
+      border-radius: 10px;
+      display: flex;
+      flex-direction: row;
+      padding: 1vh;
+
+      .icon-container{
+        display: flex;
+        flex-direction: row;
+        width: 60%;
+
+        .icon {
+          height: 60px;
+          width: 60px;
+          margin: 1vh 0 1vh 0;
+        }
+
+        .icon-text {
+          display: flex;
+          flex-direction: column;
+          gap: .5vh;
+          margin: .5vh 0 .5vh 1vh;
+
+          h3, p {
+            margin: 0;
+          }
+
+          .more-info > u {
+            margin: 0;
+            font-size: 0.8rem;
+          }
+
+          ul {
+            padding-left: 2vw;
+            margin: .5vh;
+          }
+        }
+      }
+
+      .usage-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        width: 40%;
+        height: 80px;
+
+        .usage-icon{
+          display: flex;
+          flex-direction: column;
+          gap: 1vh;
+
+          img {
+            height: 3vh;
+            stroke: red;
+          }
+
+          p {
+            margin: 0;
+          }
+
+          #svgObject svg {
+            stroke: blue;
+          }
+        }
+      }
+    }
+  }
+
+}
+
+::ng-deep.p-dialog.summary-dialog .p-dialog-footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-top: 2vh;
+}
+
+::ng-deep.edit-button {
+  height: 44px;
+  justify-content: space-between;
+  border-radius: 0.75rem;
+  background-color: #80C3DB;
+  width: 20vw;
+  padding: 0 1.25rem 0 1.25rem;
+}
+
+::ng-deep.edit-button:active {
+  background-color: #a9e2f7 !important;
+}
+
+::ng-deep.edit-button:hover {
+  background-color: #8ad3ee;
+}
+
+::ng-deep.delete-button {
+  height: 44px;
+  justify-content: space-between;
+  border-radius: 0.75rem;
+  background-color: black;
+  width: 20vw;
+  padding: 0 1.25rem 0 1.25rem;
+}
+
+::ng-deep.delete-button:active {
+  background-color: rgb(41, 41, 41) !important;
+}
+
+::ng-deep.delete-button:hover {
+  background-color: rgb(29, 29, 29);
+}
+
+::ng-deep.generate-button {
+  height: 44px;
+  justify-content: space-between;
+  border-radius: 0.75rem;
+  background-color: rgb(37, 46, 201);
+  width: 20vw;
+  padding: 0 1.25rem 0 1.25rem;
+}
+
+::ng-deep.generate-button:active {
+  background-color: rgb(94, 139, 229) !important;
+}
+
+::ng-deep.generate-button:hover {
+  background-color: rgb(33, 99, 235);
+}
+
+
+::ng-deep.p-dialog.edit-dialog .p-dialog-footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding-top: 2vh;
+}

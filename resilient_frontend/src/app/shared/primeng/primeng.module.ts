@@ -12,6 +12,9 @@ import { DialogModule } from 'primeng/dialog';
 import {ProgressSpinnerModule} from 'primeng/progressspinner';
 import {DynamicDialogModule} from 'primeng/dynamicdialog';
 import {SelectButtonModule} from 'primeng/selectbutton';
+import { AccordionModule } from 'primeng/accordion';
+import {ConfirmDialogModule} from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 
 @NgModule({
   declarations: [],
@@ -28,7 +31,9 @@ import {SelectButtonModule} from 'primeng/selectbutton';
     DialogModule,
     ProgressSpinnerModule,
     DynamicDialogModule,
-    SelectButtonModule
+    SelectButtonModule,
+    AccordionModule,
+    ConfirmDialogModule
   ],
   exports: [
     ButtonModule,
@@ -42,7 +47,10 @@ import {SelectButtonModule} from 'primeng/selectbutton';
     DialogModule,
     ProgressSpinnerModule,
     DynamicDialogModule,
-    SelectButtonModule
-  ]
+    SelectButtonModule,
+    AccordionModule,
+    ConfirmDialogModule
+  ],
+  providers: [ConfirmationService]
 })
 export class PrimengModule { }

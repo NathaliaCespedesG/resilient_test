@@ -22,6 +22,7 @@
     </p-button>
   </div>
 
+  <!--Participants table-->
   <div class="dashboard-option-body h-full w-full">
     <p-table
       [value]="filteredParticipants"
@@ -63,6 +64,7 @@
     </p-table>
   </div>
 
+  <!--Add participant dialog-->
   <p-dialog
     [(visible)]="showDialog"
     [modal]="true"
@@ -74,50 +76,58 @@
     </ng-template>
 
     <div class="dialog-content">
-      <p>Select username</p>
-      <div class="dashboard-option-header">
-        <div class="search-bar-no-icon username-bar" [ngClass]="{ 'error': isDuplicateUsername }">
-          <input
-            type="text"
-            id="usernameInput"
-            name="usernameInput"
-            placeholder=""
-            class=""
-            [(ngModel)]="username"
-            [disabled]="showSpinner"
-            (input)="onUsernameInputChange()"
-            required
-            minlength="4"
-            #usernameInput="ngModel"
-          />
-        </div>
-      </div>
-      <div *ngIf="isDuplicateUsername" class="error-message">
-        Username already exists
-      </div>
-      <div
-        *ngIf="usernameInput.invalid && (usernameInput.dirty || usernameInput.touched)"
-        class="error-message"
-      >
-        <div *ngIf="usernameInput.errors?.['required']">Username is required.</div>
-        <div *ngIf="usernameInput.errors?.['minlength']">Username must be at least 4 characters long.</div>
-      </div>
+      <form [formGroup]="participantForm" (ngSubmit)="addParticipant()">
 
-      <p>Select role</p>
-      <div class="dashboard-option-header">
-        <div class="search-bar-no-icon username-bar">
-          <p-dropdown
-            [options]="roles"
-            [(ngModel)]="selectedRole"
-            optionLabel="name"
-            [style]="{'background-color': 'rgb(222, 222, 222)', 'border-radius': '0.75rem', 'border': 'none', 'width': '100%'}"></p-dropdown>
+        <p>Select username</p>
+        <div class="dashboard-option-header">
+          <div class="search-bar-no-icon username-bar" [ngClass]="{ 'error': isDuplicateUsername }">
+            <input
+              type="text"
+              id="usernameInput"
+              name="usernameInput"
+              placeholder=""
+              class=""
+              formControlName="username"
+              [disabled]="showSpinner"
+              (input)="onUsernameInputChange()"
+            />
+          </div>
         </div>
-      </div>
+        <div *ngIf="isDuplicateUsername" class="error-message">
+          Username already exists
+        </div>
+        <div
+          *ngIf="participantForm.controls['username'].invalid && (participantForm.controls['username'].dirty || participantForm.controls['username'].touched)"
+          class="error-message"
+        >
+          <div *ngIf="participantForm.controls['username'].errors?.['required']">Username is required.</div>
+          <div *ngIf="participantForm.controls['username'].errors?.['minlength']">Username must be at least 4 characters long.</div>
+        </div>
 
-      <div *ngIf="isAddParticipantSuccessful">
-        <p>Please open the Withings authorisation URL</p>
-        <a href="{{withingsAuthURL}}" target="_blank">Open Authorisation Page</a>
-      </div>
+        <p>Select role</p>
+        <div class="dashboard-option-header">
+          <div class="search-bar-no-icon username-bar">
+            <p-dropdown
+              [options]="roles"
+              formControlName="selectedRole"
+              optionLabel="name"
+              [showClear]="true"
+              [required]="false"
+              [style]="{'background-color': 'rgb(222, 222, 222)', 'border-radius': '0.75rem', 'border': 'none', 'width': '100%'}"></p-dropdown>
+          </div>
+        </div>
+        <div
+          *ngIf="participantForm.controls['selectedRole'].invalid && (participantForm.controls['selectedRole'].dirty || participantForm.controls['selectedRole'].touched)"
+          class="error-message"
+        >
+          <div *ngIf="participantForm.controls['selectedRole'].errors?.['required']">Role is required.</div>
+        </div>
+
+        <div *ngIf="isAddParticipantSuccessful">
+          <p>Please open the Withings authorisation URL</p>
+          <a href="{{withingsAuthURL}}" target="_blank">Open Authorisation Page</a>
+        </div>
+      </form>
 
     </div>
 
@@ -137,16 +147,210 @@
     </ng-template>
   </p-dialog>
 
+  <!--Participant summary dialog-->
   <p-dialog
     [(visible)]="showParticipantSummaryDialog"
     [modal]="true"
-    [style]="{width:  '80vw', height: '70vh'}"
-    (onHide)="onParticipantSummaryDialogHide()"
+    [style]="{width:  '70vw', height: '65vh'}"
+    (onHide)="onDialogHide()"
+    styleClass="summary-dialog"
   >
-    <ng-template pTemplate="header" class="dialog-header">
-      <h2>{{currentParticipant.data.username}}</h2>
+    <ng-template pTemplate="header">
+      <h2>{{participantData.username}}</h2>
     </ng-template>
 
+    <ng-template pTemplate="content">
+      <p>User since: {{participantData.created_at}}</p>
+
+      <div class="devices">
+        @if (!participantData.devicesLoaded) {
+          <p>Loading..</p>
+        } @else {
+          @if (participantData.devices.length == 0) {
+            <p>No devices found.</p>
+          }
+          @for (device of participantData.devices; track $index) {
+            <div class="device-summary w-full"
+              [ngClass]="device.is_active ? 'active' : 'inactive'"
+              (click)="showDeviceTable($index)"
+              >
+              <div class="icon-container">
+                <img class="icon" [src]="icons[device.device_type].path">
+                <div class="icon-text">
+                  <h3>{{icons[device.device_type].prettyName}}</h3>
+                  <p>Last log: {{device.last_log ? device.last_log : 'Never'}}</p>
+                  @if (deviceDetailsVisible[$index]){
+                    <ul>
+                      <li>MAC address: {{device.mac_address}}</li>
+                      <li>Connected since: {{device.created_at}}</li>
+                      <li>Last updated: {{device.updated_at}}</li>
+                    </ul>
+                    <p (click)="toggleDeviceDetails($index)" class="more-info"><u>Less info...</u></p>
+                  } @else {
+                    <p (click)="toggleDeviceDetails($index)" class="more-info"><u>More info...</u></p>
+                  }
+                </div>
+              </div>
+              <div class="usage-container">
+                <div class="usage-icon">
+                  <img [src]="icons['usage_level'].path" alt="">
+                  <p>-100%</p>
+                </div>
+                <div class="usage-icon">
+                  <img [src]="icons['usage_battery'].path" alt="">
+                  <p>-100%</p>
+                </div>
+                <div class="usage-icon">
+                  @if (device.is_active) {
+                    <img [src]="icons['usage_active'].path" alt="" id="svgObject">
+                    <p>{{icons['usage_active'].prettyName}}</p>
+                    } @else {
+                      <img [src]="icons['usage_inactive'].path" alt="" id="svgObject">
+                      <p>{{icons['usage_inactive'].prettyName}}</p>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </div>
+
+
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+      <p-button styleClass="edit-button" (click)="showEditParticipantModal()" label="Edit Participant">
+        <div class="flex items-center justify-center">
+          <mat-icon>add_circle</mat-icon>
+        </div>
+      </p-button>
+      <p-confirmDialog styleClass="confirm-dialog" />
+      <p-button styleClass="delete-button" (click)="deleteConfirmation($event)" label="Delete Participant">
+        <div class="flex items-center justify-center">
+          <mat-icon>delete</mat-icon>
+        </div>
+      </p-button>
+      <p-button styleClass="generate-button" (click)="showAddParticipantModal()" label="Generate Report">
+        <div class="flex items-center justify-center">
+          <mat-icon>add_circle</mat-icon>
+        </div>
+      </p-button>
+
+    </ng-template>
+
+  </p-dialog>
+
+  <!--Edit participant dialog-->
+  <p-dialog
+  [(visible)]="showEditDialog"
+  [modal]="true"
+  [style]="{width:  '50vw', height: '60vh'}"
+  (onHide)="onDialogHide()"
+  styleClass="edit-dialog"
+>
+  <ng-template pTemplate="header" class="dialog-header">
+    <h2>Edit Participant: {{participantData.username}}</h2>
+  </ng-template>
+
+  <div class="dialog-content">
+    <form [formGroup]="editParticipantForm" (ngSubmit)="editParticipant()">
+
+      <p>Select new username</p>
+      <div class="dashboard-option-header">
+        <div class="search-bar-no-icon username-bar" [ngClass]="{ 'error': isDuplicateUsername }">
+          <input
+            type="text"
+            id="usernameInput"
+            name="usernameInput"
+            placeholder=""
+            class=""
+            formControlName="username"
+            [disabled]="showSpinner"
+            (input)="onUsernameInputChange()"
+          />
+        </div>
+      </div>
+      <div *ngIf="isDuplicateUsername" class="error-message">
+        Username already exists
+      </div>
+      <div
+        *ngIf="editParticipantForm.controls['username'].invalid && (editParticipantForm.controls['username'].dirty || editParticipantForm.controls['username'].touched)"
+        class="error-message"
+      >
+        <div *ngIf="editParticipantForm.controls['username'].errors?.['minlength']">Username must be at least 4 characters long.</div>
+      </div>
+
+      <p>Select new role</p>
+      <div class="dashboard-option-header">
+        <div class="search-bar-no-icon username-bar">
+          <p-dropdown
+            [options]="roles"
+            formControlName="selectedRole"
+            optionLabel="name"
+            [showClear]="true"
+            [style]="{'background-color': 'rgb(222, 222, 222)', 'border-radius': '0.75rem', 'border': 'none', 'width': '100%'}"></p-dropdown>
+        </div>
+      </div>
+    </form>
+
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="dialog-footer">
+
+      <p-button styleClass="add-participant-button" (click)="editParticipant()" label="Save changes">
+        <div class="flex items-center justify-center">
+          <mat-icon>edit</mat-icon>
+        </div>
+      </p-button>
+
+      <div *ngIf="showSpinner" class="spinner-container">
+        <p-progressSpinner styleClass="custom-spinner" animationDuration="1.0s"></p-progressSpinner>
+      </div>
+    </div>
+  </ng-template>
+  </p-dialog>
+
+  <p-dialog
+    (onHide)="onDialogHide()"
+    [(visible)]="showDeviceTableDialog"
+    [style]="{width:  '100vw', height: '80vh'}"
+    styleClass="device-table-dialog"
+  >
+    <ng-template pTemplate="header" class="dialog-header">
+      <h2>{{deviceName + "'s Summary for: '" + participantData.username}}</h2>
+    </ng-template>
+    <ng-template pTemplate="content">
+      <p-table
+        [value]="deviceSummary"
+        [rowHover]="true"
+        [paginator]="true"
+        [rows]="9"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+      >
+      <ng-template pTemplate="header">
+        <tr>
+          <th [pSortableColumn]="'date'">Date<p-sortIcon field="date"></p-sortIcon></th>
+          <th [pSortableColumn]="'average_heart_rate'">Av. Heart Rate<p-sortIcon field="average_heart_rate"></p-sortIcon></th>
+          <th [pSortableColumn]="'calories'">Calories<p-sortIcon field="calories"></p-sortIcon></th>
+          <th [pSortableColumn]="'steps'">Steps<p-sortIcon field="steps"></p-sortIcon></th>
+          <th [pSortableColumn]="'hr_max'">Max. Heart Rate<p-sortIcon field="hr_max"></p-sortIcon></th>
+          <th [pSortableColumn]="'hr_min'">Min. Heart Rate<p-sortIcon field="hr_min"></p-sortIcon></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-device>
+          <tr [pSelectableRow]="device">
+            <td>{{device.date}}</td>
+            <td>{{device.average_heart_rate}}</td>
+            <td>{{device.calories}}</td>
+            <td>{{device.steps}}</td>
+            <td>{{device.hr_max}}</td>
+            <td>{{device.hr_min}}</td>
+          </tr>
+      </ng-template>
+    </p-table>
+    </ng-template>
   </p-dialog>
 
 </div>

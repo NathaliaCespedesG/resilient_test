@@ -4,6 +4,7 @@ export interface User {
   role: string;
   updated_at: string;
   created_at: string;
+  active: boolean;
 }
 
 export interface Users {
