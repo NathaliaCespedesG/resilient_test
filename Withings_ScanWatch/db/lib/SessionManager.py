@@ -30,12 +30,14 @@ class DatabaseManager(object):
 
 		self.ScaleFile.close()
 
-	def load_ScanWatch(self, time = None, hr = None, calories = None, steps = None):
+	def load_ScanWatch(self, time = None, hr = None, calories = None, steps = None, hr_max = None, hr_min = None):
 
+		print(hr_min)
+	
 		#Loading data
 		self.ScanWatchfile = open(self.scanwatch_name, 'a')
 		for i in range (len(time)):
-			self.df_scanwatch = self.df_scanwatch.append({'date': time[i], 'HR_Average':hr[i],'Calories': calories[i], 'Steps': steps[i]}, ignore_index=True)
+			self.df_scanwatch = self.df_scanwatch.append({'date': time[i], 'HR_Average':hr[i],'Calories': calories[i], 'Steps': steps[i], 'HR_min': hr_min[i], 'HR_max': hr_max[i]}, ignore_index=True)
 		self.df_scanwatch.to_csv(self.scanwatch_name, index = False )
 
 		self.ScanWatchfile.close()
@@ -232,7 +234,7 @@ class DatabaseManager(object):
 			self.df_scanwatch = existing_data_hr
 
 		except:
-			self.df_scanwatch = pd.DataFrame({'date': [], 'HR_Average': [], 'Calories': [], 'Steps': []} )
+			self.df_scanwatch = pd.DataFrame({'date': [], 'HR_Average': [], 'Calories': [], 'Steps': [], 'HR_min': [], 'HR_max':[]} )
 			self.df_scanwatch.to_csv(self.scanwatch_name, index = False )
 
 
@@ -315,7 +317,7 @@ class DatabaseManager(object):
 		# Open the corresponding data file
 		df = pd.read_csv(file_name, header = 0, delimiter=',')
 		#Converting the dates to datetime
-		
+		#print(HOLA)
 		if cvs_from == 'Intra_watch':
 			df[ref_column_name] = pd.to_datetime(df[ref_column_name], unit = 's') 
 		elif cvs_from == 'Intra_sleep':
@@ -323,9 +325,12 @@ class DatabaseManager(object):
 		else:
 			df[ref_column_name] = pd.to_datetime(df[ref_column_name])
 
-		df = df.drop_duplicates(subset=ref_column_name)
 		# Sorting values according the date
 		df = df.sort_values(by = ref_column_name, ascending=False)
+		df = df.drop_duplicates(subset=ref_column_name, keep = 'first')
+		
+
+	
 
 		if cvs_from == 'Intra_watch':
 			df[ref_column_name] = df[ref_column_name].apply(lambda x: x.timestamp() if pd.notnull(x) else np.nan)
@@ -338,7 +343,7 @@ class DatabaseManager(object):
 
 		#Info to csv file
 		df.to_csv(file_name, index=False)
-		
+		#file_name.close()
 	
 	
 
