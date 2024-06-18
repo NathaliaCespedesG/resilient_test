@@ -10,6 +10,7 @@ class User(models.Model):
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
     password_hash = models.CharField(max_length=200)
+    active = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
         # Update the `updated_at` field before saving the record

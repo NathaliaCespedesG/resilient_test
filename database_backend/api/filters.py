@@ -10,6 +10,7 @@ class UserFilter(django_filters.FilterSet):
     updated_at = django_filters.DateFilter(field_name='updated_at', lookup_expr='exact')
     updated_at_from = django_filters.DateFilter(field_name='updated_at', lookup_expr='gte')
     updated_at_to = django_filters.DateFilter(field_name='updated_at', lookup_expr='lte')
+    active = django_filters.BooleanFilter(field_name='active', lookup_expr='exact')
 
     class Meta:
         model = User

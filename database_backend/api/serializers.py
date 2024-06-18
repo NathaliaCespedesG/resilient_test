@@ -29,7 +29,8 @@ class UserSerializer(serializers.ModelSerializer):
             'username': instance.username,
             'role': instance.role,
             'created_at': instance.created_at,
-            'updated_at': instance.updated_at
+            'updated_at': instance.updated_at,
+            'active': instance.active
         }
 
 class DeviceSerializer(serializers.ModelSerializer):
@@ -77,17 +78,17 @@ class SleepmatSummarySerializer(serializers.ModelSerializer):
         model = SleepmatSummary
         fields = '__all__'
 
-class ReportSerializer(serializers.Serializer):
+class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = '__all__'
 
-class UsageSerializer(serializers.Serializer):
+class UsageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usage
         fields = '__all__'
 
-class UserHealthDataSerializer(serializers.Serializer):
+class UserHealthDataSerializer(serializers.ModelSerializer):
     scanwatch_summary = ScanWatchSummarySerializer(many=True, read_only=True)
     scanwatch_intraactivity = ScanWatchIntraActivitySerializer(many=True, read_only=True)
     sleepmat_summary = SleepmatSummarySerializer(many=True, read_only=True)
