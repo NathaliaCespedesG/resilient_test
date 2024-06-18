@@ -95,7 +95,6 @@ class Devices_OAuth2flow(object):
 		#Create an ID for each user
 
 		self.id_user = str(id_participant)
-		print('999999999999999999999999999999999')
 		print(self.id_user)
 
 		#Create the credentials File
@@ -235,7 +234,12 @@ class Devices_OAuth2flow(object):
 	def dates_SPC_charts(self):
 
 		#Registration date from API
-		registration_date = self.db_id['users'][0]['created_at']
+		try:
+			registration_date = self.db_id['users'][0]['created_at']
+
+		except:
+			registration_date = datetime.now().strftime("%Y-%m-%d")
+
 		print(registration_date)
 
 		df = pd.read_csv(self.users_path , header = 0, delimiter=';')
@@ -261,9 +265,13 @@ class Devices_OAuth2flow(object):
 			self.starting_day_c = -(90 - self.ending_day_c)
 		else:
 			self.starting_day_c = - days_difference
+		
+		#self.ending_day_c = -127
+		#self.starting_day_c = -187
 
 		self.ending_day_p = self.data_utils.initial_day()
 		self.starting_day_p = self.ending_day_p - 6
+
 
 		# Dates
 		self.initial_dates = arrow.utcnow().shift(days = self.starting_day_c)
@@ -1264,7 +1272,8 @@ class Devices_OAuth2flow(object):
 	def db_filling(self):
 
 		self.database.SM.load_intra_activity(hr = self.HR_watch, time = self.dates_hr, time_steps = self.dates_steps, steps = self.steps_watch, time_calories = self.dates_calories, calories = self.calories_watch)
-		self.database.SM.load_ScanWatch(hr = self.activity_data['heart_rate'], calories = self.activity_data['calories'], steps = self.activity_data['steps'],  time = self.activity_data['date'] )
+		self.database.SM.load_ScanWatch(hr = self.activity_data['heart_rate'], calories = self.activity_data['calories'], steps = self.activity_data['steps'], hr_max = self.activity_data['hr_max'],
+								hr_min = self.activity_data['hr_min'],time = self.activity_data['date'] )
 		self.database.SM.load_Scale(time = self.scale_data['date'], weight = self.weight, muscle_mass = self.muscle_mass, bone_mass = self.bone_mass, fat_mass = self.fat_mass)
 		self.database.SM.load_SleepMat(time = self.sleeps_data['date'], bd = self.sleeps_data['breathing disturbances'], dsd = self.sleeps_data['deep sleep duration'], dts = self.sleeps_data['duration to sleep'],
 									dtw = self.sleeps_data['duration to wakeup'], hr = self.sleeps_data['hr average'], lsd = self.sleeps_data['light sleep duration'], rsd = self.sleeps_data['rem sleep duration'], 
@@ -1320,7 +1329,7 @@ class Devices_OAuth2flow(object):
 			self.current_sleep_rr = self.data_utils.values_dates_intersection(dates = self.current_dates_ss, start_date = arrow.utcnow().shift(days = self.starting_day_p) , end_date = arrow.utcnow().shift(days = self.ending_day_p), values = self.rr_mean_bu)
 			self.current_sleep_time_1 = self.data_utils.values_dates_intersection(dates = self.current_dates_ss, start_date = arrow.utcnow().shift(days = self.starting_day_p) , end_date = arrow.utcnow().shift(days = self.ending_day_p), values = self.current_sleep_time)
 			self.current_apnea_1 = self.data_utils.values_dates_intersection(dates = self.current_dates_ss, start_date = arrow.utcnow().shift(days = self.starting_day_p) , end_date = arrow.utcnow().shift(days = self.ending_day_p), values = self.current_apnea)
-			self.current_weight = self.data_utils.values_dates_intersection(dates = self.monthly_scale_data['date'], start_date = arrow.utcnow().shift(days = self.starting_day_p).replace(hour=0, minute=0, second=0), end_date = arrow.utcnow().shift(days = self.ending_day_p).replace(hour=23, minute=59, second=59), values = self.weight_m)
+			self.current_weight = self.data_utils.values_dates_intersection(dates = self.monthly_scale_data['date'], start_date = arrow.utcnow().shift(days = self.starting_day_p).replace(hour=0, minute=0, second=0), end_date = arrow.utcnow().shift(days = self.ending_day_p + 1).replace(hour=0, minute=0, second=0), values = self.weight_m)
 			print("FROM Developing section")
 			print(self.current_weight)
 			self.current_daily_hr = self.data_utils.values_dates_intersection(dates = self.activity_data['date'], start_date = arrow.utcnow().shift(days = self.starting_day_p) , end_date = arrow.utcnow().shift(days = self.ending_day_p), values = self.final_hr)

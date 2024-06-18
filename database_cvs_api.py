@@ -185,9 +185,12 @@ class DatabaseServer_csv(object):
     def upload_scanwatch_summary_data(self):
 
         url = 'http://127.0.0.1:8000/api/scanwatches/summary/'
+        
         for i in range(len(self.id_available)):
+            print(self.id_available)
             path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/ScanWatch_summary.csv'
             watch_id = self.get_device_id(id_user = str(self.id_available[i]), devices_dict = self.devices_dict, device_type = 'scan_watch')
+            print(watch_id)
             #print(scale_id)
             if os.path.exists(path):
                 # Open the CSV file in read mode
@@ -205,17 +208,67 @@ class DatabaseServer_csv(object):
                             average_heart_rate = 0 if math.isnan(float(dict[j]['HR_Average'])) else float(dict[j]['HR_Average']) 
                             calories = 0 if math.isnan(float(dict[j]['Calories'])) else float(dict[j]['Calories'])
                             steps = 0 if math.isnan(float(dict[j]['Steps'])) else float(dict[j]['Steps'])
+                            hr_max = 0 if math.isnan(float(dict[j]['HR_max'])) else float(dict[j]['HR_max'])
+                            hr_min = 0 if math.isnan(float(dict[j]['HR_min'])) else float(dict[j]['HR_min'])
                    
                             data ={
                                 "device": watch_id,
                                 "date": date_s,
                                 "average_heart_rate": average_heart_rate,
                                 "calories": calories,
-                                "steps": steps
+                                "steps": steps,
+                                "hr_max": hr_min,
+                                "hr_min": hr_max,
+                                
                                 }
                             
                             print(data)
+                            print('*********************')
+                            print(self.id_available[i])
                             response = requests.post(url, json=data)
+
+    def upload_usage_data(self):
+        url = 'http://127.0.0.1:8000/api/usage/'
+        current_users = {key: value for key, value in self.id_username_dict.items() if value in self.id_available }
+        for i in range(len(self.id_available)):
+            path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/Usage.csv'
+            
+            #print(scale_id)
+            if os.path.exists(path):
+                # Open the CSV file in read mode
+                with open(path, 'r', newline='') as csv_file:
+                    df = pd.read_csv(path, header = 0, delimiter=',')
+                    dict = df.to_dict(orient = 'records')
+                    #print(dict)
+                    user_key = [key for key, val in current_users.items() if val == self.id_available[i]]
+                    for j in range(len(dict)):
+                        date_scanwatch = self.convert_to_iso_format(dict[j]['Watch Last reading'][:-6])
+                        date_scanwatch = datetime.strptime(date_scanwatch, '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d')
+                        #date_scanwatch = datetime.strptime(date_scanwatch, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+                        date_sleepmat = self.convert_to_iso_format(dict[j]['SleepMat Last reading'][:-6])
+                        date_sleepmat = datetime.strptime(date_sleepmat, '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d')
+                        #date_sleepmat = datetime.strptime(date_sleepmat, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+                        date_scale = self.convert_to_iso_format(dict[j]['Scale Last reading'][:-6])
+                        date_scale = datetime.strptime(date_scale, '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d')
+                        #date_scale  = datetime.strptime(date_scale, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+                        
+                        data ={
+                            "user": user_key,
+                            "scanwatch_usage_level": '-1' if str(dict[j]['Watch Usage']) == 'nan' else dict[j]['Watch Usage'],
+                            "scanwatch_battery": '-1' if str(dict[j]['Watch Battery'] == 'nan') else dict[j]['Watch Battery'],
+                            "scanwatch_last_date": date_scanwatch,
+                            "sleepmat_usage_level": '-1' if str(dict[j]['SleepMat Usage'] == 'nan') else dict[j]['SleepMat Usage'],
+                            "sleepmat_battery": '-1' if dict[j]['SleepMat Battery'] else dict[j]['SleepMat Battery'],
+                            "sleepmat_last_date": date_sleepmat,
+                            "scale_usage_level": '-1' if str(dict[j]['Scale Usage'] == 'nan') else dict[j]['Scale Usage'],
+                            "scale_battery": '-1' if str(dict[j]['Scale Battery'] == 'nan') else dict[j]['Scale Battery'],
+                            "scale_last_date": date_scale
+                                            }
+                        
+                        print(data)
+                        response = requests.post(url, json=data)
+
+
 
 
     def upload_intra_scanwatch_summary_data(self):
@@ -250,6 +303,7 @@ class DatabaseServer_csv(object):
                                 }
                             
                             print(data)
+                           
                             response = requests.post(url, json=data)
         
     
@@ -387,6 +441,19 @@ class DatabaseServer_csv(object):
                     break
         
         return(scale_value)
+    
+    def convert_to_iso_format(self,date_string):
+        # Handle both formats: '2024-03-30 00:00:00' and '2024-03-30T00:00:00'
+        try:
+            # Try parsing with the space separator
+            parsed_datetime = datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')
+        
+        except ValueError:
+            # If parsing fails, try with the 'T' separator
+            parsed_datetime = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%S')
+            
+        # Format to 'YYYY-MM-DDTHH:MM:SS'
+        return parsed_datetime.strftime('%Y-%m-%dT%H:%M:%S')
 
             
 
@@ -405,12 +472,13 @@ path_user = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/Users.csv'
 db_csv = DatabaseServer_csv(path = path_user)
 db_csv.import_users_from_csv()
 db_csv.get_users()
-#db_csv.upload_device_info()
+db_csv.upload_device_info()
 db_csv.get_device_info()
 #db_csv.upload_scale_summary_data()
-#db_csv.upload_scanwatch_summary_data()
+db_csv.upload_scanwatch_summary_data()
 #db_csv.upload_sleep_summary_data()
-db_csv.upload_intra_sleep_summary_data()
+#db_csv.upload_intra_sleep_summary_data()
+#db_csv.upload_usage_data()
 #db_csv.upload_intra_scanwatch_summary_data()
     
 

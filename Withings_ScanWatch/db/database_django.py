@@ -15,11 +15,12 @@ class Database_API(object):
     def register(self, user = None, role = None, password_hash = None):
 
         url = 'http://127.0.0.1:8000/api/users/'
-
+        print('**********************************************')
         data = {
                 "username": user,
                 "role": role,
-                "password_hash": password_hash
+                "password_hash": password_hash,
+                "active": True
                 }
         
         response = requests.post(url, json = data)
