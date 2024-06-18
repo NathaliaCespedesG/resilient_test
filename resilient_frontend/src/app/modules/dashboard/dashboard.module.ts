@@ -7,7 +7,7 @@ import { ReportsComponent } from './components/reports/reports.component';
 import { DevicesComponent } from './components/devices/devices.component';
 import { MaterialModule } from '../../shared/material/material.module';
 import { PrimengModule } from '../../shared/primeng/primeng.module';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ParticipantSummaryComponent } from './components/participant-summary/participant-summary.component';
 
 
@@ -25,7 +25,8 @@ import { ParticipantSummaryComponent } from './components/participant-summary/pa
     DashboardRoutingModule,
     MaterialModule,
     PrimengModule,
-    FormsModule
+    FormsModule,
+    ReactiveFormsModule
   ]
 })
 export class DashboardModule { }

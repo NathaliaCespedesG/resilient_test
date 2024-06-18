@@ -8,6 +8,8 @@ import { PrimengModule } from './shared/primeng/primeng.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
+import { ReactiveFormsModule } from '@angular/forms';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -20,7 +22,8 @@ import { HttpClientModule } from '@angular/common/http';
     PrimengModule,
     BrowserAnimationsModule,
     FormsModule,
-    HttpClientModule
+    HttpClientModule,
+    ReactiveFormsModule
   ],
   providers: [
     provideClientHydration()
