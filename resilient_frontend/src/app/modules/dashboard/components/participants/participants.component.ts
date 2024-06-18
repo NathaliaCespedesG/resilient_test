@@ -3,6 +3,7 @@ import { RequestsService } from '../../../../services/requests.service';
 import { Role } from '../../../../shared/models/roles';
 import { User, Users } from '../../../../shared/models/database-types';
 import { NgModel } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-participants',
@@ -15,17 +16,21 @@ export class ParticipantsComponent implements OnInit {
   roles: Role[] = [];
   selectedRole: Role;
   showDialog: boolean = false;
+  showParticipantSummaryDialog: boolean = false;
   username: string;
   showSpinner: boolean = false;
   isDuplicateUsername: boolean = false;
   isAddParticipantSuccessful: boolean = false;
   usernameFilter: string = '';
   withingsAuthURL: string = 'https://account.withings.com/oauth2_user/authorize2?response_type=code&client_id=e64cb563bf44122144cd0702b02f69ad50d21aba0eb50ca443f69db5673ca2cc&redirect_uri=https%3A%2F%2Fresilient.ukdri.care%2F&scope=user.activity%2Cuser.metrics%2Cuser.info%2Cuser.sleepevents%2Cuser.rawdata&state=vsGpqaNPVDPOCrik8Fwn1F4369nTHa'
+  currentParticipant: any;
+  selectedRows: any[] = [];
 
   @ViewChild('usernameInput', { static: false }) usernameInput?: NgModel;
 
   constructor(
-    private _requestsService: RequestsService
+    private _requestsService: RequestsService,
+    private _router: Router
   ) {
 
     this.roles = [
@@ -110,6 +115,27 @@ export class ParticipantsComponent implements OnInit {
       this.usernameInput.control.markAsPristine(); // Reset ngModel state on dialog show
       this.usernameInput.control.markAsUntouched();
     }
+  }
+
+  onParticipantSummaryDialogHide(): void {
+    this.selectedRows = [];
+  }
+
+  onSelectParticipant(participant: any) {
+    this.showParticipantSummaryDialog = true;
+    this.currentParticipant = participant;
+    console.log(participant);
+
+    this._router.navigate(
+      ['/dashboard/participant-summary'],
+      {
+        state:{
+          username: participant.data.username,
+          createdAt: participant.data.created_at
+        }
+      }
+    );
+
   }
 
 }

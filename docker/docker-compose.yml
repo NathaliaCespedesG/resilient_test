@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  database-backend:
+    image: sergiosierraic/resilient-database-backend:v0.0.1
+    ports:
+      - "8000:8000"
+      - "5432:5432"
+    env_file:
+      - vars.env
