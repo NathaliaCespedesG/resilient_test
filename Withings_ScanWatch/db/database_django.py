@@ -18,7 +18,8 @@ class Database_API(object):
         data = {
                 "username": user,
                 "role": role,
-                "password_hash": password_hash
+                "password_hash": password_hash,
+                "active": True
                 }
         
         response = requests.post(url, json = data)
