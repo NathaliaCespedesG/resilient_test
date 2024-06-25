@@ -42,7 +42,8 @@ class DatabaseManager(object):
 
 		self.ScanWatchfile.close()
 
-	def load_SleepMat(self, time = None, bd = None, dsd = None, dts = None, dtw = None, hr = None, lsd = None, rsd = None, rr = None, ss = None,wpc = None, wpd = None):
+	def load_SleepMat(self, time = None, bd = None, dsd = None, dts = None, dtw = None, hr = None, lsd = None, rsd = None, rr = None, ss = None,wpc = None, wpd = None,
+				   tst = None,ttb = None, awb = None, ap = None, obc = None):
 
 		#Loading data
 		self.SleepMatFile = open(self.sleepmat_name, 'a')
@@ -50,7 +51,7 @@ class DatabaseManager(object):
 		for i in range (len(time)):
 			self.df_sleepsummary = self.df_sleepsummary.append({'date': time[i], 'Breathing disturbances': bd[i], 'Deep sleep duration': dsd[i], 'Duration to sleep': dts[i] , 'Duration to wakeup': dtw[i],
 								'HR average': hr[i], 'Light sleep duration': lsd[i], 'Rem sleep duration': rsd[i], 'RR average': rr[i], 'Sleep score': ss[i], 'Wake up count': wpc[i],
-								'Wake up duration': wpd[i]}, ignore_index=True)
+								'Wake up duration': wpd[i], 'Total sleep time': tst[i], 'Total time in bed': ttb[i], 'Awake in bed': awb[i], 'Apnea': ap[i], 'Out of bed count': obc[i] }, ignore_index=True)
 		self.df_sleepsummary.to_csv(self.sleepmat_name, index = False )
 
 	
@@ -253,10 +254,8 @@ class DatabaseManager(object):
 		except:
 			self.df_sleepsummary = pd.DataFrame({'date': [], 'Breathing disturbances': [], 'Deep sleep duration': [], 'Duration to sleep': [] , 'Duration to wakeup': [],
 									'HR average': [], 'Light sleep duration': [], 'Rem sleep duration': [], 'RR average': [], 'Sleep score': [], 'Wake up count': [],
-								 	'Wake up duration': []} )
+								 	'Wake up duration': [], 'Total Sleep Time': [], 'Wake up duration': [], 'Total sleep time': [], 'Total time in bed': [], 'Awake in bed': [], 'Apnea': [], 'Out of bed count': [] } )
 			self.df_sleepsummary.to_csv(self.sleepmat_name, index = False )
-
-
 		try:
 			existing_data_scanintra = pd.read_csv(self.scanwatch_intraday)
 			self.df_scawatch_intra = existing_data_scanintra

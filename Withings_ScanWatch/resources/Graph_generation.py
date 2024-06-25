@@ -148,14 +148,14 @@ class Graph_generator(object):
 		j = [value for value in j if value is not None and value != 0]
 
 		# X is a character to represent the timestamp ( e.g., '16782892902')
-		x = [datetime.fromtimestamp(timestamp) for timestamp in x]
+		x = [datetime.fromtimestamp(timestamp) for timestamp in x] 
 		x = [value for index, value in enumerate(x) if index not in index_0]
 
 		#print(k)
 		
 		# k, start_date and end_date are arroe types (e.g.,  <Arrow [2023-08-27T01:00:00+01:00]>)
-		k = [value for index, value in enumerate(k) if index not in index_1]
-		#k = np.array([np.datetime64(date.datetime) for date in k])
+		#k = [value for index, value in enumerate(k) if index not in index_1]
+		k = np.array([np.datetime64(date.datetime) for date in k]) #ESTA EN LA V2 +DB
 
 
 		plt.clf()
@@ -282,8 +282,10 @@ class Graph_generator(object):
 						print(j)
 						j = np.array(j)
 						j_ticks = j[~np.isnan(j)]
-						plt.yticks(range(int(np.min(j_ticks)), int(np.max(j_ticks )) + 1, 5))
-
+						try:
+							plt.yticks(range(int(np.min(j_ticks)), int(np.max(j_ticks )) + 1, 5))
+						except:
+							print('None ticks')
 
 
 				if len(j_s) < 2:
@@ -336,7 +338,7 @@ class Graph_generator(object):
 		#plt.close()
 
 		# Display the plot
-		#plt.show()
+		plt.show()
 
 
 	def plot_min_max_av(self,x_values,y_average,y_min,y_max,device,type_d):
@@ -425,7 +427,7 @@ class Graph_generator(object):
 		plt.savefig(device+"_"+type_d, dpi = 500)
 		plt.close()
 
-		#plt.show()
+		plt.show()
 
 	def plot_continous(self,date_weight, weight, date_muscle_mass, muscle_mass, date_bone_mass,
 							bone_mass, date_fat_mass, fat_mass, date_hydration, hydration, st_date, ed_date, device):
@@ -566,7 +568,7 @@ class Graph_generator(object):
 
 
 		plt.savefig(device, dpi = 500)
-		#plt.show()
+		plt.show()
 		plt.close()
 
 	def plot_bar(self,x,y):
@@ -670,7 +672,7 @@ class Graph_generator(object):
 		#plt.close()
 
 		# Display the plot
-		#plt.show()
+		plt.show()
 
 	def plot_stacked_bar(self,x,y,z,o):
 
@@ -734,8 +736,13 @@ class Graph_generator(object):
 				print('HELLOOOOOOOOOOOOOO')
 				print(val_avg)
 				sns.lineplot(x = date_avg, y = val_avg, color = "lavender", markersize = 14, label = "Times out of bed weekly average",  linestyle='--', linewidth = 2 )
-				for index in range(len(date_avg)):
-					plt.text(date_avg[index], val_avg[index], math.floor(val_avg[index]), size = 11,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lavender', edgecolor='white'))
+				for date, val in zip(date_avg, val_avg):
+					if not np.isnan(val):
+						plt.text(date, val, math.floor(val), size=11, rotation=45, fontdict= self.font, bbox=dict(boxstyle='circle', facecolor='lavender', edgecolor='white'))
+
+				
+				#for index in range(len(date_avg)):
+					#plt.text(date_avg[index], val_avg[index], math.floor(val_avg[index]), size = 11,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lavender', edgecolor='white'))
 				#plt.text(x_u[index], l_u[index], math.floor(l_u[index]), size = 11.5, color = "black", ha = 'center', va = 'center', zorder = 11 )
 				max_value_stacked = max(chain(y, z, val_avg))
 				plt.ylim(top= max_value_stacked + 2)
@@ -760,7 +767,7 @@ class Graph_generator(object):
 		plt.savefig('sleep_summary', dpi = 500)
 
 		# Show the chart
-		#plt.show()
+		plt.show()
 
 
 	def plot_events(self,start_times, end_times, amplitudes):
@@ -851,5 +858,5 @@ class Graph_generator(object):
 
 		# Display the plot
 		plt.legend(handles= handles, labels = labels, loc = "upper right", frameon=False)
-		#plt.show()
+		plt.show()
 		plt.close()

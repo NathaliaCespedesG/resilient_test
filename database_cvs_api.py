@@ -205,11 +205,11 @@ class DatabaseServer_csv(object):
                             date_s = datetime.strptime(date_s, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
 
                             # Convert 'nan' values to None
-                            average_heart_rate = 0 if math.isnan(float(dict[j]['HR_Average'])) else float(dict[j]['HR_Average']) 
-                            calories = 0 if math.isnan(float(dict[j]['Calories'])) else float(dict[j]['Calories'])
-                            steps = 0 if math.isnan(float(dict[j]['Steps'])) else float(dict[j]['Steps'])
-                            hr_max = 0 if math.isnan(float(dict[j]['HR_max'])) else float(dict[j]['HR_max'])
-                            hr_min = 0 if math.isnan(float(dict[j]['HR_min'])) else float(dict[j]['HR_min'])
+                            average_heart_rate = -1 if math.isnan(float(dict[j]['HR_Average'])) else float(dict[j]['HR_Average']) 
+                            calories = -1 if math.isnan(float(dict[j]['Calories'])) else float(dict[j]['Calories'])
+                            steps = -1 if math.isnan(float(dict[j]['Steps'])) else float(dict[j]['Steps'])
+                            hr_max = -1 if math.isnan(float(dict[j]['HR_max'])) else float(dict[j]['HR_max'])
+                            hr_min = -1 if math.isnan(float(dict[j]['HR_min'])) else float(dict[j]['HR_min'])
                    
                             data ={
                                 "device": watch_id,
@@ -228,9 +228,13 @@ class DatabaseServer_csv(object):
                             response = requests.post(url, json=data)
 
     def upload_usage_data(self):
-        url = 'http://127.0.0.1:8000/api/usage/'
+        #url = 'http://127.0.0.1:8000/api/usage/'
         current_users = {key: value for key, value in self.id_username_dict.items() if value in self.id_available }
+        print(current_users)
         for i in range(len(self.id_available)):
+            print(i)
+            user = [k for k, v in current_users.items() if v == i]
+            url = 'http://127.0.0.1:8000/api/usage/' + str(user)
             path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/Usage.csv'
             
             #print(scale_id)
@@ -253,7 +257,6 @@ class DatabaseServer_csv(object):
                         #date_scale  = datetime.strptime(date_scale, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
                         
                         data ={
-                            "user": user_key,
                             "scanwatch_usage_level": '-1' if str(dict[j]['Watch Usage']) == 'nan' else dict[j]['Watch Usage'],
                             "scanwatch_battery": '-1' if str(dict[j]['Watch Battery'] == 'nan') else dict[j]['Watch Battery'],
                             "scanwatch_last_date": date_scanwatch,
@@ -313,13 +316,14 @@ class DatabaseServer_csv(object):
         for i in range(len(self.id_available)):
             path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/SleepMat_summary.csv'
             sleep_id = self.get_device_id(id_user = str(self.id_available[i]), devices_dict = self.devices_dict, device_type = 'sleep_mat')
-            #print(scale_id)
+            print(self.id_available[i])
+            print(sleep_id)
             if os.path.exists(path):
                 # Open the CSV file in read mode
                 with open(path, 'r', newline='') as csv_file:
                     df = pd.read_csv(path, header = 0, delimiter=',')
                     dict = df.to_dict(orient = 'records')
-                    print(df)
+                    #print(df)
                     #print(dict)
                     if sleep_id is not None:
 
@@ -339,7 +343,11 @@ class DatabaseServer_csv(object):
                             sleep_score = -1 if math.isnan(float(dict[j]['Sleep score'])) else float(dict[j]['Sleep score'])
                             wakeup_count = -1 if math.isnan(float(dict[j]['Wake up count'])) else float(dict[j]['Wake up count'])
                             wakeup_duration = -1 if math.isnan(float(dict[j]['Wake up duration'])) else float(dict[j]['Wake up duration'])
-                            
+                            total_sleep_time = -1 if math.isnan(float(dict[j]['Total sleep time'])) else float(dict[j]['Total sleep time'])
+                            total_time_in_bed = -1 if math.isnan(float(dict[j]['Total time in bed'])) else float(dict[j]['Total time in bed'])
+                            awake_in_bed = -1 if math.isnan(float(dict[j]['Awake in bed'])) else float(dict[j]['Awake in bed'])
+                            apnea = -1 if math.isnan(float(dict[j]['Apnea'])) else float(dict[j]['Apnea'])
+                            out_of_bed_count = -1 if math.isnan(float(dict[j]['Out of bed count'])) else float(dict[j]['Out of bed count'])
                    
                             data ={
                                 "device": sleep_id,
@@ -355,9 +363,14 @@ class DatabaseServer_csv(object):
                                 "sleep_score" : sleep_score,
                                 "wakeup_count" : wakeup_count,
                                 "wakeup_duration" : wakeup_duration,
+                                "total_sleep_time": total_sleep_time,
+                                "total_time_in_bed": total_time_in_bed,
+                                "awake_in_bed":awake_in_bed,
+                                "apnea": apnea,
+                                "out_of_bed_count":out_of_bed_count,
                                 }
                             
-                            print(data)
+                            #print(data)
                             response = requests.post(url, json=data)
 
     def upload_intra_sleep_summary_data(self):
@@ -475,8 +488,8 @@ db_csv.get_users()
 db_csv.upload_device_info()
 db_csv.get_device_info()
 #db_csv.upload_scale_summary_data()
-db_csv.upload_scanwatch_summary_data()
-#db_csv.upload_sleep_summary_data()
+#db_csv.upload_scanwatch_summary_data()
+db_csv.upload_sleep_summary_data()
 #db_csv.upload_intra_sleep_summary_data()
 #db_csv.upload_usage_data()
 #db_csv.upload_intra_scanwatch_summary_data()
