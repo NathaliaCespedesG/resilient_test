@@ -5,19 +5,22 @@ export const ICONS: { [key: string]: Icon } = {
     id: 'scale',
     path: 'assets/icons/devices_scale.svg',
     prettyName: 'Scale',
-    backend_id: 'scales'
+    summaryUrl: 'scales/',
+    summaryName: 'scales'
   },
   sleep_mat: {
     id: 'sleepmat',
     path: 'assets/icons/devices_bed.svg',
     prettyName: 'Sleepmat',
-    backend_id: 'sleepmats'
+    summaryUrl: 'sleepmats/summary/',
+    summaryName: 'sleepmats_summary'
   },
   scan_watch: {
     id: 'scan_watch',
     path: 'assets/icons/devices_clock.svg',
     prettyName: 'Scan Watch',
-    backend_id: 'scanwatches'
+    summaryUrl: 'scanwatches/summary/',
+    summaryName: 'scanwatches_summary'
 
   },
   usage_level: {

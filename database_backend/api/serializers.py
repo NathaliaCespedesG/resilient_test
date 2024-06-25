@@ -34,6 +34,7 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
 class DeviceSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
     class Meta:
         model = Device
         fields = '__all__'

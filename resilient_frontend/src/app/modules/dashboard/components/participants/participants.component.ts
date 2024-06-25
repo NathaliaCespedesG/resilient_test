@@ -15,7 +15,8 @@ import { ConfirmationService } from 'primeng/api';
 })
 export class ParticipantsComponent implements OnInit {
   currentParticipant: any;
-  deviceSummary: any;
+  deviceSummary: any[] = [];
+  deviceSummaryColumns: string[] = [];
   deviceName: string = '';
   deviceDetailsVisible: boolean[] = [];
   editParticipantForm: FormGroup;
@@ -217,6 +218,9 @@ export class ParticipantsComponent implements OnInit {
     this.showSpinner = false;
     this.isAddParticipantSuccessful = false;
     this.isDuplicateUsername = false;
+    this.deviceSummary = [];
+    this.deviceSummaryColumns = [];
+
     if (this.usernameInput) {
       this.usernameInput.control.markAsPristine(); // Reset ngModel state on dialog show
       this.usernameInput.control.markAsUntouched();
@@ -257,7 +261,8 @@ export class ParticipantsComponent implements OnInit {
     })
   }
 
-  toggleDeviceDetails(index: number): void {
+  toggleDeviceDetails(event: Event, index: number): void {
+    event.stopPropagation();
     this.deviceDetailsVisible[index] = !this.deviceDetailsVisible[index];
   }
 
@@ -266,16 +271,23 @@ export class ParticipantsComponent implements OnInit {
 
     const username = this.participantData.username;
     const device_type = this.participantData.devices[index].device_type;
-    const device_id = this.icons[device_type].backend_id!;
+    const deviceSummaryName = this.icons[device_type].summaryName!;
     this.deviceName = this.icons[device_type].prettyName;
+    this.participantData.deviceSummaryLoaded = false;
 
-    this._requestsService.getDeviceSummaryByUsername(username, device_id).subscribe({
+    this._requestsService.getDeviceSummaryByUsername(username, device_type).subscribe({
       next: (response) => {
-        console.log(response);
-        this.deviceSummary = response[device_id + '_summary'];
+        this.deviceSummary = response[deviceSummaryName];
+        this.deviceSummaryColumns = [];
+
+        if (this.deviceSummary.length > 0) {
+          this.deviceSummaryColumns = Object.keys(this.deviceSummary[0]);
+        }
+
+        this.participantData.deviceSummaryLoaded = true;
 
       }
-    })
+    });
   }
 
 }

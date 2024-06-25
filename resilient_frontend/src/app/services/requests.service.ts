@@ -1,13 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Users } from '../shared/models/database-types';
+import { Users, Devices } from '../shared/models/database-types';
+import { ICONS } from '../shared/constants/icons'
 
 @Injectable({
   providedIn: 'root'
 })
 export class RequestsService {
 
+  private icons = ICONS;
   private baseUrl = 'http://localhost:8000/api/';
 
   constructor(private http: HttpClient) { }
@@ -34,6 +36,12 @@ export class RequestsService {
     return this.http.get<Users>(usersUrl);
   }
 
+  getDevices(): Observable<Devices> {
+    const usersUrl = this.baseUrl + 'devices/';
+
+    return this.http.get<Devices>(usersUrl);
+  }
+
   getDevicesByUsername(username: string): Observable<any>{
     const devicesUrl = this.baseUrl + 'devices/?username=' + username;
 
@@ -41,7 +49,7 @@ export class RequestsService {
   }
 
   getDeviceSummaryByUsername(username: string, device_type: string): Observable<any>{
-    const devicesUrl = this.baseUrl + device_type + '/summary/?username=' + username;
+    const devicesUrl = this.baseUrl + this.icons[device_type].summaryUrl + '?username=' + username;
 
     return this.http.get<any>(devicesUrl);
 
