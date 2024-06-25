@@ -18,8 +18,7 @@ class Database_API(object):
         data = {
                 "username": user,
                 "role": role,
-                "password_hash": password_hash,
-                "active": True
+                "password_hash": password_hash
                 }
         
         response = requests.post(url, json = data)
@@ -50,7 +49,6 @@ class Database_API(object):
     def get_unique_id(self, id_user = None):
         
         url = 'http://127.0.0.1:8000/api/users/?username='+ str(id_user)
-        response = requests.get(url)
         
         # Checking the status code of the response
         if response.status_code == 200:
