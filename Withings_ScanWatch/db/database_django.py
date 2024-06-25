@@ -15,12 +15,10 @@ class Database_API(object):
     def register(self, user = None, role = None, password_hash = None):
 
         url = 'http://127.0.0.1:8000/api/users/'
-        print('**********************************************')
         data = {
                 "username": user,
                 "role": role,
-                "password_hash": password_hash,
-                "active": True
+                "password_hash": password_hash
                 }
         
         response = requests.post(url, json = data)
@@ -51,7 +49,6 @@ class Database_API(object):
     def get_unique_id(self, id_user = None):
         
         url = 'http://127.0.0.1:8000/api/users/?username='+ str(id_user)
-        response = requests.get(url)
         
         # Checking the status code of the response
         if response.status_code == 200:
@@ -215,7 +212,13 @@ class Database_API(object):
                           'average_rr': item['average_rr'],
                           'sleep_score': item['sleep_score'],
                           'wakeup_count': item['wakeup_count'],
-                          'wakeup_duration': item['wakeup_duration']
+                          'wakeup_duration': item['wakeup_duration'],
+                          'total_sleep_time': item['total_sleep_time'],
+                          'total_time_in_bed': item['total_time_in_bed'],
+                          'awake_in_bed': item['awake_in_bed'],
+                          'apnea':item['apnea'],
+                          'out_of_bed_count':item['out_of_bed_count']
+
                           } for item in sleep_summary_dict["sleepmats_summary"] if start_date <= arrow.get(item['date']).datetime <= end_date]
 
         

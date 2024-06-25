@@ -143,18 +143,18 @@ class Resilient(object):
                 reports_resilient.get_user_credentials()
                 reports_resilient.devices_info()
                 reports_resilient.scale_data()
-                reports_resilient.sleep()
-                reports_resilient.sleep_daily()
+                #reports_resilient.sleep()
+                #reports_resilient.sleep_daily()
                 ###################################
-                #reports_resilient.intra_sleep_v2()
-                #reports_resilient.sleep_v2()
-                #reports_resilient.intra_activitydata_watch_v2()
-                #reports_resilient.activity_data_watch_v2()
-                #reports_resilient.plot_creatorV2()
-                #print(HOLA)
+                reports_resilient.intra_sleep_v2()
+                reports_resilient.sleep_v2()
+                reports_resilient.intra_activitydata_watch_v2()
+                reports_resilient.activity_data_watch_v2()
+                reports_resilient.plot_creatorV2()
+                print(HOLA)
                 ###########################################
-                reports_resilient.activity_data_watch()
-                reports_resilient.plot_creator()
+                #reports_resilient.activity_data_watch()
+                #reports_resilient.plot_creator()
                 #print(HOLA)
                 reports_resilient.db_filling()
                 reports_resilient.doc_generation()
@@ -247,6 +247,7 @@ class Resilient(object):
         #source_folder = path.abspath(path.join(self.current_path,
         users = self.current_users()
         self.id_available = users
+        print(users)
 
         
         if os.path.exists(folder_path):
