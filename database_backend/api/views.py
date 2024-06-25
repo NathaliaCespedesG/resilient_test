@@ -52,7 +52,7 @@ class UserHealthDataView(generics.RetrieveAPIView):
         return JsonResponse({'health_data': data})
 
 class DeviceListCreateView(generics.ListCreateAPIView):
-    queryset = Device.objects.all()
+    queryset = Device.objects.all().select_related('user')
     serializer_class = DeviceSerializer
     filterset_class = DeviceFilter
     filter_backends = [DjangoFilterBackend]
@@ -61,7 +61,7 @@ class DeviceListCreateView(generics.ListCreateAPIView):
         # Generate a new UUID before saving the instance
         serializer.save(id=uuid.uuid4())
 
-    def list(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs):            
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
         return Response({"devices": serializer.data})

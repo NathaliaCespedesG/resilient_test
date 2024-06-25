@@ -145,6 +145,8 @@
       display: flex;
       flex-direction: row;
       padding: 1vh;
+      position: relative;
+      z-index: 0;
 
       .icon-container{
         display: flex;
@@ -165,6 +167,10 @@
 
           h3, p {
             margin: 0;
+          }
+
+          .more-info {
+            z-index: 100;
           }
 
           .more-info > u {

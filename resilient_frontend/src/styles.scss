@@ -82,7 +82,8 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   padding: 1.5rem;
   align-items: center;
   flex-grow: 1;
-  gap: 3vh;
+  gap: 2.5vh;
+  overflow-y: auto;
 }
 
 .dashboard-option-wrapper > h1 {

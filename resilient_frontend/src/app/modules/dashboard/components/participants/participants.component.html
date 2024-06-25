@@ -185,9 +185,9 @@
                       <li>Connected since: {{device.created_at}}</li>
                       <li>Last updated: {{device.updated_at}}</li>
                     </ul>
-                    <p (click)="toggleDeviceDetails($index)" class="more-info"><u>Less info...</u></p>
+                    <p (click)="toggleDeviceDetails($event, $index)" class="more-info"><u>Less info...</u></p>
                   } @else {
-                    <p (click)="toggleDeviceDetails($index)" class="more-info"><u>More info...</u></p>
+                    <p (click)="toggleDeviceDetails($event, $index)" class="more-info"><u>More info...</u></p>
                   }
                 </div>
               </div>
@@ -321,35 +321,55 @@
       <h2>{{deviceName + "'s Summary for: '" + participantData.username}}</h2>
     </ng-template>
     <ng-template pTemplate="content">
-      <p-table
-        [value]="deviceSummary"
-        [rowHover]="true"
-        [paginator]="true"
-        [rows]="9"
-        [showCurrentPageReport]="true"
-        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-      >
-      <ng-template pTemplate="header">
-        <tr>
-          <th [pSortableColumn]="'date'">Date<p-sortIcon field="date"></p-sortIcon></th>
-          <th [pSortableColumn]="'average_heart_rate'">Av. Heart Rate<p-sortIcon field="average_heart_rate"></p-sortIcon></th>
-          <th [pSortableColumn]="'calories'">Calories<p-sortIcon field="calories"></p-sortIcon></th>
-          <th [pSortableColumn]="'steps'">Steps<p-sortIcon field="steps"></p-sortIcon></th>
-          <th [pSortableColumn]="'hr_max'">Max. Heart Rate<p-sortIcon field="hr_max"></p-sortIcon></th>
-          <th [pSortableColumn]="'hr_min'">Min. Heart Rate<p-sortIcon field="hr_min"></p-sortIcon></th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-device>
-          <tr [pSelectableRow]="device">
-            <td>{{device.date}}</td>
-            <td>{{device.average_heart_rate}}</td>
-            <td>{{device.calories}}</td>
-            <td>{{device.steps}}</td>
-            <td>{{device.hr_max}}</td>
-            <td>{{device.hr_min}}</td>
-          </tr>
-      </ng-template>
-    </p-table>
+      @if (!participantData.deviceSummaryLoaded) {
+        <p>Loading..</p>
+      } @else {
+        @if (deviceSummary.length == 0) {
+          <p>No summaries found.</p>
+        } @else {
+          <p-table
+            [value]="deviceSummary"
+            [scrollable]="true"
+            [rowHover]="true"
+            [paginator]="true"
+            [rows]="9"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+            styleClass="device-table"
+          >
+          <ng-template pTemplate="header">
+            <tr>
+              @for (column of deviceSummaryColumns; track $index) {
+                @if (column != "id" && column != "device") {
+                  <th pSortableColumn="{{column}}">{{column}}<p-sortIcon [field]="column"></p-sortIcon></th>
+                }
+              }
+              <!-- <th [pSortableColumn]="'date'">Date<p-sortIcon field="date"></p-sortIcon></th>
+              <th [pSortableColumn]="'average_heart_rate'">Av. Heart Rate<p-sortIcon field="average_heart_rate"></p-sortIcon></th>
+              <th [pSortableColumn]="'calories'">Calories<p-sortIcon field="calories"></p-sortIcon></th>
+              <th [pSortableColumn]="'steps'">Steps<p-sortIcon field="steps"></p-sortIcon></th>
+              <th [pSortableColumn]="'hr_max'">Max. Heart Rate<p-sortIcon field="hr_max"></p-sortIcon></th>
+              <th [pSortableColumn]="'hr_min'">Min. Heart Rate<p-sortIcon field="hr_min"></p-sortIcon></th> -->
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-device>
+              <tr [pSelectableRow]="device">
+                @for (column of deviceSummaryColumns; track $index) {
+                  @if (column != "id" && column != "device"){
+                    <td>{{device[column]}}</td>
+                  }
+                }
+                <!-- <td>{{device.date}}</td>
+                <td>{{device.average_heart_rate}}</td>
+                <td>{{device.calories}}</td>
+                <td>{{device.steps}}</td>
+                <td>{{device.hr_max}}</td>
+                <td>{{device.hr_min}}</td> -->
+              </tr>
+          </ng-template>
+          </p-table>
+        }
+      }
     </ng-template>
   </p-dialog>
 
