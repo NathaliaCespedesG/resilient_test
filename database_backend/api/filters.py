@@ -14,7 +14,7 @@ class UserFilter(django_filters.FilterSet):
 
     class Meta:
         model = User
-        fields = []
+        fields = ['id', 'username', 'created_at', 'updated_at', 'active']
 
 class DeviceFilter(django_filters.FilterSet):
     id = django_filters.UUIDFilter(field_name='id', lookup_expr='exact')
