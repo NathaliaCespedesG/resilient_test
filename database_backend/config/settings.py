@@ -60,10 +60,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ORIGIN_ALLOW_ALL = False  # Set this to False to only allow specific origins
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost:4200',  # Add the origin of your Angular frontend
-]
+CORS_ORIGIN_ALLOW_ALL = True  # Set this to False to only allow specific origins
+# CORS_ORIGIN_WHITELIST = [
+#     'http://localhost:4200',  # Add the origin of your Angular frontend
+# ]
 
 ROOT_URLCONF = 'config.urls'
 

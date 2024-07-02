@@ -6,7 +6,7 @@ app_name = 'api'
 urlpatterns = [
     path('users/', UserListCreateView.as_view(), name='user-list-create'),
     path('user/<uuid:pk>/', UserDetailView.as_view(), name='user-detail'),
-    path('user/<uuid:pk>/health_data', UserHealthDataView.as_view(), name='user-health-data-'),
+    path('user/<uuid:pk>/health_data', UserHealthDataView.as_view(), name='user-health-data'),
 
     path('devices/', DeviceListCreateView.as_view(), name='device-list-create'),
     path('device/<uuid:pk>/', DeviceDetailView.as_view(), name='device-detail'),

@@ -1,7 +1,13 @@
 version: '3'
 
 services:
-  database-backend:
+  frontend:
+    image: sergiosierraic/resilient-frontend:v0.0.1
+    ports:
+      - "80:80"
+    depends_on:
+      - database_backend
+  database_backend:
     image: sergiosierraic/resilient-database-backend:v0.0.1
     ports:
       - "8000:8000"
