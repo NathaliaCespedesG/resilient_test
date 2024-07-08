@@ -133,10 +133,11 @@ class Graph_generator(object):
 	def plot_scatter(self, x, y, k, j, name):
 
 		print('FROMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM')
-		print(x)
-		print(y)
-		print(k)
-		print(j)
+		print(len(x))
+		print(len(y))
+		print(len(k))
+		print(len(j))
+		#print(hola)
 
 		fig, ax = plt.subplots()
 
@@ -154,8 +155,8 @@ class Graph_generator(object):
 		#print(k)
 		
 		# k, start_date and end_date are arroe types (e.g.,  <Arrow [2023-08-27T01:00:00+01:00]>)
-		#k = [value for index, value in enumerate(k) if index not in index_1]
-		k = np.array([np.datetime64(date.datetime) for date in k]) #ESTA EN LA V2 +DB
+		k = [value for index, value in enumerate(k) if index not in index_1]
+		#k = np.array([np.datetime64(date.datetime) for date in k]) #ESTA EN LA V2 +DB
 
 
 		plt.clf()
@@ -163,6 +164,11 @@ class Graph_generator(object):
 		# Create a scatter plot
 		sns.set_style("whitegrid",{ "grid.linewidth":0.5, "grid.color": ".8", "grid.linestyle": ":", "ytick.left": True})
 
+		print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+		print(k)
+		print(j)
+		print(len(k))
+		print(len(j))
 	
 
 
@@ -184,6 +190,9 @@ class Graph_generator(object):
 			#k_s,j_s = self.smooth_lines(k,j)
 			k_s = k
 			j_s = j
+			print('*************************************')
+			print(len(k))
+			print(len(j))
 			#print(k_s)
 
 			if self.report_type == 1:
@@ -295,8 +304,8 @@ class Graph_generator(object):
 					min_thresh = np.nanmean(j_s) - np.nanstd(j_s)
 					aver_thresh = np.nanmean(j_s)
 					print('hjoifhjidddddddddddddddd')
-					print(k)
-					print(j)
+					print(len(k))
+					print(len(j))
 					sns.lineplot(x = k, y = j, color = "cornflowerblue", linestyle =':', label = label_scatter)
 					sns.lineplot(x = date_avg, y = val_avg, color = "darkblue",linestyle = '-', label = label_lineplot)
 					# Threshold calculations
@@ -338,7 +347,7 @@ class Graph_generator(object):
 		#plt.close()
 
 		# Display the plot
-		plt.show()
+		#plt.show()
 
 
 	def plot_min_max_av(self,x_values,y_average,y_min,y_max,device,type_d):
@@ -427,7 +436,7 @@ class Graph_generator(object):
 		plt.savefig(device+"_"+type_d, dpi = 500)
 		plt.close()
 
-		plt.show()
+		#plt.show()
 
 	def plot_continous(self,date_weight, weight, date_muscle_mass, muscle_mass, date_bone_mass,
 							bone_mass, date_fat_mass, fat_mass, date_hydration, hydration, st_date, ed_date, device):
@@ -568,7 +577,7 @@ class Graph_generator(object):
 
 
 		plt.savefig(device, dpi = 500)
-		plt.show()
+		#plt.show()
 		plt.close()
 
 	def plot_bar(self,x,y):
@@ -672,7 +681,7 @@ class Graph_generator(object):
 		#plt.close()
 
 		# Display the plot
-		plt.show()
+		#plt.show()
 
 	def plot_stacked_bar(self,x,y,z,o):
 
@@ -767,7 +776,7 @@ class Graph_generator(object):
 		plt.savefig('sleep_summary', dpi = 500)
 
 		# Show the chart
-		plt.show()
+		#plt.show()
 
 
 	def plot_events(self,start_times, end_times, amplitudes):

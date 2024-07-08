@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 import uuid
 
+
 # Create your models here.
 class User(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -80,6 +81,8 @@ class SleepmatSummary(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='sleepmat_summary')
     date = models.DateField()
+    start_date = models.DateTimeField(null=True, blank=True) 
+    end_date = models.DateTimeField(null=True, blank=True)
     breathing_disturbances = models.IntegerField()
     deep_sleep_duration = models.FloatField()
     duration_to_sleep = models.FloatField()
