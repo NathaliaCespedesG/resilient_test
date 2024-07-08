@@ -36,7 +36,7 @@ class Database_API(object):
             print('GET request successful')
             # Accessing the response data
             self.user_data = response.json()  # Assuming the response is JSON data
-            #print(data)
+            print(data)
         else:
             # Unsuccessful response
             print('GET request failed:', response.status_code)

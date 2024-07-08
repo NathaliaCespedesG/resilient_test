@@ -500,16 +500,16 @@ class DatabaseServer_csv(object):
    
 path_user = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/Users.csv'
 db_csv = DatabaseServer_csv(path = path_user)
-db_csv.import_users_from_csv()
+#db_csv.import_users_from_csv()
 db_csv.get_users()
 db_csv.upload_device_info()
 db_csv.get_device_info()
 #db_csv.upload_scale_summary_data()
 #db_csv.upload_scanwatch_summary_data()
-#db_csv.upload_sleep_summary_data()
+db_csv.upload_sleep_summary_data()
 #db_csv.upload_intra_sleep_summary_data()
 #db_csv.upload_usage_data()
-db_csv.upload_intra_scanwatch_summary_data()
+#db_csv.upload_intra_scanwatch_summary_data()
     
 
 

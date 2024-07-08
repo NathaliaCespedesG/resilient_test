@@ -776,7 +776,7 @@ class Graph_generator(object):
 		plt.savefig('sleep_summary', dpi = 500)
 
 		# Show the chart
-		#plt.show()
+		plt.show()
 
 
 	def plot_events(self,start_times, end_times, amplitudes):

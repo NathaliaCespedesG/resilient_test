@@ -303,7 +303,7 @@ class DatabaseManager(object):
 			ref_column_name = 'date'
 		elif cvs_from == 'Sleep_summary':
 			file_name = self.sleepmat_name
-			ref_column_name = 'date'
+			ref_column_name = 'start_date'
 		elif cvs_from == 'Scale':
 			file_name = self.scale_name
 			ref_column_name = 'date'

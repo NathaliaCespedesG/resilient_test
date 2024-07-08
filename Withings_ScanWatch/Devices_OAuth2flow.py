@@ -261,14 +261,14 @@ class Devices_OAuth2flow(object):
 		
 		# Calculate the difference in days
 		days_difference = ((datetime.now()- timedelta(days=self.ending_day_c)) - date_of_registration).days
-		self.starting_day_c = -days_difference
+		#self.starting_day_c = -days_difference
 
 		#print(self.starting_day)
 		#print(hola)
-		#if days_difference > 90:
-			#self.starting_day_c = -(90 - self.ending_day_c)
-		#else:
-			#self.starting_day_c = - days_difference
+		if days_difference > 90:
+			self.starting_day_c = -(90 - self.ending_day_c)
+		else:
+			self.starting_day_c = - days_difference
 		
 		#self.ending_day_c = -180
 		#self.starting_day_c = -269
@@ -1383,7 +1383,7 @@ class Devices_OAuth2flow(object):
 
 	def db_cleaning(self):
 		self.database.SM.cleaning_cvs_files(cvs_from ='Scan_summary')
-		#self.database.SM.cleaning_cvs_files(cvs_from ='Sleep_summary')
+		self.database.SM.cleaning_cvs_files(cvs_from ='Sleep_summary')
 		self.database.SM.cleaning_cvs_files(cvs_from ='Scale')
 		self.database.SM.cleaning_cvs_files(cvs_from ='Intra_watch')
 		self.database.SM.cleaning_cvs_files(cvs_from ='Intra_sleep')
