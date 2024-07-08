@@ -347,7 +347,7 @@ class Graph_generator(object):
 		#plt.close()
 
 		# Display the plot
-		plt.show()
+		#plt.show()
 
 
 	def plot_min_max_av(self,x_values,y_average,y_min,y_max,device,type_d):
@@ -436,7 +436,7 @@ class Graph_generator(object):
 		plt.savefig(device+"_"+type_d, dpi = 500)
 		plt.close()
 
-		plt.show()
+		#plt.show()
 
 	def plot_continous(self,date_weight, weight, date_muscle_mass, muscle_mass, date_bone_mass,
 							bone_mass, date_fat_mass, fat_mass, date_hydration, hydration, st_date, ed_date, device):
@@ -577,7 +577,7 @@ class Graph_generator(object):
 
 
 		plt.savefig(device, dpi = 500)
-		plt.show()
+		#plt.show()
 		plt.close()
 
 	def plot_bar(self,x,y):
@@ -681,7 +681,7 @@ class Graph_generator(object):
 		#plt.close()
 
 		# Display the plot
-		plt.show()
+		#plt.show()
 
 	def plot_stacked_bar(self,x,y,z,o):
 
@@ -776,7 +776,7 @@ class Graph_generator(object):
 		plt.savefig('sleep_summary', dpi = 500)
 
 		# Show the chart
-		plt.show()
+		#plt.show()
 
 
 	def plot_events(self,start_times, end_times, amplitudes):
