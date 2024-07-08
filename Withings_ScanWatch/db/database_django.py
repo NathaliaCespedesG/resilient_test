@@ -49,6 +49,7 @@ class Database_API(object):
     def get_unique_id(self, id_user = None):
         
         url = 'http://127.0.0.1:8000/api/users/?username='+ str(id_user)
+        response = requests.get(url)
         
         # Checking the status code of the response
         if response.status_code == 200:
@@ -65,19 +66,22 @@ class Database_API(object):
 
     def upload_device_info(self, user = None, dict = None):
         url= 'http://127.0.0.1:8000/api/devices/'
+        print('****************************')
+        print(dict)
+    
 
         for j in range(len(dict)):
             
             data ={
-                "user": user,
+                "user": user['users'][0]['id'],
                 "device_hash": dict[j]['Hash_deviceid'],
                 "device_type": {'Activity Tracker': 'scan_watch', 'Sleep Monitor': 'sleep_mat','Scale':'scale'}.get(dict[j]['Device'], 'default_value'),
                 "mac_address": dict[j]['MAC_address'],
                 "is_active": True
                 }
-            #print(data)
+            print(data)
             response = requests.post(url, json=data)
-            print(response.status_code)
+            print(response)
 
 
     def get_device_info(self, user = None):
@@ -217,7 +221,9 @@ class Database_API(object):
                           'total_time_in_bed': item['total_time_in_bed'],
                           'awake_in_bed': item['awake_in_bed'],
                           'apnea':item['apnea'],
-                          'out_of_bed_count':item['out_of_bed_count']
+                          'out_of_bed_count':item['out_of_bed_count'],
+                          'start_date': item['start_date'],
+                          'end_date': item['end_date']
 
                           } for item in sleep_summary_dict["sleepmats_summary"] if start_date <= arrow.get(item['date']).datetime <= end_date]
 

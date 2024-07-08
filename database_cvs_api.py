@@ -5,6 +5,8 @@ import os
 import requests
 import math
 from datetime import datetime, timezone
+from dateutil import parser
+
 #from database_backend.api.models import User
 
 class DatabaseServer_csv(object):
@@ -27,7 +29,7 @@ class DatabaseServer_csv(object):
 
         # Define values for the new columns
         
-        role = 'participant'
+        role = 'study-participant'
         password_hash = 'NONEYET'
 
         custom_headers = ['username', 'role', 'password_hash']
@@ -44,7 +46,7 @@ class DatabaseServer_csv(object):
 
         data = df.to_dict(orient='records')
 
-        '''
+        
 
         for i in range (len(data)):
             # Make POST request to Django server
@@ -55,7 +57,7 @@ class DatabaseServer_csv(object):
                 print('Data updated successfully')
             else:
                 print('Failed to update data:', response.text)
-        '''
+        
 
     # GET ALL THE USERS
 
@@ -86,7 +88,8 @@ class DatabaseServer_csv(object):
     def upload_device_info(self):
         url= 'http://127.0.0.1:8000/api/devices/'
         current_users = {key: value for key, value in self.id_username_dict.items() if value in self.id_available }
-        
+        print(current_users)
+        #print(HOla)
         for i in range(len(self.id_available)):
             path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/Devices.csv'
            
@@ -329,25 +332,37 @@ class DatabaseServer_csv(object):
 
                         for j in range(len(dict)):
                             date_s = dict[j]['date'][:-6]
-                            date_s = datetime.strptime(date_s, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+                            print(date_s)
+                            print(type(date_s))
+                            date_s = datetime.strptime(date_s, '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d')
+
+                            start_date = dict[j]['start_date']
+                            start_date = parser.parse(start_date)
+                            start_date = start_date.isoformat()
+
+                            end_date = dict[j]['end_date']
+                            end_date = parser.parse(end_date)
+                            end_date = end_date.isoformat()
+                            #start_date = start_date.date()
+                            #start_date = datetime.strptime(date_s, '%Y-%m-%d %H:%M:%S')
 
                             # Convert 'nan' values to None
-                            breathing_disturbances = -1 if math.isnan(float(dict[j]['Breathing disturbances'])) else float(dict[j]['Breathing disturbances']) 
-                            deep_sleep_duration = -1 if math.isnan(float(dict[j]['Deep sleep duration'])) else float(dict[j]['Deep sleep duration'])
-                            duration_to_sleep = -1 if math.isnan(float(dict[j]['Duration to sleep'])) else float(dict[j]['Duration to sleep'])
-                            duration_to_wakeup = -1 if math.isnan(float(dict[j]['Duration to wakeup'])) else float(dict[j]['Duration to wakeup'])
-                            average_heart_rate = -1 if math.isnan(float(dict[j]['HR average'])) else float(dict[j]['HR average'])
-                            light_sleep_duration = -1 if math.isnan(float(dict[j]['Light sleep duration'])) else float(dict[j]['Light sleep duration'])
-                            rem_sleep_duration = -1 if math.isnan(float(dict[j]['Rem sleep duration'])) else float(dict[j]['Rem sleep duration'])
-                            average_rr = -1 if math.isnan(float(dict[j]['RR average'])) else float(dict[j]['RR average'])
-                            sleep_score = -1 if math.isnan(float(dict[j]['Sleep score'])) else float(dict[j]['Sleep score'])
-                            wakeup_count = -1 if math.isnan(float(dict[j]['Wake up count'])) else float(dict[j]['Wake up count'])
-                            wakeup_duration = -1 if math.isnan(float(dict[j]['Wake up duration'])) else float(dict[j]['Wake up duration'])
-                            total_sleep_time = -1 if math.isnan(float(dict[j]['Total sleep time'])) else float(dict[j]['Total sleep time'])
-                            total_time_in_bed = -1 if math.isnan(float(dict[j]['Total time in bed'])) else float(dict[j]['Total time in bed'])
-                            awake_in_bed = -1 if math.isnan(float(dict[j]['Awake in bed'])) else float(dict[j]['Awake in bed'])
-                            apnea = -1 if math.isnan(float(dict[j]['Apnea'])) else float(dict[j]['Apnea'])
-                            out_of_bed_count = -1 if math.isnan(float(dict[j]['Out of bed count'])) else float(dict[j]['Out of bed count'])
+                            breathing_disturbances = -2 if math.isnan(float(dict[j]['Breathing disturbances'])) else float(dict[j]['Breathing disturbances']) 
+                            deep_sleep_duration = -2 if math.isnan(float(dict[j]['Deep sleep duration'])) else float(dict[j]['Deep sleep duration'])
+                            duration_to_sleep = -2 if math.isnan(float(dict[j]['Duration to sleep'])) else float(dict[j]['Duration to sleep'])
+                            duration_to_wakeup = -2 if math.isnan(float(dict[j]['Duration to wakeup'])) else float(dict[j]['Duration to wakeup'])
+                            average_heart_rate = -2 if math.isnan(float(dict[j]['HR average'])) else float(dict[j]['HR average'])
+                            light_sleep_duration = -2 if math.isnan(float(dict[j]['Light sleep duration'])) else float(dict[j]['Light sleep duration'])
+                            rem_sleep_duration = -2 if math.isnan(float(dict[j]['Rem sleep duration'])) else float(dict[j]['Rem sleep duration'])
+                            average_rr = -2 if math.isnan(float(dict[j]['RR average'])) else float(dict[j]['RR average'])
+                            sleep_score = -2 if math.isnan(float(dict[j]['Sleep score'])) else float(dict[j]['Sleep score'])
+                            wakeup_count = -2 if math.isnan(float(dict[j]['Wake up count'])) else float(dict[j]['Wake up count'])
+                            wakeup_duration = -2 if math.isnan(float(dict[j]['Wake up duration'])) else float(dict[j]['Wake up duration'])
+                            total_sleep_time = -2 if math.isnan(float(dict[j]['Total sleep time'])) else float(dict[j]['Total sleep time'])
+                            total_time_in_bed = -2 if math.isnan(float(dict[j]['Total time in bed'])) else float(dict[j]['Total time in bed'])
+                            awake_in_bed = -2 if math.isnan(float(dict[j]['Awake in bed'])) else float(dict[j]['Awake in bed'])
+                            apnea = -2 if math.isnan(float(dict[j]['Apnea'])) else float(dict[j]['Apnea'])
+                            out_of_bed_count = -2 if math.isnan(float(dict[j]['Out of bed count'])) else float(dict[j]['Out of bed count'])
                    
                             data ={
                                 "device": sleep_id,
@@ -368,6 +383,8 @@ class DatabaseServer_csv(object):
                                 "awake_in_bed":awake_in_bed,
                                 "apnea": apnea,
                                 "out_of_bed_count":out_of_bed_count,
+                                "start_date":start_date,
+                                "end_date":end_date
                                 }
                             
                             #print(data)
@@ -489,10 +506,10 @@ db_csv.upload_device_info()
 db_csv.get_device_info()
 #db_csv.upload_scale_summary_data()
 #db_csv.upload_scanwatch_summary_data()
-db_csv.upload_sleep_summary_data()
+#db_csv.upload_sleep_summary_data()
 #db_csv.upload_intra_sleep_summary_data()
 #db_csv.upload_usage_data()
-#db_csv.upload_intra_scanwatch_summary_data()
+db_csv.upload_intra_scanwatch_summary_data()
     
 
 
