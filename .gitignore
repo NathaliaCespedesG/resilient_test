@@ -7,3 +7,6 @@
 /Withings_ScanWatch/withings_devOp_credentials.py
 venv/*
 .env
+__pycache__
+Users.csv
+.swp
