@@ -10,7 +10,7 @@ import { ICONS } from '../shared/constants/icons'
 export class RequestsService {
 
   private icons = ICONS;
-  private baseUrl = 'http://localhost:8000/api/';
+  private baseUrl = 'https://resilient.ukdri.care/api/';
 
   constructor(private http: HttpClient) { }
 
