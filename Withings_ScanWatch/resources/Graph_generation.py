@@ -156,7 +156,8 @@ class Graph_generator(object):
 		
 		# k, start_date and end_date are arroe types (e.g.,  <Arrow [2023-08-27T01:00:00+01:00]>)
 		k = [value for index, value in enumerate(k) if index not in index_1]
-		#k = np.array([np.datetime64(date.datetime) for date in k]) #ESTA EN LA V2 +DB
+		#if name != 'RR':
+			#k = np.array([np.datetime64(date.datetime) for date in k]) #ESTA EN LA V2 +DB
 
 
 		plt.clf()
@@ -776,7 +777,7 @@ class Graph_generator(object):
 		plt.savefig('sleep_summary', dpi = 500)
 
 		# Show the chart
-		plt.show()
+		#plt.show()
 
 
 	def plot_events(self,start_times, end_times, amplitudes):

@@ -36,7 +36,7 @@ class Database_API(object):
             print('GET request successful')
             # Accessing the response data
             self.user_data = response.json()  # Assuming the response is JSON data
-            print(data)
+            print(self.user_data)
         else:
             # Unsuccessful response
             print('GET request failed:', response.status_code)
@@ -79,9 +79,9 @@ class Database_API(object):
                 "mac_address": dict[j]['MAC_address'],
                 "is_active": True
                 }
-            print(data)
+            #print(data)
             response = requests.post(url, json=data)
-            print(response)
+            #print(response)
 
 
     def get_device_info(self, user = None):
@@ -92,15 +92,24 @@ class Database_API(object):
         if response.status_code == 200:
                 print('GET request successful')
                 # Accessing the response data
-                self.device_data = response.json()  # Assuming the response is JSON data
+                data = response.json()  # Assuming the response is JSON data
                 #print(self.device_data)
-                devices = self.organized_dict(self.device_data)
+                for device in data['devices']:
+                    if device['is_active']:
+                        username = device['user']['username']
+                        device_type = device['device_type']
+                        device_id = device['id']
+                        
+                    if username not in self.devices_dict:
+                         self.devices_dict[username] = {}
+                        
+                    self.devices_dict[username][device_type] = device_id
                 
         else:
             # Unsuccessful response
             print('GET request failed:', response.status_code)
         
-        return(devices)
+        return(self.devices_dict)
     
     def organized_dict(self, original_dict):
         converted_dict = {}
@@ -183,7 +192,8 @@ class Database_API(object):
             print('GET request failed:', response.status_code)
 
         # Filter data based on start_date and end_date
-        filtered_data = [{'date_heart_rate': item['date_heart_rate'], 'heart_rate': item['heart_rate']} for item in scanwatch_intra_dict["scanwatches_intraactivity"] if start_date <= item['date_heart_rate'] <= end_date]
+        filtered_data = [{'date_heart_rate': item['date_heart_rate'], 
+                          'heart_rate': item['heart_rate']} for item in scanwatch_intra_dict["scanwatches_intraactivity"] if start_date <= item['date_heart_rate'] <= end_date]
 
         #print(filtered_data)
         
@@ -224,7 +234,6 @@ class Database_API(object):
                           'out_of_bed_count':item['out_of_bed_count'],
                           'start_date': item['start_date'],
                           'end_date': item['end_date']
-
                           } for item in sleep_summary_dict["sleepmats_summary"] if start_date <= arrow.get(item['date']).datetime <= end_date]
 
         
@@ -232,7 +241,7 @@ class Database_API(object):
     
     def get_sleep_intra_activity_data(self, user = None, start_date = None, end_date = None):
         
-        url = 'http://127.0.0.1:8000/api/sleepmat/intraactivity/' + '?username=' + user
+        url = 'http://127.0.0.1:8000/api/sleepmats/intraactivity/' + '?username=' + user
         response = requests.get(url)
         sleep_intra_day_dict = {}
         # Checking the status code of the response
@@ -245,7 +254,27 @@ class Database_API(object):
             # Unsuccessful response
             print('GET request failed:', response.status_code)
 
-        print(sleep_intra_day_dict)
+        
+        # Filter data based on start_date and end_date
+        filtered_data = [{'start_date': item['start_date'],
+                          'end_date': item['end_date'],
+                          'sleep_state': item['sleep_state'],
+                          'date_heart_rate': item['date_heart_rate'],
+                          'heart_rate': item['heart_rate'],
+                          'date_respiration_rate': item['date_respiration_rate'],
+                          'respiration_rate': item['respiration_rate'],
+                          'date_snoring': item['date_snoring'],
+                          'snoring': item['snoring'],
+                          'date_sdnn_1': item['date_sdnn_1'],
+                          'sdnn_1': item['sdnn_1'],
+                          'device': item['device'],
+                          } for item in sleep_intra_day_dict["sleepmats_intraactivity"] if start_date <= item['date_heart_rate']<= end_date]
+
+        
+        print(filtered_data)
+        print(hola)
+        return(filtered_data)
+
 
 
 

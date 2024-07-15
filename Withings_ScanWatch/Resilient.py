@@ -147,8 +147,8 @@ class Resilient(object):
                 reports_resilient.sleep()
                 reports_resilient.sleep_daily()
                 ###################################
-                #reports_resilient.intra_sleep_v2()
                 #reports_resilient.sleep_v2()
+                #reports_resilient.intra_sleep_v2()
                 #reports_resilient.intra_activitydata_watch_v2()
                 #reports_resilient.activity_data_watch_v2()
                 #reports_resilient.plot_creatorV2()
@@ -384,7 +384,7 @@ class Resilient(object):
         a = cls()
         a.individual_report_generation()
         a.create_folder_reports()
-        #a.usage_reports()
+        a.usage_reports()
         a.merge_pdf()
 		
 

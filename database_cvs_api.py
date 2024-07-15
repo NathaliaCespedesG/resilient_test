@@ -4,6 +4,7 @@ import pandas as pd
 import os
 import requests
 import math
+import numpy as np
 from datetime import datetime, timezone
 from dateutil import parser
 
@@ -21,9 +22,11 @@ class DatabaseServer_csv(object):
         #User = models_api.User()
             
         if os.path.exists(self.users_path):
+            prit('here')
             # Open the CSV file in read mode
             with open(self.users_path, 'r', newline='') as csv_file:
                 df = pd.read_csv(self.users_path, header = 0, delimiter=';')
+                print(df)
             
 
 
@@ -62,6 +65,7 @@ class DatabaseServer_csv(object):
     # GET ALL THE USERS
 
     def get_users(self):
+        self.id_available = []
         url = 'http://127.0.0.1:8000/api/users'
         response = requests.get(url)
         # Checking the status code of the response
@@ -70,7 +74,7 @@ class DatabaseServer_csv(object):
             print('GET request successful')
             # Accessing the response data
             self.user_data = response.json()  # Assuming the response is JSON data
-            #print(data)
+            print(self.user_data)
         else:
             # Unsuccessful response
             print('GET request failed:', response.status_code)
@@ -79,6 +83,7 @@ class DatabaseServer_csv(object):
         self.id_username_dict = {}
         for user in self.user_data['users']:
             self.id_username_dict[user['id']] = user['username']
+            self.id_available.append(user['username'])
         
         
         #print(self.id_username_dict)
@@ -128,12 +133,20 @@ class DatabaseServer_csv(object):
                 # Successful response
                 #print('GET request successful')
                 # Accessing the response data
-                self.device_data = response.json()  # Assuming the response is JSON data
+                data = response.json()  # Assuming the response is JSON data
                 #print(self.device_data)
-                devices = self.organized_dict(self.device_data)
-                self.devices_dict[self.id_available[i]] = devices
-
-
+                #print(self.device_data)
+                for device in data['devices']:
+                    if device['is_active']:
+                        username = device['user']['username']
+                        device_type = device['device_type']
+                        device_id = device['id']
+                        
+                    if username not in self.devices_dict:
+                         self.devices_dict[username] = {}
+                        
+                    self.devices_dict[username][device_type] = device_id
+                
             else:
                 # Unsuccessful response
                 print('GET request failed:', response.status_code)
@@ -165,10 +178,10 @@ class DatabaseServer_csv(object):
 
                             print(type(dict[j]['Muscle mass'])) 
                             # Convert 'nan' values to None
-                            weight = 0 if math.isnan(float(dict[j]['Weight'])) else float(dict[j]['Weight']) 
-                            muscle_mass = 0 if math.isnan(float(dict[j]['Muscle mass'])) else float(dict[j]['Muscle mass'])
-                            bone_mass = 0 if math.isnan(float(dict[j]['Bone mass'])) else float(dict[j]['Bone mass'])
-                            fat_mass = 0 if math.isnan(float(dict[j]['Fat mass Weight'])) else float(dict[j]['Fat mass Weight'])
+                            weight = -2 if math.isnan(float(dict[j]['Weight'])) else float(dict[j]['Weight']) 
+                            muscle_mass = -2 if math.isnan(float(dict[j]['Muscle mass'])) else float(dict[j]['Muscle mass'])
+                            bone_mass = -2 if math.isnan(float(dict[j]['Bone mass'])) else float(dict[j]['Bone mass'])
+                            fat_mass = -2 if math.isnan(float(dict[j]['Fat mass Weight'])) else float(dict[j]['Fat mass Weight'])
 
                             print(muscle_mass)
                    
@@ -208,11 +221,11 @@ class DatabaseServer_csv(object):
                             date_s = datetime.strptime(date_s, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
 
                             # Convert 'nan' values to None
-                            average_heart_rate = -1 if math.isnan(float(dict[j]['HR_Average'])) else float(dict[j]['HR_Average']) 
-                            calories = -1 if math.isnan(float(dict[j]['Calories'])) else float(dict[j]['Calories'])
-                            steps = -1 if math.isnan(float(dict[j]['Steps'])) else float(dict[j]['Steps'])
-                            hr_max = -1 if math.isnan(float(dict[j]['HR_max'])) else float(dict[j]['HR_max'])
-                            hr_min = -1 if math.isnan(float(dict[j]['HR_min'])) else float(dict[j]['HR_min'])
+                            average_heart_rate = -2 if math.isnan(float(dict[j]['HR_Average'])) else float(dict[j]['HR_Average']) 
+                            calories = -2 if math.isnan(float(dict[j]['Calories'])) else float(dict[j]['Calories'])
+                            steps = -2 if math.isnan(float(dict[j]['Steps'])) else float(dict[j]['Steps'])
+                            hr_max = -2 if math.isnan(float(dict[j]['HR_max'])) else float(dict[j]['HR_max'])
+                            hr_min = -2 if math.isnan(float(dict[j]['HR_min'])) else float(dict[j]['HR_min'])
                    
                             data ={
                                 "device": watch_id,
@@ -236,8 +249,8 @@ class DatabaseServer_csv(object):
         print(current_users)
         for i in range(len(self.id_available)):
             print(i)
-            user = [k for k, v in current_users.items() if v == i]
-            url = 'http://127.0.0.1:8000/api/usage/' + str(user)
+            user = [k for k, v in current_users.items() if v == self.id_available[i]]
+            url = 'http://127.0.0.1:8000/api/usages/' 
             path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/Usage.csv'
             
             #print(scale_id)
@@ -246,20 +259,26 @@ class DatabaseServer_csv(object):
                 with open(path, 'r', newline='') as csv_file:
                     df = pd.read_csv(path, header = 0, delimiter=',')
                     dict = df.to_dict(orient = 'records')
-                    #print(dict)
-                    user_key = [key for key, val in current_users.items() if val == self.id_available[i]]
+         
                     for j in range(len(dict)):
-                        date_scanwatch = self.convert_to_iso_format(dict[j]['Watch Last reading'][:-6])
-                        date_scanwatch = datetime.strptime(date_scanwatch, '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d')
+                        print(str(dict[j]['Watch Last reading']))
+                        print(type(dict[j]['Watch Last reading']))
+                        watch = dict[j]['Watch Last reading']
+                        watch = watch[:-6] if isinstance(watch, float) and not np.isnan(watch) else 'nan'
+                        date_scanwatch = self.convert_to_iso_format(watch)
                         #date_scanwatch = datetime.strptime(date_scanwatch, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
-                        date_sleepmat = self.convert_to_iso_format(dict[j]['SleepMat Last reading'][:-6])
-                        date_sleepmat = datetime.strptime(date_sleepmat, '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d')
+                        sleep = dict[j]['SleepMat Last reading']
+                        sleep = sleep[:-6] if isinstance(sleep, float) and not np.isnan(sleep) else 'nan'
+                        date_sleepmat = self.convert_to_iso_format(sleep)
                         #date_sleepmat = datetime.strptime(date_sleepmat, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
-                        date_scale = self.convert_to_iso_format(dict[j]['Scale Last reading'][:-6])
-                        date_scale = datetime.strptime(date_scale, '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d')
+                        scale = dict[j]['Scale Last reading']
+                        scale = scale[:-6] if isinstance(scale, float) and not np.isnan(scale) else 'nan'
+                        date_scale = self.convert_to_iso_format(scale)
                         #date_scale  = datetime.strptime(date_scale, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
                         
                         data ={
+                            "user": user[0],
+                            "report": "noneeeyet",
                             "scanwatch_usage_level": '-1' if str(dict[j]['Watch Usage']) == 'nan' else dict[j]['Watch Usage'],
                             "scanwatch_battery": '-1' if str(dict[j]['Watch Battery'] == 'nan') else dict[j]['Watch Battery'],
                             "scanwatch_last_date": date_scanwatch,
@@ -292,12 +311,12 @@ class DatabaseServer_csv(object):
                     #print(dict)
                     if watch_id is not None:
                         for j in range(len(dict)):
-                            heart_rate = 0 if math.isnan(float(dict[j]['Heart Rate'])) else float(dict[j]['Heart Rate']) 
-                            date_heart_rate = 0 if math.isnan(float(dict[j]['date HR'])) else float(dict[j]['date HR']) 
-                            steps = 0 if math.isnan(float(dict[j]['Steps'])) else float(dict[j]['Steps']) 
-                            date_steps = 0 if math.isnan(float(dict[j]['date Steps'])) else float(dict[j]['date Steps']) 
-                            calories = 0 if math.isnan(float(dict[j]['Calories'])) else float(dict[j]['Calories']) 
-                            date_calories = 0 if math.isnan(float(dict[j]['date Calories'])) else float(dict[j]['date Calories']) 
+                            heart_rate = -2 if math.isnan(float(dict[j]['Heart Rate'])) else float(dict[j]['Heart Rate']) 
+                            date_heart_rate = -2 if math.isnan(float(dict[j]['date HR'])) else float(dict[j]['date HR']) 
+                            steps = -2 if math.isnan(float(dict[j]['Steps'])) else float(dict[j]['Steps']) 
+                            date_steps = -2 if math.isnan(float(dict[j]['date Steps'])) else float(dict[j]['date Steps']) 
+                            calories = -2 if math.isnan(float(dict[j]['Calories'])) else float(dict[j]['Calories']) 
+                            date_calories = -2 if math.isnan(float(dict[j]['date Calories'])) else float(dict[j]['date Calories']) 
                             data ={
                                 "device": watch_id,
                                 "heart_rate": heart_rate,
@@ -458,32 +477,33 @@ class DatabaseServer_csv(object):
         return(converted_dict)
     
     def get_device_id(self, id_user = None, devices_dict = None, device_type = None):
-
-        scale_value = None
-       #print(devices_dict)
         
+        # Ensure the user ID is a string
         if id_user in devices_dict:
-            nested_dict = devices_dict[id_user]
-            #print(nested_dict)
-            for value in nested_dict.values():
-                if device_type in value:
-                    scale_value = value[device_type]
-                    break
-        
-        return(scale_value)
+            user_devices = devices_dict[id_user]
+            if device_type in user_devices:
+                return user_devices[device_type]
+            else:
+                return f"Device type '{device_type}' not found for user '{id_user}'."
+        else:
+            return f"User ID '{id_user}' not found."
     
-    def convert_to_iso_format(self,date_string):
+    def convert_to_iso_format(self, date_string):
         # Handle both formats: '2024-03-30 00:00:00' and '2024-03-30T00:00:00'
-        try:
-            # Try parsing with the space separator
-            parsed_datetime = datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')
-        
-        except ValueError:
-            # If parsing fails, try with the 'T' separator
-            parsed_datetime = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%S')
+        if date_string != 'nan':
+            try:
+                # Try parsing with the space separator
+                parsed_datetime = datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')      
+            except ValueError:
+                # If parsing fails, try with the 'T' separator
+                parsed_datetime = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%S')
             
-        # Format to 'YYYY-MM-DDTHH:MM:SS'
-        return parsed_datetime.strftime('%Y-%m-%dT%H:%M:%S')
+            parsed_datetime.strftime('%Y-%m-%dT%H:%M:%S')
+            return datetime.strptime(parsed_datetime, '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d')
+        else:
+            return('nan')
+                
+        
 
             
 
@@ -502,13 +522,13 @@ path_user = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/Users.csv'
 db_csv = DatabaseServer_csv(path = path_user)
 #db_csv.import_users_from_csv()
 db_csv.get_users()
-db_csv.upload_device_info()
+#db_csv.upload_device_info()
 db_csv.get_device_info()
 #db_csv.upload_scale_summary_data()
 #db_csv.upload_scanwatch_summary_data()
-db_csv.upload_sleep_summary_data()
+#db_csv.upload_sleep_summary_data()
 #db_csv.upload_intra_sleep_summary_data()
-#db_csv.upload_usage_data()
+db_csv.upload_usage_data()
 #db_csv.upload_intra_scanwatch_summary_data()
     
 
