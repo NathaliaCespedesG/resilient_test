@@ -12,6 +12,8 @@ class User(models.Model):
     updated_at = models.DateField(auto_now=True)
     password_hash = models.CharField(max_length=200)
     active = models.BooleanField(default=True)
+    withings_connected = models.BooleanField(default=False)
+    withings_credentials_path = models.CharField(max_length=300)
 
     def save(self, *args, **kwargs):
         # Update the `updated_at` field before saving the record
@@ -20,7 +22,6 @@ class User(models.Model):
 
 class Device(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='devices')
     device_hash = models.CharField(max_length=100)
     device_type = models.CharField(max_length=100)
     mac_address = models.CharField(max_length=100)
@@ -36,6 +37,7 @@ class Device(models.Model):
 class Scale(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='scales')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='scales_user')
     date = models.DateTimeField()
     weight = models.FloatField()
     muscle_mass = models.FloatField()
@@ -45,6 +47,7 @@ class Scale(models.Model):
 class ScanWatchIntraActivity(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='scanwatch_intraactivity')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='scanwatch_intraactivity_user')
     heart_rate = models.FloatField()
     date_heart_rate = models.FloatField()
     steps = models.FloatField()
@@ -55,6 +58,7 @@ class ScanWatchIntraActivity(models.Model):
 class ScanWatchSummary(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='scanwatch_summary')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='scanwatch_summary_user')
     date = models.DateField()
     average_heart_rate = models.FloatField()
     calories = models.FloatField()
@@ -65,6 +69,7 @@ class ScanWatchSummary(models.Model):
 class SleepmatIntraActivity(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='sleepmat_intraactivity')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sleepmat_intraactivity_user')
     start_date = models.FloatField() 
     end_date = models.FloatField()
     sleep_state = models.IntegerField() 
@@ -80,6 +85,7 @@ class SleepmatIntraActivity(models.Model):
 class SleepmatSummary(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='sleepmat_summary')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sleepmat_summary_user')
     date = models.DateField()
     start_date = models.DateTimeField(null=True, blank=True) 
     end_date = models.DateTimeField(null=True, blank=True)

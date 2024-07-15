@@ -4,6 +4,7 @@ from .models import *
 class UserFilter(django_filters.FilterSet):
     id = django_filters.UUIDFilter(field_name='id', lookup_expr='exact')
     username = django_filters.CharFilter(field_name='username', lookup_expr='exact') 
+    role = django_filters.CharFilter(field_name='role', lookup_expr='exact')
     created_at = django_filters.DateFilter(field_name='created_at', lookup_expr='exact')
     created_at_from = django_filters.DateFilter(field_name='created_at', lookup_expr='gte')
     created_at_to = django_filters.DateFilter(field_name='created_at', lookup_expr='lte')
@@ -11,19 +12,24 @@ class UserFilter(django_filters.FilterSet):
     updated_at_from = django_filters.DateFilter(field_name='updated_at', lookup_expr='gte')
     updated_at_to = django_filters.DateFilter(field_name='updated_at', lookup_expr='lte')
     active = django_filters.BooleanFilter(field_name='active', lookup_expr='exact')
+    withings_connected = django_filters.BooleanFilter(field_name='withings_connected', lookup_expr='exact')
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'created_at', 'updated_at', 'active']
+        fields = ['id', 'role', 'username', 'created_at', 'updated_at', 'active', 'withings_connected']
 
 class DeviceFilter(django_filters.FilterSet):
     id = django_filters.UUIDFilter(field_name='id', lookup_expr='exact')
-    user_id = django_filters.UUIDFilter(field_name='user_id', lookup_expr='exact')
     device_hash = django_filters.CharFilter(field_name='device_hash', lookup_expr='exact')
     device_type = django_filters.CharFilter(field_name='device_type', lookup_expr='exact')
     mac_address = django_filters.CharFilter(field_name='mac_address', lookup_expr='exact')
     is_active = django_filters.BooleanFilter(field_name='is_active', lookup_expr='exact')
-    username = django_filters.CharFilter(field_name='user__username', lookup_expr='exact')
+    created_at = django_filters.DateFilter(field_name='created_at', lookup_expr='exact')
+    created_at_from = django_filters.DateFilter(field_name='created_at', lookup_expr='gte')
+    created_at_to = django_filters.DateFilter(field_name='created_at', lookup_expr='lte')
+    updated_at = django_filters.DateFilter(field_name='updated_at', lookup_expr='exact')
+    updated_at_from = django_filters.DateFilter(field_name='updated_at', lookup_expr='gte')
+    updated_at_to = django_filters.DateFilter(field_name='updated_at', lookup_expr='lte')
 
     class Meta:
         model = Device
@@ -32,14 +38,11 @@ class DeviceFilter(django_filters.FilterSet):
 class ScaleFilter(django_filters.FilterSet):
     id = django_filters.UUIDFilter(field_name='id', lookup_expr='exact')
     device_id = django_filters.UUIDFilter(field_name='device_id', lookup_expr='exact')
+    user_id = django_filters.UUIDFilter(field_name='user_id', lookup_expr='exact')
     date = django_filters.DateFilter(field_name='date', lookup_expr='exact')
     date_from = django_filters.DateFilter(field_name='date', lookup_expr='gte')
     date_to = django_filters.DateFilter(field_name='date', lookup_expr='lte')
-    user_id = django_filters.UUIDFilter(field_name='device__user_id', lookup_expr='exact')
-    username = django_filters.CharFilter(method='filter_by_username')
-
-    def filter_by_username(self, queryset, name, value):
-        return queryset.filter(device__user__username=value)
+    username = django_filters.CharFilter(method='user__username', lookup_expr='exact')
 
     class Meta:
         model = Scale
@@ -48,17 +51,14 @@ class ScaleFilter(django_filters.FilterSet):
 class ScanWatch_IntraActivityFilter(django_filters.FilterSet):
     id = django_filters.UUIDFilter(field_name='id', lookup_expr='exact')
     device_id = django_filters.UUIDFilter(field_name='device_id', lookup_expr='exact')
+    user_id = django_filters.UUIDFilter(field_name='user_id', lookup_expr='exact')
     heart_rate = django_filters.RangeFilter(field_name='heart_rate')
     date_heart_rate = django_filters.RangeFilter(field_name='date_heart_rate')
     steps = django_filters.RangeFilter(field_name='steps')
     date_steps = django_filters.RangeFilter(field_name='date_steps')
     calories = django_filters.RangeFilter(field_name='calories')
     date_calories = django_filters.RangeFilter(field_name='date_calories')
-    user_id = django_filters.UUIDFilter(field_name='device__user_id', lookup_expr='exact')
-    username = django_filters.CharFilter(method='filter_by_username')
-
-    def filter_by_username(self, queryset, name, value):
-        return queryset.filter(device__user__username=value)
+    username = django_filters.CharFilter(method='user__username', lookup_expr='exact')
 
     class Meta:
         model = ScanWatchIntraActivity
@@ -67,16 +67,13 @@ class ScanWatch_IntraActivityFilter(django_filters.FilterSet):
 class ScanWatch_SummaryFilter(django_filters.FilterSet):
     id = django_filters.UUIDFilter(field_name='id', lookup_expr='exact')
     device_id = django_filters.UUIDFilter(field_name='device_id', lookup_expr='exact')
+    user_id = django_filters.UUIDFilter(field_name='user_id', lookup_expr='exact')
     date_from = django_filters.DateFilter(field_name='date', lookup_expr='gte')
     date_to = django_filters.DateFilter(field_name='date', lookup_expr='lte')
     average_heart_rate = django_filters.RangeFilter(field_name='average_heart_rate')
     calories = django_filters.RangeFilter(field_name='calories')
     steps = django_filters.RangeFilter(field_name='steps')
-    user_id = django_filters.UUIDFilter(field_name='device__user_id', lookup_expr='exact')
-    username = django_filters.CharFilter(method='filter_by_username')
-
-    def filter_by_username(self, queryset, name, value):
-        return queryset.filter(device__user__username=value)
+    username = django_filters.CharFilter(method='user__username', lookup_expr='exact')
 
     class Meta:
         model = ScanWatchSummary
@@ -85,6 +82,7 @@ class ScanWatch_SummaryFilter(django_filters.FilterSet):
 class Sleepmat_IntraActivityFilter(django_filters.FilterSet):
     id = django_filters.UUIDFilter(field_name='id', lookup_expr='exact')
     device_id = django_filters.UUIDFilter(field_name='device_id', lookup_expr='exact')
+    user_id = django_filters.UUIDFilter(field_name='user_id', lookup_expr='exact')
     start_date_from = django_filters.DateFilter(field_name='start_date', lookup_expr='gte')
     start_date_to = django_filters.DateFilter(field_name='start_date', lookup_expr='lte')
     end_date_from = django_filters.DateFilter(field_name='end_date', lookup_expr='gte')
@@ -98,8 +96,7 @@ class Sleepmat_IntraActivityFilter(django_filters.FilterSet):
     snoring = django_filters.RangeFilter(field_name='snoring')
     date_sdnn_1 = django_filters.RangeFilter(field_name='date_sdnn_1')
     sdnn_1 = django_filters.RangeFilter(field_name='sdnn_1')
-    user_id = django_filters.UUIDFilter(field_name='device__user_id', lookup_expr='exact')
-    username = django_filters.CharFilter(method='filter_by_username')
+    username = django_filters.CharFilter(method='user__username', lookup_expr='exact')
 
     def filter_by_username(self, queryset, name, value):
         return queryset.filter(device__user__username=value)
@@ -111,6 +108,7 @@ class Sleepmat_IntraActivityFilter(django_filters.FilterSet):
 class Sleepmat_SummaryFilter(django_filters.FilterSet):
     id = django_filters.UUIDFilter(field_name='id', lookup_expr='exact')
     device_id = django_filters.UUIDFilter(field_name='device_id', lookup_expr='exact')
+    user_id = django_filters.UUIDFilter(field_name='user_id', lookup_expr='exact')
     date_from = django_filters.DateFilter(field_name='date', lookup_expr='gte')
     date_to = django_filters.DateFilter(field_name='date', lookup_expr='lte')
     breathing_disturbances = django_filters.RangeFilter(field_name='breathing_disturbances')
@@ -124,11 +122,7 @@ class Sleepmat_SummaryFilter(django_filters.FilterSet):
     sleep_score = django_filters.RangeFilter(field_name='sleep_score')
     wakeup_count = django_filters.RangeFilter(field_name='wakeup_count')
     wakeup_duration = django_filters.RangeFilter(field_name='wakeup_duration')
-    user_id = django_filters.UUIDFilter(field_name='device__user_id', lookup_expr='exact')
-    username = django_filters.CharFilter(method='filter_by_username')
-
-    def filter_by_username(self, queryset, name, value):
-        return queryset.filter(device__user__username=value)
+    username = django_filters.CharFilter(method='user__username', lookup_expr='exact')
 
     class Meta:
         model = SleepmatSummary

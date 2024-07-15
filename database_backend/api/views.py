@@ -130,6 +130,8 @@ class ScanWatchSummaryDetailView(generics.RetrieveUpdateDestroyAPIView):
 class SleepmatIntraActivityListCreateView(generics.ListCreateAPIView):
     queryset = SleepmatIntraActivity.objects.all()
     serializer_class = SleepmatIntraActivitySerializer
+    filterset_class = Sleepmat_IntraActivityFilter
+    filter_backends = [DjangoFilterBackend]
 
     def perform_create(self, serializer):
         # Generate a new UUID before saving the instance
