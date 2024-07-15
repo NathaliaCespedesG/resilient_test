@@ -52,7 +52,7 @@ class UserHealthDataView(generics.RetrieveAPIView):
         return JsonResponse({'health_data': data})
 
 class DeviceListCreateView(generics.ListCreateAPIView):
-    queryset = Device.objects.all().select_related('user')
+    queryset = Device.objects.all()
     serializer_class = DeviceSerializer
     filterset_class = DeviceFilter
     filter_backends = [DjangoFilterBackend]
