@@ -86,7 +86,7 @@ class DatabaseServer_csv(object):
             self.id_available.append(user['username'])
         
         
-        #print(self.id_username_dict)
+        print(self.id_username_dict)
 
     #UPLOAD DEVICES FOR EACH USER
             
