@@ -13,10 +13,23 @@ class UserFilter(django_filters.FilterSet):
     updated_at_to = django_filters.DateFilter(field_name='updated_at', lookup_expr='lte')
     active = django_filters.BooleanFilter(field_name='active', lookup_expr='exact')
     withings_connected = django_filters.BooleanFilter(field_name='withings_connected', lookup_expr='exact')
+    scale_device = django_filters.UUIDFilter(field_name='scale_device_id', lookup_expr='exact')
+    sleepmat_device = django_filters.UUIDFilter(field_name='sleepmat_device_id', lookup_expr='exact')
+    scanwatch_device = django_filters.UUIDFilter(field_name='scanwatch_device_id', lookup_expr='exact')
 
     class Meta:
         model = User
-        fields = ['id', 'role', 'username', 'created_at', 'updated_at', 'active', 'withings_connected']
+        fields = [ 'id', 
+                    'role', 
+                    'username', 
+                    'created_at', 
+                    'updated_at', 
+                    'active', 
+                    'withings_connected',
+                    'scale_device',
+                    'sleepmat_device',
+                    'scanwatch_device'
+                ]
 
 class DeviceFilter(django_filters.FilterSet):
     id = django_filters.UUIDFilter(field_name='id', lookup_expr='exact')

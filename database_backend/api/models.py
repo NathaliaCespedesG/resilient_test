@@ -3,23 +3,6 @@ from django.utils import timezone
 import uuid
 
 
-# Create your models here.
-class User(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    username = models.CharField(max_length=50)
-    role = models.CharField(max_length=100)
-    created_at = models.DateField(auto_now_add=True)
-    updated_at = models.DateField(auto_now=True)
-    password_hash = models.CharField(max_length=200)
-    active = models.BooleanField(default=True)
-    withings_connected = models.BooleanField(default=False)
-    withings_credentials_path = models.CharField(max_length=300)
-
-    def save(self, *args, **kwargs):
-        # Update the `updated_at` field before saving the record
-        self.updated_at = timezone.now()
-        super(User, self).save(*args, **kwargs)
-
 class Device(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     device_hash = models.CharField(max_length=100)
@@ -33,6 +16,25 @@ class Device(models.Model):
         # Update the `updated_at` field before saving the record
         self.updated_at = timezone.now()
         super(Device, self).save(*args, **kwargs)
+
+class User(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    username = models.CharField(max_length=50)
+    role = models.CharField(max_length=100)
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateField(auto_now=True)
+    password_hash = models.CharField(max_length=200)
+    active = models.BooleanField(default=True)
+    withings_connected = models.BooleanField(default=False)
+    withings_credentials_path = models.CharField(max_length=300)
+    scale_device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='scale_device_id', null=True, blank=True)
+    sleepmat_device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='sleepmat_device_id', null=True, blank=True)
+    scanwatch_device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='scanwatch_device_id', null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        # Update the `updated_at` field before saving the record
+        self.updated_at = timezone.now()
+        super(User, self).save(*args, **kwargs)
 
 class Scale(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
