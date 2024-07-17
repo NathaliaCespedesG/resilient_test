@@ -74,7 +74,7 @@ class DatabaseServer_csv(object):
             print('GET request successful')
             # Accessing the response data
             self.user_data = response.json()  # Assuming the response is JSON data
-            print(self.user_data)
+            #print(self.user_data)
         else:
             # Unsuccessful response
             print('GET request failed:', response.status_code)
@@ -86,7 +86,7 @@ class DatabaseServer_csv(object):
             self.id_available.append(user['username'])
         
         
-        print(self.id_username_dict)
+        #print(self.id_username_dict)
 
     #UPLOAD DEVICES FOR EACH USER
             
@@ -134,8 +134,7 @@ class DatabaseServer_csv(object):
                 #print('GET request successful')
                 # Accessing the response data
                 data = response.json()  # Assuming the response is JSON data
-                #print(self.device_data)
-                #print(self.device_data)
+                print(data)
                 for device in data['devices']:
                     if device['is_active']:
                         username = device['user']['username']
