@@ -30,7 +30,12 @@ class UserSerializer(serializers.ModelSerializer):
             'role': instance.role,
             'created_at': instance.created_at,
             'updated_at': instance.updated_at,
-            'active': instance.active
+            'active': instance.active,
+            'withings_connected': instance.withings_connected,
+            'withings_credentials_path': instance.withings_credentials_path,
+            'scale_device': instance.scale_device,
+            'sleepmat_device': instance.sleepmat_device,
+            'scanwatch_device': instance.scanwatch_device,
         }
 
 class DeviceSerializer(serializers.ModelSerializer):
