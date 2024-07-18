@@ -60,6 +60,8 @@ class DatabaseServer_csv(object):
                 print('Data updated successfully')
             else:
                 print('Failed to update data:', response.text)
+
+
         
 
     # GET ALL THE USERS
@@ -135,17 +137,6 @@ class DatabaseServer_csv(object):
                 # Accessing the response data
                 data = response.json()  # Assuming the response is JSON data
                 print(data)
-                for device in data['devices']:
-                    if device['is_active']:
-                        username = device['user']['username']
-                        device_type = device['device_type']
-                        device_id = device['id']
-                        
-                    if username not in self.devices_dict:
-                         self.devices_dict[username] = {}
-                        
-                    self.devices_dict[username][device_type] = device_id
-                
             else:
                 # Unsuccessful response
                 print('GET request failed:', response.status_code)

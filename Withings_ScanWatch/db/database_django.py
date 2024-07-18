@@ -12,18 +12,22 @@ class Database_API(object):
     def __init__(self):
         pass
     
-    def register(self, user = None, role = None, password_hash = None):
+    def register(self, user = None, role = None, password_hash = None, credential_path = None,
+                scale_device_id = None, scanwatch_device_id = None, sleepmat_device_id = None):
 
         url = 'http://127.0.0.1:8000/api/users/'
         data = {
                 "username": user,
                 "role": role,
-                "password_hash": password_hash
+                "password_hash": password_hash,
+                "withings_credentials_path": credential_path
                 }
+        print(data)
         
         response = requests.post(url, json = data)
+        print('HIII')
         if response.status_code == 400:
-            print('User already in the database')
+            print('Not working')
 
     def get_users(self):
         

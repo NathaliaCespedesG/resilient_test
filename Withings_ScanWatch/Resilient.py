@@ -73,7 +73,8 @@ class Resilient(object):
                 # register participant - database API
                 self.role = input('Please provide the role: ')
                 self.password = 'NoneYet'
-                self.database_api.register(user = self.id_available, role = self.role, password_hash = self.password)
+                self.path_cred = 'Path'
+                self.database_api.register(user = self.id_available, role = self.role, password_hash = self.password, credential_path = self.path_cred)
 
                 self.create_participant(user = id_user)
                 
@@ -130,7 +131,7 @@ class Resilient(object):
             print(self.id_available)
             
             total_participants = len(self.id_available)
-            for i in range (total_participants):
+            for i in range (16,total_participants):
 
                 id_report = self.id_available[i]
                 reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 

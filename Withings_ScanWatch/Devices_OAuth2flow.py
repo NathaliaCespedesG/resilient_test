@@ -318,8 +318,8 @@ class Devices_OAuth2flow(object):
 
 		#Get codes for the devices
 
-		devices_api = self.database_api.get_device_info(user = self.id_user)
-		print(devices_api)
+		#devices_api = self.database_api.get_device_info(user = self.id_user)
+		#print(devices_api)
 		
 
 
