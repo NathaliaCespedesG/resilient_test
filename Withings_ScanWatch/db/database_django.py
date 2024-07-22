@@ -67,8 +67,24 @@ class Database_API(object):
             print('GET request failed:', response.status_code)
         
         return(unique_id)
+    
+    #PATCH users table
+    def update_devices_in_user(self, user_uid = None, scale_id = None, scanwatch_id = None, sleepmat_id = None):
+        url= 'http://127.0.0.1:8000/api/user/' + user_uid +'/'
+        print(scale_id)
+        data = {
+             "scale_device": scale_id,
+             "scanwatch_device":scanwatch_id,
+             "sleepmat_device": scanwatch_id
+        }
+        response = requests.patch(url,json=data)
+        if response.status_code == 200:
+             print("PATCH request successful")
+        else:
+             print(f"PATCH request failed with status code {response.status_code}")
 
-    def upload_device_info(self, user = None, dict = None):
+
+    def upload_device_info(self, dict = None):
         url= 'http://127.0.0.1:8000/api/devices/'
         print('****************************')
         print(dict)
@@ -77,7 +93,6 @@ class Database_API(object):
         for j in range(len(dict)):
             
             data ={
-                "user": user['users'][0]['id'],
                 "device_hash": dict[j]['Hash_deviceid'],
                 "device_type": {'Activity Tracker': 'scan_watch', 'Sleep Monitor': 'sleep_mat','Scale':'scale'}.get(dict[j]['Device'], 'default_value'),
                 "mac_address": dict[j]['MAC_address'],
@@ -88,8 +103,8 @@ class Database_API(object):
             #print(response)
 
 
-    def get_device_info(self, user = None):
-        url = 'http://127.0.0.1:8000/api/devices/' + '?username=' + user
+    def get_device_info(self, device_hash = None):
+        url = 'http://127.0.0.1:8000/api/devices/' + '?device_hash=' + device_hash
         response = requests.get(url)
         self.devices_dict = {}
         # Checking the status code of the response
@@ -97,23 +112,14 @@ class Database_API(object):
                 print('GET request successful')
                 # Accessing the response data
                 data = response.json()  # Assuming the response is JSON data
-                #print(self.device_data)
-                for device in data['devices']:
-                    if device['is_active']:
-                        username = device['user']['username']
-                        device_type = device['device_type']
-                        device_id = device['id']
-                        
-                    if username not in self.devices_dict:
-                         self.devices_dict[username] = {}
-                        
-                    self.devices_dict[username][device_type] = device_id
+                print(data)
                 
         else:
             # Unsuccessful response
             print('GET request failed:', response.status_code)
-        
-        return(self.devices_dict)
+
+        extracted_id = {device['device_type']: device['id'] for device in data['devices']}
+        return(extracted_id)
     
     def organized_dict(self, original_dict):
         converted_dict = {}

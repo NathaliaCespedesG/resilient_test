@@ -121,9 +121,8 @@ class Devices_OAuth2flow(object):
 
 		self.db_id = self.database_api.get_unique_id(id_user = self.id_user)
 		self.database.SM.set_User({"registered" : True, "id": self.id_user})
+		self.uuid_db = self.db_id['users'][0]['id']
 
-		print('***************************')
-		print(self.db_id)
 
 
 		
@@ -324,11 +323,17 @@ class Devices_OAuth2flow(object):
 
 
 	def register_devices(self):
-		# This function register the device information. 
+		# This function register the device information.
+		ids_list = [] 
 		devices = self.api.user_get_device()
 		devices = devices['devices']
-		
 
+		values = {
+			'scale': None,
+			'sleep_mat': None,
+			'scan_watch': None
+			}
+		
 		filtered_data = [{'Device': d['type'], 'Hash_deviceid': d['hash_deviceid'], 'MAC_address': d['mac_address']} for d in devices]
 		
 		type_d = [i['type'] for i in devices]
@@ -337,7 +342,18 @@ class Devices_OAuth2flow(object):
 		# Devices to csv database files
 		self.database.SM.load_SensorInfo(sensor = type_d, hash_deviceid = hash_deviceid, MAC_address = MAC_address)
 		# Devices to API database
-		self.database_api.upload_device_info(user = self.db_id, dict = filtered_data)
+		self.database_api.upload_device_info(dict = filtered_data)
+		for i in range(len(hash_deviceid)):
+			ids_devices = self.database_api.get_device_info(device_hash = hash_deviceid[i])
+			ids_list.append(ids_devices)
+
+		self.database_api.get_unique_id()
+		
+		for item in ids_list:
+			values.update(item)
+
+		self.database_api.update_devices_in_user(user_uid = self.uuid_db, scale_id = values['scale'],
+										    scanwatch_id = values['scan_watch'], sleepmat_id = values['sleep_mat'])
 
 	def create_nonce(self):
 

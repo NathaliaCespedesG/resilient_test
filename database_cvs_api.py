@@ -35,7 +35,7 @@ class DatabaseServer_csv(object):
         role = 'study-participant'
         password_hash = 'NONEYET'
 
-        custom_headers = ['username', 'role', 'password_hash']
+        custom_headers = ['username', 'role', 'password_hash', '']
 
         # Add new columns with constum headers
         df = pd.DataFrame(df, columns=['Id', 'Date of Registration'] + custom_headers)
@@ -60,6 +60,9 @@ class DatabaseServer_csv(object):
                 print('Data updated successfully')
             else:
                 print('Failed to update data:', response.text)
+
+
+    
 
 
         
