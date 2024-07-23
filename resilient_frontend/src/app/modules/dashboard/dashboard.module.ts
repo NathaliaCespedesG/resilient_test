@@ -9,7 +9,7 @@ import { MaterialModule } from '../../shared/material/material.module';
 import { PrimengModule } from '../../shared/primeng/primeng.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ParticipantSummaryComponent } from './components/participant-summary/participant-summary.component';
-
+import { SharedModule } from './../../shared/shared.module';
 
 
 @NgModule({
@@ -25,6 +25,7 @@ import { ParticipantSummaryComponent } from './components/participant-summary/pa
     DashboardRoutingModule,
     MaterialModule,
     PrimengModule,
+    SharedModule,
     FormsModule,
     ReactiveFormsModule
   ]
