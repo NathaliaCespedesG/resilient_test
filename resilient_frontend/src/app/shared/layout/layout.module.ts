@@ -4,13 +4,15 @@ import { MaterialModule } from '../material/material.module';
 import { FooterComponent } from './components/footer/footer.component';
 import { HeaderComponent } from './components/header/header.component';
 import { PrimengModule } from '../primeng/primeng.module';
+import { SummaryCardComponent } from './components/summary-card/summary-card.component';
 
 
 
 @NgModule({
   declarations: [
     FooterComponent,
-    HeaderComponent
+    HeaderComponent,
+    SummaryCardComponent
   ],
   imports: [
     CommonModule,
@@ -20,6 +22,7 @@ import { PrimengModule } from '../primeng/primeng.module';
   exports: [
     HeaderComponent,
     FooterComponent,
+    SummaryCardComponent,
     PrimengModule
   ]
 })
