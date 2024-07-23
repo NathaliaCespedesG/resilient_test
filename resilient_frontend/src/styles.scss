@@ -55,6 +55,27 @@ $resilient_frontend-theme: mat.define-light-theme((
 //     @tailwind utilities;
 // }
 
+:root {
+  --tw-color-red-500: #ef4444;
+  --tw-color-pink-500: #ec4899;
+  --tw-color-purple-500: #a855f7;
+  --tw-color-indigo-500: #6366f1;
+  --tw-color-blue-500: #3b82f6;
+  --tw-color-green-500: #10b981;
+  --tw-color-yellow-500: #f59e0b;
+  --tw-color-orange-500: #f97316;
+  --tw-color-teal-500: #14b8a6;
+  --tw-color-cyan-500: #06b6d4;
+  --tw-color-emerald-500: #10b981;
+  --tw-color-lime-500: #84cc16;
+  --tw-color-amber-500: #f59e0b;
+  --tw-color-rose-500: #f43f5e;
+  --tw-color-violet-500: #8b5cf6;
+  --tw-color-fuchsia-500: #d946ef;
+  --tw-color-sky-500: #0ea5e9;
+  --tw-color-gray-500: #6b7280;
+}
+
 .bg-image-gradient{
   background: linear-gradient(220.77deg, #232ED1 0%, #89D2DC 100%);
 }
@@ -83,7 +104,6 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   align-items: center;
   flex-grow: 1;
   gap: 2.5vh;
-  overflow-y: auto;
 }
 
 .dashboard-option-wrapper > h1 {
