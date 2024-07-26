@@ -675,6 +675,7 @@ class Devices_OAuth2flow(object):
 		self.sleeps_data['awake in bed'] =  np.subtract(self.sleeps_data['total timeinbed'],self.sleeps_data['total sleep time'])
 		self.sleeps_data['apnea'] =  [x.apnea_hypopnea_index for x in self.sleeps_data['data']]
 		self.sleeps_data['out of bed count'] = [x.out_of_bed_count for x in self.sleeps_data['data']]
+		
 
 		#Values  of total time in bed, awake in bed conversion to hours /3600 
 		self.sleeps_data['total sleep time']=[x/3600 for x in self.sleeps_data['total sleep time']]
@@ -1083,6 +1084,8 @@ class Devices_OAuth2flow(object):
 		self.sleeps_data['wake up duration'] = [x.wakeupduration for x in self.sleeps_data['data']]
 		self.sleeps_data['awake in bed'] =  np.subtract(self.sleeps_data['total timeinbed'],self.sleeps_data['total sleep time'])
 		self.sleeps_data['apnea'] =  [x.apnea_hypopnea_index for x in self.sleeps_data['data']]
+		print(self.sleeps_data['apnea'])
+		print(hola)
 		
 		self.sleeps_data['out of bed count'] = [x.out_of_bed_count for x in self.sleeps_data['data']]
 

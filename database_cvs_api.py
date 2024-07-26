@@ -6,7 +6,7 @@ import requests
 import math
 import numpy as np
 from datetime import datetime, timezone
-from dateutil import parser
+from dateutil import parser, relativedelta
 
 #from database_backend.api.models import User
 
@@ -83,15 +83,18 @@ class DatabaseServer_csv(object):
         else:
             # Unsuccessful response
             print('GET request failed:', response.status_code)
-            
-        # Dictionary to store id and username
-        self.id_username_dict = {}
-        for user in self.user_data['users']:
-            self.id_username_dict[user['id']] = user['username']
-            self.id_available.append(user['username'])
         
-        
+        self.user_data = {user['username']: user for user in self.user_data['users']}
+        self.id_available =  list(self.user_data.keys())
+        print(self.id_available)
         #print(self.id_username_dict)
+
+    #Extract User data
+    def extract_user_data(self,username):
+        user = self.user_data.get(username)
+        if user:
+            return user['id'], user['scale_device'], user['scanwatch_device'], user['sleepmat_device'] 
+        return None, None, None, None
 
     #UPLOAD DEVICES FOR EACH USER
             
@@ -152,8 +155,7 @@ class DatabaseServer_csv(object):
 
         for i in range(len(self.id_available)):
             path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/Scale.csv'
-            scale_id = self.get_device_id(id_user = str(self.id_available[i]), devices_dict = self.devices_dict, device_type = 'scale')
-            print(scale_id)
+            id,scale_id,_,_= self.extract_user_data(self.id_available[i])
 
             if os.path.exists(path):
                 # Open the CSV file in read mode
@@ -166,8 +168,10 @@ class DatabaseServer_csv(object):
                     if scale_id is not None:
 
                         for j in range(len(dict)):
-                            date_s = dict[j]['date'][:-6]
-                            date_s = datetime.strptime(date_s, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+                            date_s = dict[j]['date']
+                            date_s = parser.parse(date_s)
+                            date_s= date_s.isoformat()
+                           
 
                             print(type(dict[j]['Muscle mass'])) 
                             # Convert 'nan' values to None
@@ -180,6 +184,7 @@ class DatabaseServer_csv(object):
                    
                             data ={
                                 "device": scale_id,
+                                "user": id, 
                                 "date": date_s,
                                 "weight": weight,
                                 "muscle_mass": muscle_mass,
@@ -198,8 +203,8 @@ class DatabaseServer_csv(object):
         for i in range(len(self.id_available)):
             print(self.id_available)
             path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/ScanWatch_summary.csv'
-            watch_id = self.get_device_id(id_user = str(self.id_available[i]), devices_dict = self.devices_dict, device_type = 'scan_watch')
-            print(watch_id)
+            id,_,watch_id,_= self.extract_user_data(self.id_available[i])
+            print(id)
             #print(scale_id)
             if os.path.exists(path):
                 # Open the CSV file in read mode
@@ -222,30 +227,53 @@ class DatabaseServer_csv(object):
                    
                             data ={
                                 "device": watch_id,
+                                "user": id,
                                 "date": date_s,
                                 "average_heart_rate": average_heart_rate,
                                 "calories": calories,
                                 "steps": steps,
                                 "hr_max": hr_min,
                                 "hr_min": hr_max,
-                                
-                                }
+                            }
                             
                             print(data)
                             print('*********************')
                             print(self.id_available[i])
                             response = requests.post(url, json=data)
 
+    def get_report_id(self, username = None):
+
+        self.devices_dict = {}
+
+        for i in range(len(self.id_available)):
+            url = 'http://127.0.0.1:8000/api/reports/?username=' + str(username) 
+            response = requests.get(url)
+            # Checking the status code of the response
+            if response.status_code == 200:
+                # Successful response
+                #print('GET request successful')
+                # Accessing the response data
+                data = response.json()  # Assuming the response is JSON data
+                #print(data)
+            else:
+                # Unsuccessful response
+                print('GET request failed:', response.status_code)
+        
+        print(data)
+        
+        return(data)
+
+
     def upload_usage_data(self):
         #url = 'http://127.0.0.1:8000/api/usage/'
-        current_users = {key: value for key, value in self.id_username_dict.items() if value in self.id_available }
-        print(current_users)
+        #current_users = {key: value for key, value in self.id_username_dict.items() if value in self.id_available }
+        #print(current_users)
         for i in range(len(self.id_available)):
-            print(i)
-            user = [k for k, v in current_users.items() if v == self.id_available[i]]
             url = 'http://127.0.0.1:8000/api/usages/' 
             path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/Usage.csv'
-            
+            id,_,_,_= self.extract_user_data(self.id_available[i])
+            reports = self.get_report_id(username = self.id_available[i])
+            #print(hola)
             #print(scale_id)
             if os.path.exists(path):
                 # Open the CSV file in read mode
@@ -270,8 +298,8 @@ class DatabaseServer_csv(object):
                         #date_scale  = datetime.strptime(date_scale, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
                         
                         data ={
-                            "user": user[0],
-                            "report": "noneeeyet",
+                            "user": id,
+                            "report": reports['reports'][0]['id'],
                             "scanwatch_usage_level": '-1' if str(dict[j]['Watch Usage']) == 'nan' else dict[j]['Watch Usage'],
                             "scanwatch_battery": '-1' if str(dict[j]['Watch Battery'] == 'nan') else dict[j]['Watch Battery'],
                             "scanwatch_last_date": date_scanwatch,
@@ -330,9 +358,7 @@ class DatabaseServer_csv(object):
         url = 'http://127.0.0.1:8000/api/sleepmats/summary/'
         for i in range(len(self.id_available)):
             path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/SleepMat_summary.csv'
-            sleep_id = self.get_device_id(id_user = str(self.id_available[i]), devices_dict = self.devices_dict, device_type = 'sleep_mat')
-            print(self.id_available[i])
-            print(sleep_id)
+            id,_,_,sleep_id= self.extract_user_data(self.id_available[i])
             if os.path.exists(path):
                 # Open the CSV file in read mode
                 with open(path, 'r', newline='') as csv_file:
@@ -378,6 +404,7 @@ class DatabaseServer_csv(object):
                    
                             data ={
                                 "device": sleep_id,
+                                "user":id,
                                 "date": date_s,
                                 "breathing_disturbances" : breathing_disturbances,
                                 "deep_sleep_duration" : deep_sleep_duration,
@@ -401,6 +428,25 @@ class DatabaseServer_csv(object):
                             
                             #print(data)
                             response = requests.post(url, json=data)
+
+    def upload_report_data(self):
+        url = 'http://127.0.0.1:8000/api/reports/'
+        for i in range(len(self.id_available)):
+            id,_,_,_= self.extract_user_data(self.id_available[i])
+            start_date = (datetime.now() - relativedelta.relativedelta(months=3)).strftime('%Y-%m-%d')
+            end_date = (datetime.now()).strftime('%Y-%m-%d')
+            data ={
+                "user": id,
+                "path": "path",
+                "type" : "agreggated",
+                "start_date": start_date,
+                "end_date": end_date
+                                }
+            response = requests.post(url, json=data)
+            
+
+
+
 
     def upload_intra_sleep_summary_data(self):
 
@@ -516,13 +562,15 @@ db_csv = DatabaseServer_csv(path = path_user)
 #db_csv.import_users_from_csv()
 db_csv.get_users()
 #db_csv.upload_device_info()
-db_csv.get_device_info()
+#db_csv.get_device_info()
 #db_csv.upload_scale_summary_data()
 #db_csv.upload_scanwatch_summary_data()
-#db_csv.upload_sleep_summary_data()
+db_csv.upload_sleep_summary_data()
 #db_csv.upload_intra_sleep_summary_data()
-db_csv.upload_usage_data()
+#db_csv.upload_usage_data()
 #db_csv.upload_intra_scanwatch_summary_data()
+#db_csv.upload_report_data()
+#db_csv.get_report_id(username = 1)
     
 
 

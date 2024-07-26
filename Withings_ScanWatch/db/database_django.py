@@ -75,7 +75,7 @@ class Database_API(object):
         data = {
              "scale_device": scale_id,
              "scanwatch_device":scanwatch_id,
-             "sleepmat_device": scanwatch_id
+             "sleepmat_device": sleepmat_id
         }
         response = requests.patch(url,json=data)
         if response.status_code == 200:

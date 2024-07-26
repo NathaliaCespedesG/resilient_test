@@ -131,7 +131,7 @@ class Resilient(object):
             print(self.id_available)
             
             total_participants = len(self.id_available)
-            for i in range (16,total_participants):
+            for i in range (total_participants):
 
                 id_report = self.id_available[i]
                 reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
