@@ -1,5 +1,5 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { RequestsService } from '../../../../services/requests.service';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { RequestsService } from 'src/app/services/requests.service';
 import { Role } from '../../../../shared/models/roles';
 import { User, Users } from '../../../../shared/models/database-types';
 import { NgModel, ValidatorFn } from '@angular/forms';
@@ -7,6 +7,9 @@ import { Router } from '@angular/router';
 import { ICONS } from '@shared/constants/icons';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ConfirmationService } from 'primeng/api';
+import { EnvService } from 'src/app/services/env.service';
+import { ChartField, DeviceField, DeviceType } from '@shared/models/app-config';
+import { UIUtilsService } from 'src/app/services/ui-utils.service';
 
 @Component({
   selector: 'app-participants',
@@ -14,9 +17,10 @@ import { ConfirmationService } from 'primeng/api';
   styleUrl: './participants.component.scss'
 })
 export class ParticipantsComponent implements OnInit {
+  @ViewChild('chart') chart: any;
+
   currentParticipant: any;
-  deviceSummary: any[] = [];
-  deviceSummaryColumns: string[] = [];
+  deviceSummary: any;
   deviceName: string = '';
   deviceDetailsVisible: boolean[] = [];
   editParticipantForm: FormGroup;
@@ -38,14 +42,25 @@ export class ParticipantsComponent implements OnInit {
   username: string;
   usernameFilter: string = '';
   withingsAuthURL: string = 'https://account.withings.com/oauth2_user/authorize2?response_type=code&client_id=e64cb563bf44122144cd0702b02f69ad50d21aba0eb50ca443f69db5673ca2cc&redirect_uri=https%3A%2F%2Fresilient.ukdri.care%2F&scope=user.activity%2Cuser.metrics%2Cuser.info%2Cuser.sleepevents%2Cuser.rawdata&state=vsGpqaNPVDPOCrik8Fwn1F4369nTHa'
-
+  chartFields: ChartField;
+  chartVisualizationOptions: any[] = [
+    {label: 'Last Week', value: 'last_week'},
+    {label: 'Last Month', value: 'last_month'},
+    {label: 'Last 3 Months', value: 'last_3_months'},
+    {label: 'Last Year', value: 'last_year'},
+    {label: 'All Time', value: 'all_time'}
+  ];
+  defaultVisualizationOption: string = 'all_time';
   @ViewChild('usernameInput', { static: false }) usernameInput?: NgModel;
 
   constructor(
     private _requestsService: RequestsService,
+    private _envService: EnvService,
+    private _uiUtilsService: UIUtilsService,
     private _router: Router,
     private _fb: FormBuilder,
     private _confirmationService: ConfirmationService,
+    private _changeDetectorRef: ChangeDetectorRef,
     private _elementRef: ElementRef
   ) {
 
@@ -65,6 +80,8 @@ export class ParticipantsComponent implements OnInit {
       username: ['', [Validators.minLength(4)]],
       selectedRole: ['']
     });
+
+    this.chartFields = this._envService.appConfig.chartFields;
   }
 
   ngOnInit(): void {
@@ -218,8 +235,8 @@ export class ParticipantsComponent implements OnInit {
     this.showSpinner = false;
     this.isAddParticipantSuccessful = false;
     this.isDuplicateUsername = false;
-    this.deviceSummary = [];
-    this.deviceSummaryColumns = [];
+    this.deviceSummary = {};
+    this.defaultVisualizationOption = 'all_time';
 
     if (this.usernameInput) {
       this.usernameInput.control.markAsPristine(); // Reset ngModel state on dialog show
@@ -266,28 +283,150 @@ export class ParticipantsComponent implements OnInit {
     this.deviceDetailsVisible[index] = !this.deviceDetailsVisible[index];
   }
 
+  //TODO: Rename this function
   showDeviceTable(index: number): void {
     this.showDeviceTableDialog = true;
 
     const username = this.participantData.username;
-    const device_type = this.participantData.devices[index].device_type;
+    const device_type: 'scale' = this.participantData.devices[index].device_type;
     const deviceSummaryName = this.icons[device_type].summaryName!;
     this.deviceName = this.icons[device_type].prettyName;
     this.participantData.deviceSummaryLoaded = false;
 
     this._requestsService.getDeviceSummaryByUsername(username, device_type).subscribe({
       next: (response) => {
-        this.deviceSummary = response[deviceSummaryName];
-        this.deviceSummaryColumns = [];
-
-        if (this.deviceSummary.length > 0) {
-          this.deviceSummaryColumns = Object.keys(this.deviceSummary[0]);
+          this.setDeviceSummaryData(response[deviceSummaryName], device_type)
+          return;
         }
-
-        this.participantData.deviceSummaryLoaded = true;
-
       }
+    );
+  }
+
+  setDeviceSummaryData(deviceSummary: any, deviceType: DeviceType): void {
+    if (deviceSummary.length == 0) {
+      this.deviceSummary = {
+        data:    [],
+      };
+      this.participantData.deviceSummaryLoaded = true;
+      return;
+    }
+
+    this.deviceSummary = {
+      data:       deviceSummary,
+      deviceType: deviceType,
+      columns:    Object.keys(deviceSummary[0]),
+      dataFields: this.chartFields[deviceType],
+      chartData: {
+        labels: deviceSummary.map((item: { date: string | number | Date; }) => new Date(item.date).toLocaleDateString()).reverse(),
+        datasets: []
+      },
+    };
+
+    for (let i = 0; i < this.deviceSummary.dataFields.length; i++) {
+      const color = this._uiUtilsService.getRandomColor();
+      const currentField: DeviceType = this.deviceSummary.dataFields[i].fieldName;
+      const deviceType: DeviceType = this.deviceSummary.deviceType;
+
+      const datasetValue = {
+        field: currentField,
+        label: this.chartFields[deviceType][i].label,
+        data: this.deviceSummary.data.map((item: any) => item[currentField]).reverse(),
+        fill: true,
+        borderColor: color,
+        backgroundColor: this._uiUtilsService.getColorWithTransparency(color, 0.5),
+        hidden: true,
+        tension: 0.5
+      };
+      this.deviceSummary.chartData.datasets.push(datasetValue);
+    }
+    this.deviceSummary.filteredChartData = this.deviceSummary.chartData;
+    this.deviceSummary.chartData.datasets[0].hidden = false;
+    this.deviceSummary.dataFields[0].hidden = false;
+    this.deviceSummary.chartOptions = this._uiUtilsService.getLineChartOptions();
+    this.deviceSummary.chartOptions.plugins.legend.onClick = this.chartLegendClick.bind(this);
+
+    this.participantData.deviceSummaryLoaded = true;
+
+  }
+
+  onDeviceFieldSelected(selectedField: DeviceField): void {
+    const ci = this.chart.chart;
+    const indexOfInstance= ci._metasets.findIndex(
+      (meta: any) => meta.label === selectedField.label
+    )
+
+    if (indexOfInstance == -1) {
+      return;
+    }
+
+    if (ci.isDatasetVisible(indexOfInstance)) {
+        ci.hide(indexOfInstance);
+    } else {
+        ci.show(indexOfInstance);
+    }
+  }
+
+  chartLegendClick(event: any, legendItem: any, legend: any): void {
+    const indexOfField = this.deviceSummary.dataFields.findIndex(
+      (field: any) => field.label === legendItem.text
+    )
+
+    const index = legendItem.datasetIndex;
+    const ci = legend.chart;
+    if (ci.isDatasetVisible(index)) {
+        ci.hide(index);
+        legendItem.hidden = true;
+    } else {
+        ci.show(index);
+        legendItem.hidden = false;
+    }
+    if (indexOfField != -1) {
+      this.deviceSummary.dataFields[indexOfField].hidden = legendItem.hidden;
+      this._changeDetectorRef.detectChanges();
+    }
+  }
+
+  onChartDateOptionClick(event: any) {
+    const now = new Date();
+    let startDate: Date;
+
+    switch (this.defaultVisualizationOption) {
+      case 'last_week':
+        startDate = new Date(now.setDate(now.getDate() - 7));
+        break;
+      case 'last_month':
+        startDate = new Date(now.setMonth(now.getMonth() - 1));
+        break;
+      case 'last_3_months':
+        startDate = new Date(now.setMonth(now.getMonth() - 3));
+        break;
+      case 'last_year':
+        startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+        break;
+      case 'all_time':
+      default:
+        startDate = new Date(0); // A date in the far past
+        break;
+    }
+
+    //TODO: Try to copy data without using JSON parse, as it may cause performance issues
+    const filteredData = JSON.parse(JSON.stringify(this.deviceSummary.chartData));;
+
+    filteredData.labels = this.deviceSummary.chartData.labels.filter(
+      (label: any) => new Date(label) >= startDate)
+    ;
+
+    filteredData.datasets.forEach((dataset: any, index: number) => {
+      dataset.data = this.deviceSummary.chartData.datasets[index].data.slice(
+        this.deviceSummary.chartData.labels.findIndex(
+          (label: any) => new Date(label) >= startDate
+        )
+      );
+      dataset.hidden = this.deviceSummary.dataFields[index].hidden;
     });
+
+    this.deviceSummary.filteredChartData = filteredData;
+    this.chart.chart.update();
   }
 
 }

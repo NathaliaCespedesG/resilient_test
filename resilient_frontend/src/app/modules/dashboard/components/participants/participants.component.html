@@ -314,17 +314,46 @@
   <p-dialog
     (onHide)="onDialogHide()"
     [(visible)]="showDeviceTableDialog"
-    [style]="{width:  '100vw', height: '80vh'}"
-    styleClass="device-table-dialog"
+    [style]="{width:  '90vw', height: '80vh'}"
+    styleClass="device-summary-dialog"
   >
     <ng-template pTemplate="header" class="dialog-header">
-      <h2>{{deviceName + "'s Summary for: '" + participantData.username}}</h2>
+      <h2>{{deviceName + "'s Summary for: " + participantData.username}}</h2>
     </ng-template>
     <ng-template pTemplate="content">
       @if (!participantData.deviceSummaryLoaded) {
         <p>Loading..</p>
       } @else {
-        @if (deviceSummary.length == 0) {
+        @if (deviceSummary.data.length == 0) {
+          <p>No summary data found.</p>
+        } @else {
+          <div class="device-summary">
+            <div class="fields-container">
+              <div class="fields">
+                @for(deviceField of deviceSummary.dataFields; track $index){
+                  <app-summary-card
+                    [deviceField]="deviceField"
+                    (deviceFieldSelected)="onDeviceFieldSelected($event)"
+                  ></app-summary-card>
+                }
+              </div>
+            </div>
+            <div class="chart">
+              <p-selectButton
+                [options]="chartVisualizationOptions"
+                [(ngModel)]="defaultVisualizationOption"
+                optionLabel="label"
+                optionValue="value"
+                [allowEmpty]="false"
+                class="self-center"
+                (onOptionClick)="onChartDateOptionClick($event)"
+                />
+              <p-chart #chart type="line" [data]="deviceSummary.filteredChartData" [options]="deviceSummary.chartOptions"/>
+            </div>
+          </div>
+
+          <!-- @if (deviceSummary.length == 0) {
+        }
           <p>No summaries found.</p>
         } @else {
           <p-table
@@ -344,12 +373,6 @@
                   <th pSortableColumn="{{column}}">{{column}}<p-sortIcon [field]="column"></p-sortIcon></th>
                 }
               }
-              <!-- <th [pSortableColumn]="'date'">Date<p-sortIcon field="date"></p-sortIcon></th>
-              <th [pSortableColumn]="'average_heart_rate'">Av. Heart Rate<p-sortIcon field="average_heart_rate"></p-sortIcon></th>
-              <th [pSortableColumn]="'calories'">Calories<p-sortIcon field="calories"></p-sortIcon></th>
-              <th [pSortableColumn]="'steps'">Steps<p-sortIcon field="steps"></p-sortIcon></th>
-              <th [pSortableColumn]="'hr_max'">Max. Heart Rate<p-sortIcon field="hr_max"></p-sortIcon></th>
-              <th [pSortableColumn]="'hr_min'">Min. Heart Rate<p-sortIcon field="hr_min"></p-sortIcon></th> -->
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-device>
@@ -359,15 +382,10 @@
                     <td>{{device[column]}}</td>
                   }
                 }
-                <!-- <td>{{device.date}}</td>
-                <td>{{device.average_heart_rate}}</td>
-                <td>{{device.calories}}</td>
-                <td>{{device.steps}}</td>
-                <td>{{device.hr_max}}</td>
-                <td>{{device.hr_min}}</td> -->
               </tr>
           </ng-template>
           </p-table>
+        } -->
         }
       }
     </ng-template>

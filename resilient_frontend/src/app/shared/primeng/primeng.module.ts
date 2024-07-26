@@ -9,12 +9,13 @@ import { ProgressBarModule } from 'primeng/progressbar';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { SliderModule } from 'primeng/slider';
 import { DialogModule } from 'primeng/dialog';
-import {ProgressSpinnerModule} from 'primeng/progressspinner';
-import {DynamicDialogModule} from 'primeng/dynamicdialog';
-import {SelectButtonModule} from 'primeng/selectbutton';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { DynamicDialogModule } from 'primeng/dynamicdialog';
+import { SelectButtonModule } from 'primeng/selectbutton';
 import { AccordionModule } from 'primeng/accordion';
 import {ConfirmDialogModule} from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
+import { ChartModule } from 'primeng/chart';
 
 @NgModule({
   declarations: [],
@@ -33,7 +34,8 @@ import { ConfirmationService } from 'primeng/api';
     DynamicDialogModule,
     SelectButtonModule,
     AccordionModule,
-    ConfirmDialogModule
+    ConfirmDialogModule,
+    ChartModule
   ],
   exports: [
     ButtonModule,
@@ -49,7 +51,8 @@ import { ConfirmationService } from 'primeng/api';
     DynamicDialogModule,
     SelectButtonModule,
     AccordionModule,
-    ConfirmDialogModule
+    ConfirmDialogModule,
+    ChartModule
   ],
   providers: [ConfirmationService]
 })

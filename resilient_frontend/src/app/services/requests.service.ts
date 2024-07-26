@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Users, Devices } from '../shared/models/database-types';
 import { ICONS } from '../shared/constants/icons'
+import { EnvService } from './env.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,9 +11,14 @@ import { ICONS } from '../shared/constants/icons'
 export class RequestsService {
 
   private icons = ICONS;
-  private baseUrl = 'https://resilient.ukdri.care/api/';
+  private baseUrl: string;
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private _envService: EnvService
+  ) {
+    this.baseUrl = this._envService.appConfig.apiUrl;
+  }
 
   addParticipant(participantData: any): Observable<any> {
     const reqUrl = this.baseUrl + 'users/';
