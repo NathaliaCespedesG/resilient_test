@@ -10,6 +10,7 @@ import { ConfirmationService } from 'primeng/api';
 import { EnvService } from 'src/app/services/env.service';
 import { ChartField, DeviceField, DeviceType } from '@shared/models/app-config';
 import { UIUtilsService } from 'src/app/services/ui-utils.service';
+import { CsvService } from 'src/app/services/csv.service';
 
 @Component({
   selector: 'app-participants',
@@ -50,13 +51,19 @@ export class ParticipantsComponent implements OnInit {
     {label: 'Last Year', value: 'last_year'},
     {label: 'All Time', value: 'all_time'}
   ];
+  dataVisualizationOptions: any[] = [
+    {label: 'Table', value: 'table', icon: 'pi pi-table'},
+    {label: 'Graph', value: 'graph', icon: 'pi pi-chart-bar'}
+  ]
   defaultVisualizationOption: string = 'all_time';
+  defaultDataVisualizationOption: string = 'graph';
   @ViewChild('usernameInput', { static: false }) usernameInput?: NgModel;
 
   constructor(
     private _requestsService: RequestsService,
     private _envService: EnvService,
     private _uiUtilsService: UIUtilsService,
+    private _csvService: CsvService,
     private _router: Router,
     private _fb: FormBuilder,
     private _confirmationService: ConfirmationService,
@@ -311,6 +318,9 @@ export class ParticipantsComponent implements OnInit {
       return;
     }
 
+    console.log(deviceSummary);
+
+
     this.deviceSummary = {
       data:       deviceSummary,
       deviceType: deviceType,
@@ -327,10 +337,14 @@ export class ParticipantsComponent implements OnInit {
       const currentField: DeviceType = this.deviceSummary.dataFields[i].fieldName;
       const deviceType: DeviceType = this.deviceSummary.deviceType;
 
+      this.deviceSummary.dataFields[i].color = color;
+
       const datasetValue = {
         field: currentField,
         label: this.chartFields[deviceType][i].label,
-        data: this.deviceSummary.data.map((item: any) => item[currentField]).reverse(),
+        data: this.deviceSummary.data.map((item: any) => item[currentField])
+                .reverse()
+                .map((value: any) => value === null ? -1 : value),
         fill: true,
         borderColor: color,
         backgroundColor: this._uiUtilsService.getColorWithTransparency(color, 0.5),
@@ -338,7 +352,10 @@ export class ParticipantsComponent implements OnInit {
         tension: 0.5
       };
       this.deviceSummary.chartData.datasets.push(datasetValue);
+
     }
+    console.log(this.deviceSummary.chartData.datasets);
+
     this.deviceSummary.filteredChartData = this.deviceSummary.chartData;
     this.deviceSummary.chartData.datasets[0].hidden = false;
     this.deviceSummary.dataFields[0].hidden = false;
@@ -427,6 +444,11 @@ export class ParticipantsComponent implements OnInit {
 
     this.deviceSummary.filteredChartData = filteredData;
     this.chart.chart.update();
+  }
+
+  downloadCSV() {
+    const fileName = this.participantData.username + '-' + this.deviceSummary.deviceType + '-device-summary.csv';
+    this._csvService.downloadCSV(this.deviceSummary, fileName);
   }
 
 }

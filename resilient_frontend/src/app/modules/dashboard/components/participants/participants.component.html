@@ -328,17 +328,20 @@
           <p>No summary data found.</p>
         } @else {
           <div class="device-summary">
-            <div class="fields-container">
-              <div class="fields">
-                @for(deviceField of deviceSummary.dataFields; track $index){
-                  <app-summary-card
-                    [deviceField]="deviceField"
-                    (deviceFieldSelected)="onDeviceFieldSelected($event)"
-                  ></app-summary-card>
-                }
-              </div>
-            </div>
-            <div class="chart">
+            <div class="options-container">
+              <p-selectButton
+                [options]="dataVisualizationOptions"
+                [(ngModel)]="defaultDataVisualizationOption"
+                optionLabel="label"
+                optionValue="value"
+                [allowEmpty]="false"
+                class="self-center">
+                <ng-template pTemplate="item" let-item>
+                  <i [class]="item.icon"></i>
+                  <span class="p-button-label" style="margin-left: 1rem;">{{item.label}}</span>
+                </ng-template>
+              </p-selectButton>
+
               <p-selectButton
                 [options]="chartVisualizationOptions"
                 [(ngModel)]="defaultVisualizationOption"
@@ -347,44 +350,71 @@
                 [allowEmpty]="false"
                 class="self-center"
                 (onOptionClick)="onChartDateOptionClick($event)"
-                />
-              <p-chart #chart type="line" [data]="deviceSummary.filteredChartData" [options]="deviceSummary.chartOptions"/>
+              />
+              <p-button
+                label="Download CSV"
+                icon="pi pi-download"
+                (onClick)="downloadCSV()"></p-button>
             </div>
+            @if (defaultDataVisualizationOption == "graph") {
+              <div class="data-container animate-fade-in animate-delay-100">
+                <div class="fields-container">
+                  <div class="fields">
+                    @for(deviceField of deviceSummary.dataFields; track $index){
+                      <app-summary-card
+                        [deviceField]="deviceField"
+                        (deviceFieldSelected)="onDeviceFieldSelected($event)"
+                      ></app-summary-card>
+                    }
+                  </div>
+                </div>
+                <div class="chart">
+                  <p-chart
+                    #chart
+                    type="line"
+                    [data]="deviceSummary.filteredChartData"
+                    [options]="deviceSummary.chartOptions"
+                  />
+                </div>
+              </div>
+            } @else {
+              <div class="table-container animate-fade-in animate-delay-100">
+                <p-table
+                  [value]="deviceSummary.filteredChartData.labels"
+                  [scrollable]="true"
+                  [rowHover]="true"
+                  [paginator]="true"
+                  [rows]="9"
+                  [showCurrentPageReport]="true"
+                  currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                  styleClass="device-table"
+                >
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th>Date</th>
+                    @for (column of deviceSummary.dataFields; track $index) {
+                      <th pSortableColumn="{{column.label}}">{{column.label}}<p-sortIcon [field]="column.label"></p-sortIcon></th>
+                    }
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-label>
+                    <tr [pSelectableRow]="label">
+                      <td>{{label}}</td>
+                      @for (dataset of deviceSummary.filteredChartData.datasets; track $index) {
+                        <td>{{dataset.data[$index]}}</td>
+                      }
+                    </tr>
+                </ng-template>
+                </p-table>
+              </div>
+            }
           </div>
 
           <!-- @if (deviceSummary.length == 0) {
         }
           <p>No summaries found.</p>
         } @else {
-          <p-table
-            [value]="deviceSummary"
-            [scrollable]="true"
-            [rowHover]="true"
-            [paginator]="true"
-            [rows]="9"
-            [showCurrentPageReport]="true"
-            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-            styleClass="device-table"
-          >
-          <ng-template pTemplate="header">
-            <tr>
-              @for (column of deviceSummaryColumns; track $index) {
-                @if (column != "id" && column != "device") {
-                  <th pSortableColumn="{{column}}">{{column}}<p-sortIcon [field]="column"></p-sortIcon></th>
-                }
-              }
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-device>
-              <tr [pSelectableRow]="device">
-                @for (column of deviceSummaryColumns; track $index) {
-                  @if (column != "id" && column != "device"){
-                    <td>{{device[column]}}</td>
-                  }
-                }
-              </tr>
-          </ng-template>
-          </p-table>
+
         } -->
         }
       }

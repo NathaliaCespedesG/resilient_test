@@ -298,31 +298,53 @@
   .p-ripple {
     font-size: small;
   }
+
+  .p-datatable {
+    font-size: small;
+  }
 }
 
 .device-summary {
   display: flex;
+  flex-direction: column;
   width: 100%;
-  gap: 2vw;
+  gap: 2vh;
   padding-top: 1vh;
   overflow-y: hidden;
 
-  .fields-container {
-    margin: auto;
-    max-height: 100%;
-    overflow: auto;
-    width: 20%;
-
-    .fields {
-      display: flex;
-      flex-direction: column;
-      gap: 1vw;
-      justify-content: center;
-      overflow-y: auto;
-      width: 100%;
-    }
+  .options-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
   }
 
+  .data-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 2vw;
+    margin: auto;
+    overflow-y: hidden;
+
+    .fields-container {
+      margin: auto;
+      max-height: 100%;
+      overflow: auto;
+      width: 20%;
+
+      .fields {
+        display: flex;
+        flex-direction: column;
+        gap: 1vw;
+        justify-content: center;
+        overflow-y: auto;
+        width: 100%;
+      }
+    }
+  }
 
   .chart {
     display: flex;
