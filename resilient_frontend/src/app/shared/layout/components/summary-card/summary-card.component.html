@@ -1,7 +1,6 @@
 <div class="summary-card" (click)="onCardClick()" [ngClass]="{ 'selected': !deviceField.hidden}">
 
-  <div class="icon">
-    <img [src]="deviceField.iconPath" />
+  <div class="icon" [style.background-color]="deviceField.color">
   </div>
 
   <div class="info">
