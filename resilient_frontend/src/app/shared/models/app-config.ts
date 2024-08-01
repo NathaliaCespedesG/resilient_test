@@ -1,7 +1,7 @@
 export interface DeviceField {
   fieldName: string;
   label: string;
-  iconPath: string;
+  color: string;
   units: string;
   value?: string | number;
   hidden?: boolean;
