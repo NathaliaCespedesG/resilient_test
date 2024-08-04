@@ -11,6 +11,7 @@ export class EnvService {
     chartFields: {
       scale: [],
     },
+    nullReplaceValue: 0,
   };
 
   constructor() {

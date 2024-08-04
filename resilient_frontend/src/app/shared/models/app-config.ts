@@ -15,5 +15,6 @@ export interface ChartField {
 
 export interface AppConfig {
   apiUrl: string;
-  chartFields: ChartField
+  chartFields: ChartField;
+  nullReplaceValue: number;
 }
