@@ -58,7 +58,12 @@ export class RequestsService {
     const devicesUrl = this.baseUrl + this.icons[device_type].summaryUrl + '?username=' + username;
 
     return this.http.get<any>(devicesUrl);
+  }
 
+  saveWithingsCredentials(participantWithingsData: any): Observable<any> {
+    const reqUrl = this.baseUrl + 'reports/withings-credentials/';
+
+    return this.http.post<any>(reqUrl, participantWithingsData);
   }
 
 }
