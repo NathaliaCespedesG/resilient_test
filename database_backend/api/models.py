@@ -26,7 +26,7 @@ class User(models.Model):
     password_hash = models.CharField(max_length=200)
     active = models.BooleanField(default=True)
     withings_connected = models.BooleanField(default=False)
-    withings_credentials_path = models.CharField(max_length=300)
+    withings_credentials_path = models.CharField(max_length=300, null=True, blank=True)
     scale_device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='scale_device_id', null=True, blank=True)
     sleepmat_device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='sleepmat_device_id', null=True, blank=True)
     scanwatch_device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='scanwatch_device_id', null=True, blank=True)
