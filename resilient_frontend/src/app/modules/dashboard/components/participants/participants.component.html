@@ -1,5 +1,8 @@
 <div class="dashboard-option-wrapper animate-fade-in animate-delay-300">
-  <h1>Participants</h1>
+  <div class="dashboard-option-title">
+    <h1 class="w-full text-center">Participants</h1>
+    <i class="p-link button pi pi-times" (click)="closeParticipants()"></i>
+  </div>
 
   <div class="dashboard-option-header">
     <div class="search-bar">
@@ -14,11 +17,13 @@
         <mat-icon>search</mat-icon>
       </div>
     </div>
-    <p-button styleClass="add-button" (click)="showAddParticipantModal()" label="Add participant">
-      <div class="flex items-center justify-center">
-        <mat-icon>add_circle</mat-icon>
-      </div>
-      <!-- <span>Add participant</span> -->
+    <p-button
+      styleClass="add-button"
+      class="flex items-center justify-center"
+      (onClick)="showAddParticipantModal()"
+    >
+      <i class="pi pi-user-plus m-auto lg:m-0"></i>
+      <span class="hidden lg:inline-block ml-2 w-full">Add participant</span>
     </p-button>
   </div>
 
@@ -26,6 +31,7 @@
   <div class="dashboard-option-body h-full w-full">
     <p-table
       [value]="filteredParticipants"
+      [scrollable]="true"
       [rowHover]="true"
       [paginator]="true"
       [rows]="5"
@@ -34,6 +40,7 @@
       (onRowSelect)="onSelectParticipant($event)"
       selectionMode="single"
       [(selection)]="selectedRows"
+      styleClass="participants-table"
       >
       <ng-template pTemplate="header">
           <tr>
@@ -49,10 +56,10 @@
               <td class="icon-column">
                 <img class="participant-icon" src="./../../../assets/icons/participant-table-icon.svg">
               </td>
-              <td>{{participant.username}}</td>
-              <td>{{participant.role}}</td>
-              <td>{{participant.updated_at}}</td>
-              <td style="width: 15vw;">
+              <td class="text-nowrap text-ellipsis max-w-20 overflow-hidden ">{{participant.username}}</td>
+              <td class="text-nowrap text-ellipsis max-w-20 overflow-hidden ">{{participant.role}}</td>
+              <td class="text-nowrap text-ellipsis max-w-20 overflow-hidden ">{{participant.updated_at}}</td>
+              <td class="text-nowrap text-ellipsis max-w-5 overflow-hidden">
                 <div class="devices-cell">
                   <img class="devices-cell-icon" src="./../../../assets/icons/devices_bed.svg">
                   <img class="devices-cell-icon" src="./../../../assets/icons/devices_clock.svg">
@@ -219,23 +226,31 @@
     </ng-template>
 
     <ng-template pTemplate="footer">
-      <p-button styleClass="edit-button" (click)="showEditParticipantModal()" label="Edit Participant">
-        <div class="flex items-center justify-center">
-          <mat-icon>add_circle</mat-icon>
-        </div>
+      <p-button
+        styleClass="edit-button"
+        class="flex items-center justify-center"
+        (onClick)="showEditParticipantModal()"
+      >
+        <i class="pi pi-user-edit m-auto lg:m-0"></i>
+        <span class="hidden lg:inline-block ml-2 w-full">Edit Participant</span>
       </p-button>
       <p-confirmDialog styleClass="confirm-dialog" />
-      <p-button styleClass="delete-button" (click)="deleteConfirmation($event)" label="Delete Participant">
-        <div class="flex items-center justify-center">
-          <mat-icon>delete</mat-icon>
-        </div>
+      <p-button
+        styleClass="delete-button"
+        class="flex items-center justify-center"
+        (onClick)="deleteConfirmation($event)"
+      >
+        <i class="pi pi-trash m-auto lg:m-0"></i>
+        <span class="hidden lg:inline-block ml-2 w-full">Delete Participant</span>
       </p-button>
-      <p-button styleClass="generate-button" (click)="showAddParticipantModal()" label="Generate Report">
-        <div class="flex items-center justify-center">
-          <mat-icon>add_circle</mat-icon>
-        </div>
+      <p-button
+        styleClass="generate-button"
+        class="flex items-center justify-center"
+        (onClick)="showAddParticipantModal()"
+      >
+        <i class="pi pi-file-pdf m-auto lg:m-0"></i>
+        <span class="hidden lg:inline-block ml-2 w-full">Generate Report</span>
       </p-button>
-
     </ng-template>
 
   </p-dialog>
@@ -342,23 +357,39 @@
                 </ng-template>
               </p-selectButton>
 
+              @if (defaultDataVisualizationOption == "table") {
+                <p-multiSelect
+                  [options]="deviceSummary.dataFields"
+                  [(ngModel)]="selectedColumns"
+                  optionLabel="label"
+                  selectedItemsLabel="{0} columns selected"
+                  [style]="{'min-width': '200px'}"
+                  placeholder="Choose Columns"
+                  (onChange)="onSelectedColumnsChange($event)"
+                  class="hidden xl:block">
+                </p-multiSelect>
+              }
+
               <p-selectButton
                 [options]="chartVisualizationOptions"
                 [(ngModel)]="defaultVisualizationOption"
                 optionLabel="label"
                 optionValue="value"
                 [allowEmpty]="false"
-                class="self-center"
+                class="self-center hidden xl:block"
                 (onOptionClick)="onChartDateOptionClick($event)"
               />
               <p-button
-                label="Download CSV"
-                icon="pi pi-download"
-                (onClick)="downloadCSV()"></p-button>
+                class="flex items-center"
+                (onClick)="downloadCSV()"
+              >
+                <i class="pi pi-download"></i>
+                <span class="hidden xl:inline-block ml-2">CSV</span>
+              </p-button>
             </div>
             @if (defaultDataVisualizationOption == "graph") {
               <div class="data-container animate-fade-in animate-delay-100">
-                <div class="fields-container">
+                <div class="fields-container hidden md:inline-block">
                   <div class="fields">
                     @for(deviceField of deviceSummary.dataFields; track $index){
                       <app-summary-card
@@ -368,7 +399,7 @@
                     }
                   </div>
                 </div>
-                <div class="chart">
+                <div class="chart sm:w-full md:w-4/5">
                   <p-chart
                     #chart
                     type="line"
@@ -380,8 +411,8 @@
             } @else {
               <div class="table-container animate-fade-in animate-delay-100">
                 <p-table
+                  [columns]="selectedColumns"
                   [value]="deviceSummary.filteredChartData.labels"
-                  [scrollable]="true"
                   [rowHover]="true"
                   [paginator]="true"
                   [rows]="9"
@@ -389,19 +420,33 @@
                   currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
                   styleClass="device-table"
                 >
-                <ng-template pTemplate="header">
+                <ng-template pTemplate="header" let-columns>
                   <tr>
-                    <th>Date</th>
-                    @for (column of deviceSummary.dataFields; track $index) {
-                      <th pSortableColumn="{{column.label}}">{{column.label}}<p-sortIcon [field]="column.label"></p-sortIcon></th>
+                    <th pTooltip="Date" tooltipPosition="right">Date</th>
+                    @for (column of columns; track $index) {
+                      <th [pTooltip]="column.label" tooltipPosition="right" pSortableColumn="{{column.label}}">{{column.label}}<p-sortIcon [field]="column.label"></p-sortIcon></th>
                     }
                   </tr>
                 </ng-template>
-                <ng-template pTemplate="body" let-label>
+                <ng-template pTemplate="body" let-label let-rowIndex="rowIndex" let-columns="columns">
                     <tr [pSelectableRow]="label">
-                      <td>{{label}}</td>
-                      @for (dataset of deviceSummary.filteredChartData.datasets; track $index) {
+                      <td>
+                        {{label}}
+                      </td>
+                      <!-- @for (column of columns; track $index) {
+                        <td>{{deviceSummary.filteredTableData[]}}</td>
+                      } -->
+                      <!-- @for (dataset of deviceSummary.filteredChartData.datasets; track $index) {
                         <td>{{dataset.data[$index]}}</td>
+                      } -->
+                      @for (column of columns; track $index) {
+                        <td>
+                          <ng-container *ngFor="let dataset of deviceSummary.filteredChartData.datasets">
+                            <ng-container *ngIf="dataset.field === column.fieldName">
+                              {{ dataset.data[rowIndex] | truncateDecimals: 2 }}
+                            </ng-container>
+                          </ng-container>
+                        </td>
                       }
                     </tr>
                 </ng-template>

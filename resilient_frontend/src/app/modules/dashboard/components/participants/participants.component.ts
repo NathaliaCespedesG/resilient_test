@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild, Renderer2 } from '@angular/core';
 import { RequestsService } from 'src/app/services/requests.service';
 import { Role } from '../../../../shared/models/roles';
 import { User, Users } from '../../../../shared/models/database-types';
@@ -11,6 +11,7 @@ import { EnvService } from 'src/app/services/env.service';
 import { ChartField, DeviceField, DeviceType } from '@shared/models/app-config';
 import { UIUtilsService } from 'src/app/services/ui-utils.service';
 import { CsvService } from 'src/app/services/csv.service';
+import { LocalStorageService } from '@app/services/local-storage.service';
 
 @Component({
   selector: 'app-participants',
@@ -32,6 +33,7 @@ export class ParticipantsComponent implements OnInit {
   participantData: any;
   participantForm: FormGroup;
   participants: User[] = [];
+  nullReplaceValue: number;
   roles: Role[] = [];
   selectedRole: Role | undefined;
   selectedRows: any[] = [];
@@ -59,6 +61,9 @@ export class ParticipantsComponent implements OnInit {
   defaultDataVisualizationOption: string = 'graph';
   @ViewChild('usernameInput', { static: false }) usernameInput?: NgModel;
 
+  selectedColumns: any[] = [];
+  maxColumnWidth: number = 200;
+
   constructor(
     private _requestsService: RequestsService,
     private _envService: EnvService,
@@ -67,7 +72,9 @@ export class ParticipantsComponent implements OnInit {
     private _router: Router,
     private _fb: FormBuilder,
     private _confirmationService: ConfirmationService,
+    private _localStorageService: LocalStorageService,
     private _changeDetectorRef: ChangeDetectorRef,
+    private _renderer: Renderer2,
     private _elementRef: ElementRef
   ) {
 
@@ -89,10 +96,19 @@ export class ParticipantsComponent implements OnInit {
     });
 
     this.chartFields = this._envService.appConfig.chartFields;
+    this.nullReplaceValue = this._envService.appConfig.nullReplaceValue;
   }
 
   ngOnInit(): void {
     this.getUsers();
+    this.calculateMaxColumnWidth();
+    window.addEventListener('resize', this.calculateMaxColumnWidth.bind(this));
+  }
+
+  calculateMaxColumnWidth() {
+    this.maxColumnWidth = 0.8 * window.innerWidth/(this.selectedColumns.length+1);
+    document.documentElement.style.setProperty('--maxColumnWidth', this.maxColumnWidth + 'px');
+
   }
 
   getUsers(): void{
@@ -148,14 +164,19 @@ export class ParticipantsComponent implements OnInit {
       role: this.participantForm.value.selectedRole.name,
       password_hash: "NA"
     }
+    console.log(participantData);
+
     this._requestsService.addParticipant(participantData).subscribe({
       next: (response) => {
         this.showSpinner = false;
         this.isAddParticipantSuccessful = true;
+        this._localStorageService.setData('participant', response);
       },
       error: (error) => {
         this.isDuplicateUsername = error.error.username.status_code = 403 ? true : false;
         this.showSpinner = false;
+        console.log(error);
+
       }
     }
     );
@@ -318,9 +339,6 @@ export class ParticipantsComponent implements OnInit {
       return;
     }
 
-    console.log(deviceSummary);
-
-
     this.deviceSummary = {
       data:       deviceSummary,
       deviceType: deviceType,
@@ -344,7 +362,7 @@ export class ParticipantsComponent implements OnInit {
         label: this.chartFields[deviceType][i].label,
         data: this.deviceSummary.data.map((item: any) => item[currentField])
                 .reverse()
-                .map((value: any) => value === null ? -1 : value),
+                .map((value: any) => value === null ? this.nullReplaceValue : value),
         fill: true,
         borderColor: color,
         backgroundColor: this._uiUtilsService.getColorWithTransparency(color, 0.5),
@@ -354,7 +372,9 @@ export class ParticipantsComponent implements OnInit {
       this.deviceSummary.chartData.datasets.push(datasetValue);
 
     }
-    console.log(this.deviceSummary.chartData.datasets);
+
+    this.selectedColumns = this.deviceSummary.dataFields
+    this.calculateMaxColumnWidth();
 
     this.deviceSummary.filteredChartData = this.deviceSummary.chartData;
     this.deviceSummary.chartData.datasets[0].hidden = false;
@@ -443,12 +463,24 @@ export class ParticipantsComponent implements OnInit {
     });
 
     this.deviceSummary.filteredChartData = filteredData;
-    this.chart.chart.update();
+
+    if (this.defaultDataVisualizationOption === 'graph') {
+      this.chart.chart.update();
+    }
   }
 
   downloadCSV() {
     const fileName = this.participantData.username + '-' + this.deviceSummary.deviceType + '-device-summary.csv';
     this._csvService.downloadCSV(this.deviceSummary, fileName);
+  }
+
+  onSelectedColumnsChange(event: any) {
+    this.calculateMaxColumnWidth();
+  }
+
+  closeParticipants() {
+    //Go to /dashboard
+    this._router.navigate(['/dashboard']);
   }
 
 }

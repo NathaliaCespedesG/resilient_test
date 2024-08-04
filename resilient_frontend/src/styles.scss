@@ -106,9 +106,11 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   gap: 2.5vh;
 }
 
-.dashboard-option-wrapper > h1 {
+.dashboard-option-wrapper h1 {
   font-size: x-large;
   font-weight: bold;
+  margin-bottom: 0;
+
 }
 
 .dashboard-option-header {
