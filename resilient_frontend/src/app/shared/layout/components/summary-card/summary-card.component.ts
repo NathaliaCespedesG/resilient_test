@@ -15,22 +15,18 @@ export class SummaryCardComponent implements OnInit{
     this.deviceField = {
       fieldName: '',
       label: '',
-      iconPath: '',
+      color: '',
       units: '',
     }
   }
 
   ngOnInit(): void {
-    console.log(this.deviceField);
-
     if (this.deviceField.hidden == undefined) {
       this.deviceField.hidden = true;
     }
   }
 
   onCardClick() {
-    console.log(this.deviceField.hidden);
-
     this.deviceField.hidden = !this.deviceField.hidden;
     this.deviceFieldSelected.emit(this.deviceField);
   }

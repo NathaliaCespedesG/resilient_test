@@ -37,6 +37,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '0.0.0.0',
+    '10.167.159.235'
 ]
 
 
@@ -51,7 +52,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
     'corsheaders',
-    'api'
+    'api',
+    'reports'
 ]
 
 MIDDLEWARE = [

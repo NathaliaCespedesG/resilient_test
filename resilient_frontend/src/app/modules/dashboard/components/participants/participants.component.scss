@@ -4,6 +4,8 @@
 
 .icon-column{
   width: 40px;
+  max-width: 40px;
+  overflow: hidden;
 }
 
 .dialog-content {
@@ -15,9 +17,30 @@
   width: 100% !important;
 }
 
+.dashboard-option-title {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0;
+  width: 100%;
+}
+
+.dashboard-option-header {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.dashboard-option-body {
+  overflow: auto;
+  flex-shrink: 0;
+  height: 53dvh;
+}
+
 .dashboard-option-header .search-bar-no-icon > input {
   font-size: 1rem !important;
 }
+
 
 ::ng-deep.add-participant-button {
   height: 44px;
@@ -26,6 +49,7 @@
   background-color: rgb(37, 46, 201);
   width: 20vw;
   padding: 0 1.25rem 0 1.25rem;
+  font-weight: bold;
 }
 
 ::ng-deep.add-participant-button:active {
@@ -87,6 +111,11 @@
 ::ng-deep.p-datatable thead > tr > th {
   background-color: black;
   color: white;
+  max-width: 15vw;
+  min-width: 10vw;
+  text-wrap: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 ::ng-deep.p-sortable-column-icon {
@@ -143,7 +172,9 @@
     .device-summary {
       border-radius: 10px;
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       padding: 1vh;
       position: relative;
       z-index: 0;
@@ -190,7 +221,7 @@
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
-        width: 40%;
+        width: 60%;
         height: 80px;
 
         .usage-icon{
@@ -212,6 +243,18 @@
           }
         }
       }
+
+      @media (min-width: 640px) {
+        .usage-container {
+          width: 40%;
+        }
+      }
+    }
+
+    @media (min-width: 640px) {
+      .device-summary{
+        flex-direction: row;
+      }
     }
   }
 
@@ -225,11 +268,11 @@
 }
 
 ::ng-deep.edit-button {
+  font-weight: bold;
   height: 44px;
-  justify-content: space-between;
   border-radius: 0.75rem;
   background-color: #80C3DB;
-  width: 20vw;
+  width: 18vw;
   padding: 0 1.25rem 0 1.25rem;
 }
 
@@ -242,11 +285,11 @@
 }
 
 ::ng-deep.delete-button {
+  font-weight: bold;
   height: 44px;
-  justify-content: space-between;
   border-radius: 0.75rem;
   background-color: black;
-  width: 20vw;
+  width: 18vw;
   padding: 0 1.25rem 0 1.25rem;
 }
 
@@ -259,11 +302,11 @@
 }
 
 ::ng-deep.generate-button {
+  font-weight: bold;
   height: 44px;
-  justify-content: space-between;
   border-radius: 0.75rem;
   background-color: rgb(37, 46, 201);
-  width: 20vw;
+  width: 18vw;
   padding: 0 1.25rem 0 1.25rem;
 }
 
@@ -298,37 +341,89 @@
   .p-ripple {
     font-size: small;
   }
-}
 
-.device-summary {
-  display: flex;
-  width: 100%;
-  gap: 2vw;
-  padding-top: 1vh;
-  overflow-y: hidden;
+  .p-multiselect {
+    font-size: small;
+    width: 10vw;
 
-  .fields-container {
-    margin: auto;
-    max-height: 100%;
-    overflow: auto;
-    width: 20%;
-
-    .fields {
-      display: flex;
-      flex-direction: column;
-      gap: 1vw;
-      justify-content: center;
-      overflow-y: auto;
-      width: 100%;
+    .p-multiselect-items-wrapper {
+      max-height: 40vh !important;
     }
   }
 
 
+  .p-datatable {
+    font-size: small;
+
+    thead > tr >th {
+      max-width: var(--maxColumnWidth);
+      min-width: unset;
+      text-wrap: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .p-paginator-bottom {
+      padding: 0;
+      font-size: small;
+    }
+  }
+}
+
+.device-summary {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 3vh;
+  padding: 1vh .5vw 0 .5vw;
+  overflow-y: hidden;
+
+  .options-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .data-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 2vw;
+    margin: auto;
+    overflow-y: hidden;
+
+    .fields-container {
+      margin: auto;
+      max-height: 100%;
+      overflow: auto;
+      width: 20%;
+      padding-right: .5vw;
+
+      .fields {
+        display: flex;
+        flex-direction: column;
+        gap: 1vw;
+        justify-content: center;
+        overflow-y: auto;
+        width: 100%;
+      }
+    }
+  }
+
+  .table-container {
+    overflow: auto;
+  }
+
   .chart {
     display: flex;
-    width: 80%;
     gap: 2vw;
     flex-direction: column;
   }
 }
 
+::ng-deep.p-tooltip {
+  font-size: small;
+}

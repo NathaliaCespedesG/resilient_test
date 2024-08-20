@@ -26,7 +26,7 @@ class User(models.Model):
     password_hash = models.CharField(max_length=200)
     active = models.BooleanField(default=True)
     withings_connected = models.BooleanField(default=False)
-    withings_credentials_path = models.CharField(max_length=300)
+    withings_credentials_path = models.CharField(max_length=300, null=True, blank=True)
     scale_device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='scale_device_id', null=True, blank=True)
     sleepmat_device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='sleepmat_device_id', null=True, blank=True)
     scanwatch_device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='scanwatch_device_id', null=True, blank=True)
@@ -126,7 +126,6 @@ class Report(models.Model):
 class Usage(models.Model):
     id =  models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='usages')
-    report = models.ForeignKey(Report, on_delete=models.CASCADE, related_name='report_usages')
     scanwatch_usage_level = models.CharField(max_length=10, null=True, blank=True)
     scanwatch_battery = models.CharField(max_length=10, null=True, blank=True)
     scanwatch_last_date = models.DateField(null=True, blank=True)
@@ -138,6 +137,8 @@ class Usage(models.Model):
     scale_last_date = models.DateField(null=True, blank=True)
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         # Update the `updated_at` field before saving the record
