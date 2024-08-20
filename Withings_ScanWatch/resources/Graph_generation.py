@@ -156,8 +156,9 @@ class Graph_generator(object):
 		
 		# k, start_date and end_date are arroe types (e.g.,  <Arrow [2023-08-27T01:00:00+01:00]>)
 		k = [value for index, value in enumerate(k) if index not in index_1]
+		#print(name)
 		#if name != 'RR':
-			#k = np.array([np.datetime64(date.datetime) for date in k]) #ESTA EN LA V2 +DB
+			#k = np.array([np.datetime64(date.datetime) for date in k]) #ESTA EN LA V2 +D
 
 
 		plt.clf()
@@ -685,6 +686,11 @@ class Graph_generator(object):
 		#plt.show()
 
 	def plot_stacked_bar(self,x,y,z,o):
+		print(x)
+		print(y)
+		print(z)
+		print('AUIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII')
+		print(o)
 
 		# Create a scatter plot
 		sns.set_style("whitegrid",{ "grid.linewidth":0.5, "grid.color": ".8", "grid.linestyle": ":", "ytick.left": True})

@@ -175,10 +175,10 @@ class DatabaseServer_csv(object):
 
                             print(type(dict[j]['Muscle mass'])) 
                             # Convert 'nan' values to None
-                            weight = -2 if math.isnan(float(dict[j]['Weight'])) else float(dict[j]['Weight']) 
-                            muscle_mass = -2 if math.isnan(float(dict[j]['Muscle mass'])) else float(dict[j]['Muscle mass'])
-                            bone_mass = -2 if math.isnan(float(dict[j]['Bone mass'])) else float(dict[j]['Bone mass'])
-                            fat_mass = -2 if math.isnan(float(dict[j]['Fat mass Weight'])) else float(dict[j]['Fat mass Weight'])
+                            weight = None if math.isnan(float(dict[j]['Weight'])) else float(dict[j]['Weight']) 
+                            muscle_mass = None if math.isnan(float(dict[j]['Muscle mass'])) else float(dict[j]['Muscle mass'])
+                            bone_mass = None if math.isnan(float(dict[j]['Bone mass'])) else float(dict[j]['Bone mass'])
+                            fat_mass = None if math.isnan(float(dict[j]['Fat mass Weight'])) else float(dict[j]['Fat mass Weight'])
 
                             print(muscle_mass)
                    
@@ -219,11 +219,11 @@ class DatabaseServer_csv(object):
                             date_s = datetime.strptime(date_s, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
 
                             # Convert 'nan' values to None
-                            average_heart_rate = -2 if math.isnan(float(dict[j]['HR_Average'])) else float(dict[j]['HR_Average']) 
-                            calories = -2 if math.isnan(float(dict[j]['Calories'])) else float(dict[j]['Calories'])
-                            steps = -2 if math.isnan(float(dict[j]['Steps'])) else float(dict[j]['Steps'])
-                            hr_max = -2 if math.isnan(float(dict[j]['HR_max'])) else float(dict[j]['HR_max'])
-                            hr_min = -2 if math.isnan(float(dict[j]['HR_min'])) else float(dict[j]['HR_min'])
+                            average_heart_rate = None if math.isnan(float(dict[j]['HR_Average'])) else float(dict[j]['HR_Average']) 
+                            calories = None if math.isnan(float(dict[j]['Calories'])) else float(dict[j]['Calories'])
+                            steps = None if math.isnan(float(dict[j]['Steps'])) else float(dict[j]['Steps'])
+                            hr_max = None if math.isnan(float(dict[j]['HR_max'])) else float(dict[j]['HR_max'])
+                            hr_min = None if math.isnan(float(dict[j]['HR_min'])) else float(dict[j]['HR_min'])
                    
                             data ={
                                 "device": watch_id,
@@ -322,7 +322,8 @@ class DatabaseServer_csv(object):
         url = 'http://127.0.0.1:8000/api/scanwatches/intra_activity/'
         for i in range(len(self.id_available)):
             path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/ScanWatch_intra_activity.csv'
-            watch_id = self.get_device_id(id_user = str(self.id_available[i]), devices_dict = self.devices_dict, device_type = 'scan_watch')
+            #watch_id = self.get_device_id(id_user = str(self.id_available[i]), devices_dict = self.devices_dict, device_type = 'scan_watch')
+            id,_,watch_id,_= self.extract_user_data(self.id_available[i])
             #print(scale_id)
             if os.path.exists(path):
                 # Open the CSV file in read mode
@@ -332,13 +333,14 @@ class DatabaseServer_csv(object):
                     #print(dict)
                     if watch_id is not None:
                         for j in range(len(dict)):
-                            heart_rate = -2 if math.isnan(float(dict[j]['Heart Rate'])) else float(dict[j]['Heart Rate']) 
-                            date_heart_rate = -2 if math.isnan(float(dict[j]['date HR'])) else float(dict[j]['date HR']) 
-                            steps = -2 if math.isnan(float(dict[j]['Steps'])) else float(dict[j]['Steps']) 
-                            date_steps = -2 if math.isnan(float(dict[j]['date Steps'])) else float(dict[j]['date Steps']) 
-                            calories = -2 if math.isnan(float(dict[j]['Calories'])) else float(dict[j]['Calories']) 
-                            date_calories = -2 if math.isnan(float(dict[j]['date Calories'])) else float(dict[j]['date Calories']) 
+                            heart_rate = None if math.isnan(float(dict[j]['Heart Rate'])) else float(dict[j]['Heart Rate']) 
+                            date_heart_rate = None if math.isnan(float(dict[j]['date HR'])) else float(dict[j]['date HR']) 
+                            steps = None if math.isnan(float(dict[j]['Steps'])) else float(dict[j]['Steps']) 
+                            date_steps = None if math.isnan(float(dict[j]['date Steps'])) else float(dict[j]['date Steps']) 
+                            calories = None if math.isnan(float(dict[j]['Calories'])) else float(dict[j]['Calories']) 
+                            date_calories = None if math.isnan(float(dict[j]['date Calories'])) else float(dict[j]['date Calories']) 
                             data ={
+                                "user":id,
                                 "device": watch_id,
                                 "heart_rate": heart_rate,
                                 "date_heart_rate": date_heart_rate,
@@ -385,22 +387,22 @@ class DatabaseServer_csv(object):
                             #start_date = datetime.strptime(date_s, '%Y-%m-%d %H:%M:%S')
 
                             # Convert 'nan' values to None
-                            breathing_disturbances = -2 if math.isnan(float(dict[j]['Breathing disturbances'])) else float(dict[j]['Breathing disturbances']) 
-                            deep_sleep_duration = -2 if math.isnan(float(dict[j]['Deep sleep duration'])) else float(dict[j]['Deep sleep duration'])
-                            duration_to_sleep = -2 if math.isnan(float(dict[j]['Duration to sleep'])) else float(dict[j]['Duration to sleep'])
-                            duration_to_wakeup = -2 if math.isnan(float(dict[j]['Duration to wakeup'])) else float(dict[j]['Duration to wakeup'])
-                            average_heart_rate = -2 if math.isnan(float(dict[j]['HR average'])) else float(dict[j]['HR average'])
-                            light_sleep_duration = -2 if math.isnan(float(dict[j]['Light sleep duration'])) else float(dict[j]['Light sleep duration'])
-                            rem_sleep_duration = -2 if math.isnan(float(dict[j]['Rem sleep duration'])) else float(dict[j]['Rem sleep duration'])
-                            average_rr = -2 if math.isnan(float(dict[j]['RR average'])) else float(dict[j]['RR average'])
-                            sleep_score = -2 if math.isnan(float(dict[j]['Sleep score'])) else float(dict[j]['Sleep score'])
-                            wakeup_count = -2 if math.isnan(float(dict[j]['Wake up count'])) else float(dict[j]['Wake up count'])
-                            wakeup_duration = -2 if math.isnan(float(dict[j]['Wake up duration'])) else float(dict[j]['Wake up duration'])
-                            total_sleep_time = -2 if math.isnan(float(dict[j]['Total sleep time'])) else float(dict[j]['Total sleep time'])
-                            total_time_in_bed = -2 if math.isnan(float(dict[j]['Total time in bed'])) else float(dict[j]['Total time in bed'])
-                            awake_in_bed = -2 if math.isnan(float(dict[j]['Awake in bed'])) else float(dict[j]['Awake in bed'])
-                            apnea = -2 if math.isnan(float(dict[j]['Apnea'])) else float(dict[j]['Apnea'])
-                            out_of_bed_count = -2 if math.isnan(float(dict[j]['Out of bed count'])) else float(dict[j]['Out of bed count'])
+                            breathing_disturbances = None if math.isnan(float(dict[j]['Breathing disturbances'])) else float(dict[j]['Breathing disturbances']) 
+                            deep_sleep_duration = None if math.isnan(float(dict[j]['Deep sleep duration'])) else float(dict[j]['Deep sleep duration'])
+                            duration_to_sleep = None if math.isnan(float(dict[j]['Duration to sleep'])) else float(dict[j]['Duration to sleep'])
+                            duration_to_wakeup = None if math.isnan(float(dict[j]['Duration to wakeup'])) else float(dict[j]['Duration to wakeup'])
+                            average_heart_rate = None if math.isnan(float(dict[j]['HR average'])) else float(dict[j]['HR average'])
+                            light_sleep_duration = None if math.isnan(float(dict[j]['Light sleep duration'])) else float(dict[j]['Light sleep duration'])
+                            rem_sleep_duration = None if math.isnan(float(dict[j]['Rem sleep duration'])) else float(dict[j]['Rem sleep duration'])
+                            average_rr = None if math.isnan(float(dict[j]['RR average'])) else float(dict[j]['RR average'])
+                            sleep_score = None if math.isnan(float(dict[j]['Sleep score'])) else float(dict[j]['Sleep score'])
+                            wakeup_count = None if math.isnan(float(dict[j]['Wake up count'])) else float(dict[j]['Wake up count'])
+                            wakeup_duration = None if math.isnan(float(dict[j]['Wake up duration'])) else float(dict[j]['Wake up duration'])
+                            total_sleep_time = None if math.isnan(float(dict[j]['Total sleep time'])) else float(dict[j]['Total sleep time'])
+                            total_time_in_bed = None if math.isnan(float(dict[j]['Total time in bed'])) else float(dict[j]['Total time in bed'])
+                            awake_in_bed = None if math.isnan(float(dict[j]['Awake in bed'])) else float(dict[j]['Awake in bed'])
+                            apnea = None if math.isnan(float(dict[j]['Apnea'])) else float(dict[j]['Apnea'])
+                            out_of_bed_count = None if math.isnan(float(dict[j]['Out of bed count'])) else float(dict[j]['Out of bed count'])
                    
                             data ={
                                 "device": sleep_id,
@@ -454,7 +456,7 @@ class DatabaseServer_csv(object):
         url = 'http://127.0.0.1:8000/api/sleepmats/intraactivity/'
         for i in range(len(self.id_available)):
             path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/Sleepmat_intra_activity.csv'
-            sleep_id = self.get_device_id(id_user = str(self.id_available[i]), devices_dict = self.devices_dict, device_type = 'sleep_mat')
+            id,_,_,sleep_id= self.extract_user_data(self.id_available[i])
             #print(scale_id)
             if os.path.exists(path):
                 # Open the CSV file in read mode
@@ -467,21 +469,22 @@ class DatabaseServer_csv(object):
 
                         for j in range(len(dict)):
                             # Convert 'nan' values to None
-                            start_date = -1 if math.isnan(float(dict[j]['startdate'])) else float(dict[j]['startdate']) 
-                            end_date = -1 if math.isnan(float(dict[j]['enddate'])) else float(dict[j]['enddate']) 
-                            sleep_state = -1 if math.isnan(float(dict[j]['Sleep state'])) else int(dict[j]['Sleep state']) 
-                            date_heart_rate = -1 if math.isnan(float(dict[j]['Heart Rate date'])) else float(dict[j]['Heart Rate date'])
-                            heart_rate = -1 if math.isnan(float(dict[j]['Heart Rate'])) else float(dict[j]['Heart Rate'])
-                            date_respiration_rate = -1 if math.isnan(float(dict[j]['Respiration rate date'])) else float(dict[j]['Respiration rate date'])
-                            respiration_rate = -1 if math.isnan(float(dict[j]['Respiration rate'])) else float(dict[j]['Respiration rate'])
-                            date_snoring = -1 if math.isnan(float(dict[j]['Snoring date'])) else float(dict[j]['Snoring date'])
-                            snoring = -1 if math.isnan(float(dict[j]['Snoring'])) else float(dict[j]['Snoring'])
-                            date_sdnn_1 = -1 if math.isnan(float(dict[j]['sdnn_1 date'])) else float(dict[j]['sdnn_1 date'])
-                            sdnn_1 = -1 if math.isnan(float(dict[j]['sdnn_1'])) else float(dict[j]['sdnn_1'])
+                            start_date = None if math.isnan(float(dict[j]['startdate'])) else float(dict[j]['startdate']) 
+                            end_date = None if math.isnan(float(dict[j]['enddate'])) else float(dict[j]['enddate']) 
+                            sleep_state = None if math.isnan(float(dict[j]['Sleep state'])) else int(dict[j]['Sleep state']) 
+                            date_heart_rate = None if math.isnan(float(dict[j]['Heart Rate date'])) else float(dict[j]['Heart Rate date'])
+                            heart_rate = None if math.isnan(float(dict[j]['Heart Rate'])) else float(dict[j]['Heart Rate'])
+                            date_respiration_rate = None if math.isnan(float(dict[j]['Respiration rate date'])) else float(dict[j]['Respiration rate date'])
+                            respiration_rate = None if math.isnan(float(dict[j]['Respiration rate'])) else float(dict[j]['Respiration rate'])
+                            date_snoring = None if math.isnan(float(dict[j]['Snoring date'])) else float(dict[j]['Snoring date'])
+                            snoring = None  if math.isnan(float(dict[j]['Snoring'])) else float(dict[j]['Snoring'])
+                            date_sdnn_1 = None  if math.isnan(float(dict[j]['sdnn_1 date'])) else float(dict[j]['sdnn_1 date'])
+                            sdnn_1 = None  if math.isnan(float(dict[j]['sdnn_1'])) else float(dict[j]['sdnn_1'])
                             print(start_date)
                             print(type(start_date))
                    
                             data ={
+                                "user": id, 
                                 "device": sleep_id,
                                 "start_date": start_date,
                                 "end_date":end_date, 
@@ -565,7 +568,7 @@ db_csv.get_users()
 #db_csv.get_device_info()
 #db_csv.upload_scale_summary_data()
 #db_csv.upload_scanwatch_summary_data()
-db_csv.upload_sleep_summary_data()
+#db_csv.upload_sleep_summary_data()
 #db_csv.upload_intra_sleep_summary_data()
 #db_csv.upload_usage_data()
 #db_csv.upload_intra_scanwatch_summary_data()

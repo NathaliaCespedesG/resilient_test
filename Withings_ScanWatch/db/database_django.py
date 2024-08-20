@@ -282,7 +282,7 @@ class Database_API(object):
 
         
         print(filtered_data)
-        print(hola)
+        #print(hola)
         return(filtered_data)
 
 
