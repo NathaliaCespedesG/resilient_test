@@ -44,7 +44,7 @@ export class ParticipantsComponent implements OnInit {
   showSpinner: boolean = false;
   username: string;
   usernameFilter: string = '';
-  withingsAuthURL: string = 'https://account.withings.com/oauth2_user/authorize2?response_type=code&client_id=e64cb563bf44122144cd0702b02f69ad50d21aba0eb50ca443f69db5673ca2cc&redirect_uri=https%3A%2F%2Fresilient.ukdri.care%2F&scope=user.activity%2Cuser.metrics%2Cuser.info%2Cuser.sleepevents%2Cuser.rawdata&state=vsGpqaNPVDPOCrik8Fwn1F4369nTHa'
+  withingsAuthURL: string = 'https://account.withings.com/oauth2_user/authorize2?response_type=code&client_id=e64cb563bf44122144cd0702b02f69ad50d21aba0eb50ca443f69db5673ca2cc&redirect_uri=https%3A%2F%2Fresilient.ukdri.care%2Fauth%2Fwithings-connected%2F&scope=user.activity%2Cuser.metrics%2Cuser.info%2Cuser.sleepevents&state=mRNzuSMp2txOVLinWx3bRor0ZPvOzY'
   chartFields: ChartField;
   chartVisualizationOptions: any[] = [
     {label: 'Last Week', value: 'last_week'},
