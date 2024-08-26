@@ -43,16 +43,30 @@ class DatabaseManager(object):
 		self.ScanWatchfile.close()
 
 	def load_SleepMat(self, time = None, bd = None, dsd = None, dts = None, dtw = None, hr = None, lsd = None, rsd = None, rr = None, ss = None,wpc = None, wpd = None,
-				   tst = None,ttb = None, awb = None, ap = None, obc = None, start_date = None, end_date = None):
+				   tst = None,ttb = None, awb = None, ap = None, obc = None, start_date = None, end_date = None, date_hr_ap = None, hr_ap = None, date_rr_ap = None, rr_ap = None):
 
 		#Loading data
 		self.SleepMatFile = open(self.sleepmat_name, 'a')
+		max_size = max(len(date_hr_ap), len(date_rr_ap), len(time))
+		print(date_hr_ap)
+		if len(date_hr_ap) < max_size:
 
+			date_hr_ap = np.append(date_hr_ap, [None] * (max_size - len(date_hr_ap)))
+			date_rr_ap = np.append(date_rr_ap, [None] * (max_size - len(date_rr_ap)))
+			hr_ap = np.append(hr_ap, [np.nan] * (max_size - len(hr_ap)))
+			rr_ap = np.append(rr_ap, [np.nan] * (max_size - len(rr_ap)))
+
+		#print(len(time))
+		#print(len(date_hr_ap))
+		#print(len(date_rr_ap))
+		#print(len(hr_ap))
+		#print(len(rr_ap))
+		#print(hola)
 		for i in range (len(time)):
 			self.df_sleepsummary = self.df_sleepsummary.append({'date': time[i], 'Breathing disturbances': bd[i], 'Deep sleep duration': dsd[i], 'Duration to sleep': dts[i] , 'Duration to wakeup': dtw[i],
 								'HR average': hr[i], 'Light sleep duration': lsd[i], 'Rem sleep duration': rsd[i], 'RR average': rr[i], 'Sleep score': ss[i], 'Wake up count': wpc[i],
 								'Wake up duration': wpd[i], 'Total sleep time': tst[i], 'Total time in bed': ttb[i], 'Awake in bed': awb[i], 'Apnea': ap[i], 'Out of bed count': obc[i],
-								'start_date': start_date[i], 'end_date': end_date[i]}, ignore_index=True)
+								'start_date': start_date[i], 'end_date': end_date[i], 'date_hr_sleep_ap':date_hr_ap[i] , 'hr_sleep_ap':hr_ap[i], 'date_rr_sleep_ap':date_rr_ap[i], 'rr_sleep_ap':rr_ap[i]}, ignore_index=True)
 		self.df_sleepsummary.to_csv(self.sleepmat_name, index = False )
 
 	
@@ -255,7 +269,8 @@ class DatabaseManager(object):
 		except:
 			self.df_sleepsummary = pd.DataFrame({'date': [], 'Breathing disturbances': [], 'Deep sleep duration': [], 'Duration to sleep': [] , 'Duration to wakeup': [],
 									'HR average': [], 'Light sleep duration': [], 'Rem sleep duration': [], 'RR average': [], 'Sleep score': [], 'Wake up count': [],
-								 	'Wake up duration': [], 'Total Sleep Time': [], 'Wake up duration': [], 'Total sleep time': [], 'Total time in bed': [], 'Awake in bed': [], 'Apnea': [], 'Out of bed count': [], 'start_date': [], 'end_date': [] } )
+								 	'Wake up duration': [], 'Total Sleep Time': [], 'Wake up duration': [], 'Total sleep time': [], 'Total time in bed': [], 'Awake in bed': [], 'Apnea': [], 'Out of bed count': [], 'start_date': [],
+									'end_date': [], 'date_hr_sleep_ap':[] , 'hr_sleep_ap':[], 'date_rr_sleep_ap':[], 'rr_sleep_ap':[] } )
 			self.df_sleepsummary.to_csv(self.sleepmat_name, index = False )
 		try:
 			existing_data_scanintra = pd.read_csv(self.scanwatch_intraday)

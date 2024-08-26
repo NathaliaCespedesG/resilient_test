@@ -195,7 +195,8 @@ class Database_API(object):
                 print('GET request successful')
                 # Accessing the response data
                 scanwatch_intra_dict = response.json()  # Assuming the response is JSON data
-                #print(scanwatch_dict)
+                print(scanwatch_intra_dict)
+                #print(HOLA)
                 
         else:
             # Unsuccessful response
@@ -203,7 +204,9 @@ class Database_API(object):
 
         # Filter data based on start_date and end_date
         filtered_data = [{'date_heart_rate': item['date_heart_rate'], 
-                          'heart_rate': item['heart_rate']} for item in scanwatch_intra_dict["scanwatches_intraactivity"] if start_date <= item['date_heart_rate'] <= end_date]
+                          'heart_rate': item['heart_rate']} 
+                          for item in scanwatch_intra_dict["scanwatches_intraactivity"] 
+                          if item['date_heart_rate'] is not None and start_date <= item['date_heart_rate'] <= end_date]
 
         #print(filtered_data)
         

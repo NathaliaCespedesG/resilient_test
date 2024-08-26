@@ -107,6 +107,11 @@ class SleepmatSummary(models.Model):
     awake_in_bed = models.FloatField(null=True, blank=True)
     apnea = models.FloatField(null=True, blank=True)
     out_of_bed_count = models.FloatField(null=True, blank=True)
+    hr_date_af = models.DateTimeField(null=True, blank=True)
+    hr_af = models.FloatField(null=True, blank=True)
+    hr_date_rr = models.DateTimeField(null=True, blank=True)
+    hr_rr = models.FloatField(null=True, blank=True)
+
 
 class Report(models.Model):
     id =  models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

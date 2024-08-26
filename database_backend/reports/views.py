@@ -14,6 +14,7 @@ class WithingsCredentials(View):
             # For demonstration, we'll just print it and send it back in the response
             print(data)
             return JsonResponse({'status': 'success', 'data': data})
+        #HERE SHOULD BE THE CODE TO UNDERSTAND THE CALLBACK URL
         except json.JSONDecodeError:
             return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
 

@@ -56,7 +56,6 @@ class Resilient(object):
         if self.gen_type == 'all':
 
             self.id_available = users
-            
             self.run_all_participants()
 
         elif self.gen_type == 'create' :

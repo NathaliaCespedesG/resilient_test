@@ -1112,11 +1112,13 @@ class Devices_OAuth2flow(object):
 		#print(self.sleeps_data['total sleep time'])
 		#print(hola)
 		
+		'''
 		self.database.SM.load_SleepMat(time = self.sleeps_data['date'], bd = self.sleeps_data['breathing disturbances'], dsd = self.sleeps_data['deep sleep duration'], dts = self.sleeps_data['duration to sleep'],
 								 dtw = self.sleeps_data['duration to wakeup'], hr = self.sleeps_data['hr average'], lsd = self.sleeps_data['light sleep duration'], rsd = self.sleeps_data['rem sleep duration'], 
 								 rr = self.sleeps_data['rr average'], ss = self.sleeps_data['sleep score'], wpc = self.sleeps_data['wake up count'], wpd = self.sleeps_data['wake up duration'],
 								 tst = self.sleeps_data_1['total sleep time'],ttb = self.sleeps_data_1['total timeinbed'], awb = self.sleeps_data_1['awake in bed'], ap = self.sleeps_data_1['apnea'], obc = self.sleeps_data_1['out of bed count'],
 								 start_date = self.sleeps_data['start_date'], end_date = self.sleeps_data['end_date'])
+		'''
 		# Previous week values
 
 		prev_sleeps_data['hr average'] = [x.hr_average for x in prev_sleeps_data['data']]
@@ -1382,8 +1384,8 @@ class Devices_OAuth2flow(object):
 		self.graph.plot_scatter(x = self.intra_activity_watch['dates_HR'], y = self.intra_activity_watch['Heart Rate'], k = self.activity_data['date'], j = self.activity_data['heart rate'], name = "HR_ScanWatch")
 		self.graph.plot_stacked_bar(x = self.dates_agg_ss, y = self.current_sleep_time,
 									z = self.current_awake_bed, o = self.current_out_bed)
-		self.graph.plot_scatter(x = self.dates_rr, y = self.rr_sleephf , k = self.current_dates_ss, j = self.current_rr, name = "RR")
-		self.graph.plot_scatter(x = self.dates_hr_sleep, y = self.hr_sleephf , k = self.current_dates_ss,  j = self.current_heart_rate, name = "HR")
+		#self.graph.plot_scatter(x = self.dates_rr, y = self.rr_sleephf , k = self.current_dates_ss, j = self.current_rr, name = "RR")
+		#self.graph.plot_scatter(x = self.dates_hr_sleep, y = self.hr_sleephf , k = self.current_dates_ss,  j = self.current_heart_rate, name = "HR")
 	
 	#The following function is to fill the database with the values from the devices (modules called: db)
 	def db_filling(self):
@@ -1392,6 +1394,13 @@ class Devices_OAuth2flow(object):
 		self.database.SM.load_ScanWatch(hr = self.activity_data['heart_rate'], calories = self.activity_data['calories'], steps = self.activity_data['steps'], hr_max = self.activity_data['hr_max'],
 								hr_min = self.activity_data['hr_min'],time = self.activity_data['date'] )
 		self.database.SM.load_Scale(time = self.scale_data['date'], weight = self.weight, muscle_mass = self.muscle_mass, bone_mass = self.bone_mass, fat_mass = self.fat_mass)
+		self.database.SM.load_SleepMat(time = self.sleeps_data['date'], bd = self.sleeps_data['breathing disturbances'], dsd = self.sleeps_data['deep sleep duration'], dts = self.sleeps_data['duration to sleep'],
+								 dtw = self.sleeps_data['duration to wakeup'], hr = self.sleeps_data['hr average'], lsd = self.sleeps_data['light sleep duration'], rsd = self.sleeps_data['rem sleep duration'], 
+								 rr = self.sleeps_data['rr average'], ss = self.sleeps_data['sleep score'], wpc = self.sleeps_data['wake up count'], wpd = self.sleeps_data['wake up duration'],
+								 tst = self.sleeps_data_1['total sleep time'],ttb = self.sleeps_data_1['total timeinbed'], awb = self.sleeps_data_1['awake in bed'], ap = self.sleeps_data_1['apnea'], obc = self.sleeps_data_1['out of bed count'],
+								 start_date = self.sleeps_data['start_date'], end_date = self.sleeps_data['end_date'], date_hr_ap = self.current_dates_ss, hr_ap = self.hr_mean_bu , date_rr_ap = self.current_dates_ss, rr_ap =  self.rr_mean_bu)
+		
+		
 		#self.database.SM.load_SleepMat(time = self.sleeps_data['date'], bd = self.sleeps_data['breathing disturbances'], dsd = self.sleeps_data['deep sleep duration'], dts = self.sleeps_data['duration to sleep'],
 									#dtw = self.sleeps_data['duration to wakeup'], hr = self.sleeps_data['hr average'], lsd = self.sleeps_data['light sleep duration'], rsd = self.sleeps_data['rem sleep duration'], 
 									#rr = self.sleeps_data['rr average'], ss = self.sleeps_data['sleep score'], wpc = self.sleeps_data['wake up count'], wpd = self.sleeps_data['wake up duration'],
