@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import requests
 import math
+import numpy as np
 from datetime import datetime, timezone
 import arrow
 #from database_backend.api.models import User
@@ -40,7 +41,8 @@ class Database_API(object):
             print('GET request successful')
             # Accessing the response data
             self.user_data = response.json()  # Assuming the response is JSON data
-            print(self.user_data)
+            print('YEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEES')
+            #print(hola)
         else:
             # Unsuccessful response
             print('GET request failed:', response.status_code)
@@ -112,7 +114,7 @@ class Database_API(object):
                 print('GET request successful')
                 # Accessing the response data
                 data = response.json()  # Assuming the response is JSON data
-                print(data)
+                #print(data)
                 
         else:
             # Unsuccessful response
@@ -136,31 +138,25 @@ class Database_API(object):
                 
         return(converted_dict)
     
-    def upload_scanwatch_summary_data(self):
+    def get_scale_data(self, user = None, start_date = None, end_date = None):
 
-        url = 'http://127.0.0.1:8000/api/scanwatches/summary/'
-     
-        if watch_id is not None:
+        url = 'http://127.0.0.1:8000/api/scales/' + '?username=' + user
+        response = requests.get(url)
+        scale_dict = {}
+        # Checking the status code of the response
+        if response.status_code == 200:
+            print('GET request successful')
+            # Accessing the response data
+            scale_dict = response.json()  # Assuming the response is JSON data
+        else:
+            # Unsuccessful response
+            print('GET request failed:', response.status_code)
 
-            for j in range(len(dict)):
-                date_s = dict[j]['date'][:-6]
-                date_s = datetime.strptime(date_s, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+        return(scale_dict)
 
-                # Convert 'nan' values to None
-                average_heart_rate = 0 if math.isnan(float(dict[j]['HR_Average'])) else float(dict[j]['HR_Average']) 
-                calories = 0 if math.isnan(float(dict[j]['Calories'])) else float(dict[j]['Calories'])
-                steps = 0 if math.isnan(float(dict[j]['Steps'])) else float(dict[j]['Steps'])
+
+
         
-                data ={
-                    "device": watch_id,
-                    "date": date_s,
-                    "average_heart_rate": average_heart_rate,
-                    "calories": calories,
-                    "steps": steps
-                    }
-                
-                print(data)
-                response = requests.post(url, json=data)
 
 
     def get_scanwatch_summary_data(self,user = None, start_date = None, end_date = None):
@@ -171,10 +167,10 @@ class Database_API(object):
         scanwatch_dict = {}
         # Checking the status code of the response
         if response.status_code == 200:
-                print('GET request successful')
-                # Accessing the response data
-                scanwatch_dict = response.json()  # Assuming the response is JSON data
-                #print(scanwatch_dict)
+            print('GET request successful')
+            # Accessing the response data
+            scanwatch_dict = response.json()  # Assuming the response is JSON data
+            #print(scanwatch_dict)
                 
         else:
             # Unsuccessful response
@@ -195,7 +191,7 @@ class Database_API(object):
                 print('GET request successful')
                 # Accessing the response data
                 scanwatch_intra_dict = response.json()  # Assuming the response is JSON data
-                print(scanwatch_intra_dict)
+                #print(scanwatch_intra_dict)
                 #print(HOLA)
                 
         else:
@@ -246,7 +242,11 @@ class Database_API(object):
                           'apnea':item['apnea'],
                           'out_of_bed_count':item['out_of_bed_count'],
                           'start_date': item['start_date'],
-                          'end_date': item['end_date']
+                          'end_date': item['end_date'],
+                          'hr_date_af': item['hr_date_af'],
+                          'hr_date_rr': item['hr_date_rr'],
+                          'hr_af': item['hr_af'],
+                          'hr_rr': item['hr_rr']
                           } for item in sleep_summary_dict["sleepmats_summary"] if start_date <= arrow.get(item['date']).datetime <= end_date]
 
         
@@ -284,9 +284,236 @@ class Database_API(object):
                           } for item in sleep_intra_day_dict["sleepmats_intraactivity"] if start_date <= item['date_heart_rate']<= end_date]
 
         
-        print(filtered_data)
+        #print(filtered_data)
         #print(hola)
         return(filtered_data)
+    
+    def upload_scanwatch_summary_data(self, user = None, watch_id= None, date = None, hr_i = None,
+                                      cal_i = None, steps_i = None, hr_max_i = None, hr_min_i = None):
+        url = 'http://127.0.0.1:8000/api/scanwatches/summary/'
+        if watch_id is not None:
+            for j in range(len(date)):
+                date_s = date[j].isoformat()
+                date_s = date_s[:-15]
+                # Convert 'nan' values to None
+                average_heart_rate = hr_i[j]
+                calories = cal_i[j]
+                steps = steps_i[j]
+                hr_max = hr_max_i[j]
+                hr_min = hr_min_i[j]
+        
+                data ={
+                    "device": watch_id,
+                    "user": user,
+                    "date": date_s,
+                    "average_heart_rate": None if math.isnan(float(average_heart_rate)) else float(average_heart_rate),
+                    "calories": None if math.isnan(float(calories)) else float(calories),
+                    "steps": None if math.isnan(float(steps)) else float(steps),
+                    "hr_max": None if math.isnan(float(hr_max)) else float(hr_max),
+                    "hr_min": None if math.isnan(float(hr_min)) else float(hr_min)
+                }
+                
+                response = requests.post(url, json=data)
+
+    def upload_intra_scanwatch_summary_data(self,  user = None, watch_id= None, date_hr_i = None, hr_i = None,
+                                      date_calories_i = None,cal_i = None, date_steps_i= None, steps_i = None):
+
+        url = 'http://127.0.0.1:8000/api/scanwatches/intra_activity/'
+        
+        #Convert to homogenous lists
+        max_size = max(len(date_hr_i), len(date_steps_i), len(date_calories_i))
+        if len(date_hr_i) < max_size:
+            date_hr_i = np.append(date_hr_i , [np.nan] * (max_size - len(date_hr_i)))
+            hr_i = np.append(hr_i, [np.nan] * (max_size - len(hr_i)))
+        # Fill time_steps and steps with NaN until they reach max_size
+        if len(date_steps_i) < max_size:
+            date_steps_i = np.append(date_steps_i, [np.nan] * (max_size - len(date_steps_i)))
+            steps_i = np.append(steps_i, [np.nan] * (max_size - len(steps_i)))
+        # Fill time_calories and calories with NaN until they reach max_size
+        if len(date_calories_i) < max_size:
+            date_calories_i = np.append(date_calories_i, [np.nan] * (max_size - len(date_calories_i)))
+            cal_i = np.append(cal_i, [np.nan] * (max_size - len(cal_i)))
+        
+        if watch_id is not None:
+            for j in range(len(date_hr_i)):
+                heart_rate = None if math.isnan(float(hr_i[j])) else float(hr_i[j]) 
+                date_heart_rate = None if math.isnan(float(date_hr_i[j])) else float(date_hr_i[j]) 
+                date_steps = None if math.isnan(float(date_steps_i[j])) else float(date_steps_i[j]) 
+                steps = None if math.isnan(float(steps_i[j])) else float(steps_i[j]) 
+                calories = None if math.isnan(float(cal_i[j])) else float(cal_i[j]) 
+                date_calories = None if math.isnan(float(date_calories_i[j])) else float(date_calories_i[j]) 
+                data ={
+                    "user":user,
+                    "device": watch_id,
+                    "heart_rate": heart_rate,
+                    "date_heart_rate": date_heart_rate,
+                    "steps": steps,
+                    "date_steps": date_steps,
+                    "calories": calories,
+                    "date_calories": date_calories
+                    }
+                
+                #print(data)
+                response = requests.post(url, json=data)
+                
+    def upload_sleep_summary_data(self, user = None, sleep_id = None, date = None, bd = None, dsd = None, dts = None,
+                                   dtw = None, hr = None, lsd = None, rsd = None, rr = None, ss = None, wc = None,
+                                   wd = None, tst = None, tib = None, ab = None, apn = None, obc = None, start_date = None,
+                                   end_date = None, hr_date_ap = None, hr_ap = None, rr_date_ap = None, rr_ap = None):
+        url = 'http://127.0.0.1:8000/api/sleepmats/summary/'
+        max_size = max(len(hr_date_ap), len(rr_date_ap), len(date))
+        if len(hr_date_ap) < max_size:
+            hr_date_ap = np.append(hr_date_ap, [None] * (max_size - len(hr_date_ap)))
+            rr_date_ap = np.append(rr_date_ap, [None] * (max_size - len(rr_date_ap)))
+            hr_ap = np.append(hr_ap, [np.nan] * (max_size - len(hr_ap)))
+            rr_ap = np.append(rr_ap, [np.nan] * (max_size - len(rr_ap)))
+      
+        if sleep_id is not None:
+
+            for j in range(len(date)):
+                date_s = date[j].isoformat()
+                date_s = date_s[:-15]
+                start_date_s = start_date[j].isoformat() if start_date[j] is not None else None
+                end_date_s = end_date[j].isoformat() if end_date[j] is not None else None
+                date_hr_sleep_ap = hr_date_ap[j].isoformat() if hr_date_ap[j] is not None else None
+                date_rr_sleep_ap = rr_date_ap[j].isoformat() if rr_date_ap[j] is not None else None
+
+                breathing_disturbances = bd[j] 
+                deep_sleep_duration = dsd[j]
+                duration_to_sleep = dts[j]
+                duration_to_wakeup = dtw[j]
+                average_heart_rate = hr[j]
+                light_sleep_duration = lsd[j]
+                rem_sleep_duration = rsd[j]
+                average_rr = rr[j]
+                sleep_score = ss[j]
+                wakeup_count = wc[j]
+                wakeup_duration = wd[j]
+                total_sleep_time = tst[j]
+                total_time_in_bed = tib[j]
+                awake_in_bed = ab[j]
+                apnea = apn[j]
+                out_of_bed_count = obc[j]
+                hr_af = hr_ap[j]
+                rr_af = rr_ap[j]
+
+                data ={
+                    "device": sleep_id,
+                    "user": user,
+                    "date": date_s,
+                    "breathing_disturbances" : breathing_disturbances,
+                    "deep_sleep_duration" : deep_sleep_duration,
+                    "duration_to_sleep" : duration_to_sleep,
+                    "duration_to_wakeup" : duration_to_wakeup,
+                    "average_heart_rate" : average_heart_rate,
+                    "light_sleep_duration" : light_sleep_duration,
+                    "rem_sleep_duration" : rem_sleep_duration,
+                    "average_rr" : average_rr,
+                    "sleep_score" : sleep_score,
+                    "wakeup_count" : wakeup_count,
+                    "wakeup_duration" : wakeup_duration,
+                    "total_sleep_time": total_sleep_time,
+                    "total_time_in_bed": total_time_in_bed,
+                    "awake_in_bed":awake_in_bed,
+                    "apnea": apnea,
+                    "out_of_bed_count":out_of_bed_count,
+                    "start_date":start_date_s,
+                    "end_date":end_date_s,
+                    "hr_date_af": date_hr_sleep_ap,
+                    "hr_af": None if np.isnan(hr_af) else hr_af, 
+                    "hr_date_rr": date_rr_sleep_ap,
+                    "hr_rr":None if np.isnan(rr_af) else rr_af
+                    }
+                response = requests.post(url, json=data)
+                print(response)
+
+
+    def upload_intra_sleep_summary_data(self, user = None, sleep_id = None, start_date = None, end_date = None, ss = None,
+                                        date_hr = None, hr = None, date_rr = None, rr = None, date_s = None, sn = None, date_sddn = None, sdnn_1 = None):
+        
+        url = 'http://127.0.0.1:8000/api/sleepmats/intraactivity/'
+        
+        max_size = max(len(start_date), len(date_hr))
+        
+        if len(start_date) < max_size:
+            start_date = np.append(start_date, [np.nan] * (max_size - len(start_date)))
+            end_date = np.append(end_date, [np.nan] * (max_size - len(end_date)))
+            ss = np.append(ss, [np.nan] * (max_size - len(ss)))
+            
+        if sleep_id is not None:
+            
+            for j in range(max_size):
+                print(start_date[j])
+                # Convert 'nan' values to None
+                start_date_s = None if math.isnan(start_date[j]) else float(start_date[j]) 
+                end_date_s = None if math.isnan(float(end_date[j])) else float(end_date[j]) 
+                sleep_state_s = None if math.isnan(float(ss[j])) else int(ss[j]) 
+                date_heart_rate = None if math.isnan(float(date_hr[j])) else float(date_hr[j])
+                heart_rate = None if math.isnan(float(hr[j])) else float(hr[j])
+                date_respiration_rate = None if math.isnan(float(date_rr[j])) else float(date_rr[j])
+                respiration_rate = None if math.isnan(float(rr[j])) else float(rr[j])
+                date_snoring = None if math.isnan(float(date_s[j])) else float(date_s[j])
+                snoring = None  if math.isnan(float(sn[j])) else float(sn[j])
+                date_sdnn_1 = None  if math.isnan(float(date_sddn[j])) else float(date_sddn[j])
+                sdnn_1_1 = None  if math.isnan(float(sdnn_1[j])) else float(sdnn_1[j])
+                data ={
+                    "user": user, 
+                    "device": sleep_id,
+                    "start_date": start_date_s,
+                    "end_date":end_date_s, 
+                    "sleep_state": sleep_state_s, 
+                    "date_heart_rate": date_heart_rate, 
+                    "heart_rate": heart_rate,
+                    "date_respiration_rate": date_respiration_rate,
+                    "respiration_rate": respiration_rate,
+                    "date_snoring": date_snoring,
+                    "snoring" : snoring,
+                    "date_sdnn_1" : date_sdnn_1,
+                    "sdnn_1": sdnn_1_1
+                    }
+                
+                #print(data)
+                response = requests.post(url, json=data)
+                #print(response)
+    
+    def upload_scale_data(self, user = None, scale_id = None ):
+        url = 'http://127.0.0.1:8000/api/scales/'
+
+        if scale_id is not None:
+
+            for j in range(len(dict)):
+                date_s = dict[j]['date']
+                date_s = parser.parse(date_s)
+                date_s= date_s.isoformat()
+                
+
+                print(type(dict[j]['Muscle mass'])) 
+                # Convert 'nan' values to None
+                weight = None if math.isnan(float(dict[j]['Weight'])) else float(dict[j]['Weight']) 
+                muscle_mass = None if math.isnan(float(dict[j]['Muscle mass'])) else float(dict[j]['Muscle mass'])
+                bone_mass = None if math.isnan(float(dict[j]['Bone mass'])) else float(dict[j]['Bone mass'])
+                fat_mass = None if math.isnan(float(dict[j]['Fat mass Weight'])) else float(dict[j]['Fat mass Weight'])
+
+                print(muscle_mass)
+        
+                data ={
+                    "device": scale_id,
+                    "user": id, 
+                    "date": date_s,
+                    "weight": weight,
+                    "muscle_mass": muscle_mass,
+                    "bone_mass": bone_mass,
+                    'fat_mass': fat_mass, 
+                    }
+                
+
+                print(data)
+                response = requests.post(url, json=data)
+
+    
+       
+    
+  
 
 
 
