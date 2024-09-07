@@ -476,39 +476,39 @@ class Database_API(object):
                 response = requests.post(url, json=data)
                 #print(response)
     
-    def upload_scale_data(self, user = None, scale_id = None ):
+    def upload_scale_data(self, user = None, scale_id = None, date = None, weight = None, muscle_mass= None,
+                          bone_mass = None, fat_mass = None):
         url = 'http://127.0.0.1:8000/api/scales/'
 
         if scale_id is not None:
 
-            for j in range(len(dict)):
-                date_s = dict[j]['date']
-                date_s = parser.parse(date_s)
-                date_s= date_s.isoformat()
-                
-
-                print(type(dict[j]['Muscle mass'])) 
+            for j in range(len(date)):
+                date = date[j].isoformat()
                 # Convert 'nan' values to None
-                weight = None if math.isnan(float(dict[j]['Weight'])) else float(dict[j]['Weight']) 
-                muscle_mass = None if math.isnan(float(dict[j]['Muscle mass'])) else float(dict[j]['Muscle mass'])
-                bone_mass = None if math.isnan(float(dict[j]['Bone mass'])) else float(dict[j]['Bone mass'])
-                fat_mass = None if math.isnan(float(dict[j]['Fat mass Weight'])) else float(dict[j]['Fat mass Weight'])
+                weight_s = None if math.isnan(weight[j]) else float(weight[j])  
+                muscle_mass_s = None if math.isnan(muscle_mass[j]) else float(muscle_mass[j]) 
+                bone_mass_s = None if math.isnan(bone_mass[j]) else float(bone_mass[j]) 
+                fat_mass_s = None if math.isnan(fat_mass[j]) else float(fat_mass[j])
 
                 print(muscle_mass)
         
                 data ={
                     "device": scale_id,
-                    "user": id, 
-                    "date": date_s,
-                    "weight": weight,
-                    "muscle_mass": muscle_mass,
-                    "bone_mass": bone_mass,
-                    'fat_mass': fat_mass, 
+                    "user": user, 
+                    "date": date,
+                    "weight": weight_s,
+                    "muscle_mass": muscle_mass_s,
+                    "bone_mass": bone_mass_s,
+                    'fat_mass': fat_mass_s, 
                     }
                 
 
                 print(data)
                 response = requests.post(url, json=data)
+                print(response)
+    
+    def cleaning(self, table_type = None):
+        pass
 
     
        

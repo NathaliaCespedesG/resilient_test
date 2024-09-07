@@ -357,18 +357,18 @@ class Devices_OAuth2flow(object):
 	#Function  to acquire scale values 
 	
 	def scale_data_v2(self):
-		self.scale_data = {}
+		self.scale_data_w = {}
 		self.monthly_scale_data = {}
 
 		#Extracting scale current week data from 
 		scale_values_w = self.api.measure_get_meas(startdate=arrow.utcnow().shift(days = self.ending_day_c - 7).replace(hour=23, minute=59, second=59), enddate = arrow.utcnow().shift(days= self.ending_day_c).replace(hour=23, minute=59, second=59), lastupdate = None)
 		#Current week values
-		self.scale_data['date'] = [arrow.get(x.date) for x in scale_values_w.measuregrps]
-		self.scale_data['measures'] = [x.measures for x in scale_values_w.measuregrps]
+		self.scale_data_w['date'] = [arrow.get(x.date) for x in scale_values_w.measuregrps]
+		self.scale_data_w['measures'] = [x.measures for x in scale_values_w.measuregrps]
 
-		self.last_scale = self.scale_data['date']
-		self.weight, self.muscle_mass, self.bone_mass, self.fat_mass, hydration = self.data_utils.scale_data_extractor(self.scale_data['measures'])
-		self.scale_data['date'], self.weight = self.data_utils.data_cleaning(self.scale_data['date'],self.weight)
+		self.last_scale = self.scale_data_w['date']
+		self.weight, self.muscle_mass, self.bone_mass, self.fat_mass, hydration = self.data_utils.scale_data_extractor(self.scale_data_w['measures'])
+		self.scale_data_w['date'], self.weight = self.data_utils.data_cleaning(self.scale_data_w['date'],self.weight)
 
 		print(self.weight)
 		print(type(self.weight))
@@ -403,7 +403,7 @@ class Devices_OAuth2flow(object):
 		
 		# Agreggated values
 
-		self.dates_scale_agg = dates_db + self.scale_data['date']
+		self.dates_scale_agg = dates_db + self.scale_data_w['date']
 		self.weight_agg = np.concatenate((weight_db ,self.weight))
 		self.muscle_mass_agg = np.concatenate((muscle_mass_db, self.muscle_mass))
 		self.bone_mass_agg = np.concatenate((bone_mass_db, self.bone_mass))
@@ -412,7 +412,9 @@ class Devices_OAuth2flow(object):
 		print(self.dates_scale_agg)
 		print(self.weight_agg)
 
-		self.graph.plot_continous(self.dates_scale_agg,self.weight_agg, "Scale")
+		#self.graph.plot_continous(self.dates_scale_agg,self.weight_agg, "Scale")
+		#self.database_api.upload_scale_data(user = self.uuid_db, date = self.scale_data_w['date'], scale_id = self.values_devices['scale'], weight = self.weight,
+									  muscle_mass = self.muscle_mass, bone_mass = self.bone_mass, fat_mass =self.fat_mass)
 
 	
 		
@@ -1539,6 +1541,9 @@ class Devices_OAuth2flow(object):
 
 	def db_api_filling(self):
 
+		self.database_api.upload_scale_data(user = self.uuid_db, date = self.scale_data_w['date'], scale_id = self.values_devices['scale'], weight = self.weight,
+									  muscle_mass = self.muscle_mass, bone_mass = self.bone_mass, fat_mass =self.fat_mass)
+
 		self.database_api.upload_intra_scanwatch_summary_data(user = self.uuid_db, watch_id = self.values_devices['scan_watch'], 
 														date_hr_i = self.dates_HR_watch_agg, hr_i = self.hr_watch_agg, date_calories_i = self.dates_cal_watch_agg,
 														cal_i = self.cal_watch_agg, date_steps_i= self.dates_step_watch_agg, steps_i = self.steps_watch_agg)
@@ -1556,6 +1561,11 @@ class Devices_OAuth2flow(object):
 		self.database_api.upload_intra_sleep_summary_data(user = self.uuid_db, sleep_id = self.values_devices['sleep_mat'], start_date = self.sleephf_startdate_w, end_date = self.sleephf_enddate_w, ss = self.sleephf_states_w,
                                         date_hr = self.dates_hr_sleep_w, hr = self.hr_sleephf_w, date_rr = self.dates_rr_w, rr = self.rr_sleephf_w, date_s = self.dates_snoring_w, sn = self.snoring_sleephf_w, date_sddn = self.dates_sdnn_w,
 										sdnn_1 = self.sdnn_1_sleephf_w)
+		
+
+	def db_api_cleaning(self):
+
+		pass
 
 		
 
