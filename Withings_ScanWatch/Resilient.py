@@ -23,7 +23,8 @@ import db.database as database
 
 class Resilient(object):
 
-    def __init__(self, report_type: None):
+    def __init__(self, report_type: None,
+                user: None):
 
 
         # Types of generation
@@ -36,10 +37,13 @@ class Resilient(object):
         self.database = database.General(db_type = self.db_type)
 
         # Report Type
-
         self.report_type = report_type
-
         self.gen_type = input('Please indicate  the type of report you want to generate, all - one - create: ')
+
+        #Participant number if the incoming report type is one
+        self.participant = user
+
+        
 
         # Database from CVS files instructions
         #self.users_path()
@@ -55,7 +59,17 @@ class Resilient(object):
         if self.gen_type == 'all':
 
             self.id_available = users
-            self.run_all_participants()
+            try:
+                self.run_all_participants()
+
+                return({'status': 'success', 'path': 'withings_reports'})
+        
+            except Exception as e:
+                # You can log the error or print it if needed
+                print(f"An error occurred: {e}")
+                
+                return({'status': 'failed', 'path': None})
+        
 
         elif self.gen_type == 'create' :
 
@@ -82,10 +96,19 @@ class Resilient(object):
             self.id_available = [] 
 
             id_user = input('Please provide the id for the user: ')
-        
+            # when using the incoming value from web
+            #id_user = self.participant    
+
             if id_user in users:
-                self.id_available.append(id_user)
-                self.run_all_participants()
+                try:
+                    self.id_available.append(id_user)
+                    self.run_all_participants()
+                    return({'status': 'success', 'path':'one'})
+                
+                except Exception as e:
+                    # You can log the error or print it if needed
+                    print(f"An error occurred: {e}")
+                    return({'status': 'failed', 'path': None})
             else:
                 print("Participant not in the database")
 
@@ -124,57 +147,46 @@ class Resilient(object):
 
     def run_all_participants(self):
         
-        try:
-            if self.id_available is not None:
-                print(self.id_available)
-                
-                total_participants = len(self.id_available)
-                for i in range (total_participants):
-
-                    id_report = self.id_available[i]
-                    reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
-                                        costumer_secret = dev_credentials.costumer_secret,
-                                        callback_uri = dev_credentials.callback_uri,
-                                        report_type = 0,
-                                        id_participant = id_report,
-                                        running_type = self.db_type)
-
-                    reports_resilient.get_user_credentials()
-                    reports_resilient.register_devices()
-                    reports_resilient.devices_info()
-                    #reports_resilient.scale_data()
-                    #reports_resilient.sleep()
-                    #reports_resilient.sleep_daily()
-                    ###################################
-                    reports_resilient.scale_data_v2()
-                    #reports_resilient.sleep_v2()
-                    #reports_resilient.intra_sleep_v2()
-                    #reports_resilient.intra_activitydata_watch_v2()
-                    #reports_resilient.activity_data_watch_v2()
-                    #reports_resilient.plot_creatorV2()
-                    #print(HOLA)
-                    ###########################################
-                    reports_resilient.activity_data_watch()
-                    reports_resilient.plot_creator()
-                    #print(HOLA)
-                    reports_resilient.db_filling()
-                    reports_resilient.doc_generation()
-                    reports_resilient.usage_levels()
-                    reports_resilient.remove_images()
-                    reports_resilient.db_cleaning()
+        if self.id_available is not None:
+            print(self.id_available)
             
-            return("success")
+            total_participants = len(self.id_available)
+            for i in range (total_participants):
+
+                id_report = self.id_available[i]
+                reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
+                                    costumer_secret = dev_credentials.costumer_secret,
+                                    callback_uri = dev_credentials.callback_uri,
+                                    report_type = 0,
+                                    id_participant = id_report,
+                                    running_type = self.db_type)
+
+                reports_resilient.get_user_credentials()
+                reports_resilient.register_devices()
+                reports_resilient.devices_info()
+                #reports_resilient.scale_data()
+                #reports_resilient.sleep()
+                #reports_resilient.sleep_daily()
+                ###################################
+                reports_resilient.scale_data_v2()
+                #reports_resilient.sleep_v2()
+                #reports_resilient.intra_sleep_v2()
+                #reports_resilient.intra_activitydata_watch_v2()
+                #reports_resilient.activity_data_watch_v2()
+                #reports_resilient.plot_creatorV2()
+                #print(HOLA)
+                ###########################################
+                reports_resilient.activity_data_watch()
+                reports_resilient.plot_creator()
+                #print(HOLA)
+                reports_resilient.db_filling()
+                reports_resilient.doc_generation()
+                reports_resilient.usage_levels()
+                reports_resilient.remove_images()
+                reports_resilient.db_cleaning()
+            
+           
         
-        except Exception as e:
-            # You can log the error or print it if needed
-            print(f"An error occurred: {e}")
-            return "failure"
-        
-
-
-        
-
-
     
     def create_participant(self, user = None):
         
