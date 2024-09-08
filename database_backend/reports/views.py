@@ -29,7 +29,7 @@ class WithingsCredentials(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class ReportGeneration(View):
 
-    def post(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         try:
             data = json.loads(request.body)  # Parse JSON from request body
             report_type = data.get('report_type')  # Get report type from the payload
@@ -42,16 +42,10 @@ class ReportGeneration(View):
             return JsonResponse({'status': 'success', 'report': report})
         
         except json.JSONDecodeError:
+            
             return JsonResponse({'status': 'error', 'message': 'Invalid JSON format'}, status=400)
+        
         except ValueError as e:
+            
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
-    def get(self, request, *args, **kwargs):
-        # Handle a callback URL or another case for a GET request
-        callback_param = request.GET.get('callback', None)
-        
-        if callback_param:
-            # Perform the necessary actions for the callback
-            return JsonResponse({'status': 'success', 'callback': callback_param})
-        
-        return JsonResponse({'status': 'error', 'message': 'Invalid request method or missing callback'}, status=405)
