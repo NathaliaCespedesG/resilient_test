@@ -17,6 +17,7 @@ class Command(BaseCommand):
         self.clean_scanwatch_summary_duplicates()
         self.clean_sleepmat_summary_duplicates()
         self.clean_scanwatch_intra_duplicates()
+        self.clean_sleepmat_intra_duplicates()
         self.stdout.write(self.style.SUCCESS('Duplicates cleaned successfully!'))
 
     def clean_scale_duplicates(self):

@@ -23,15 +23,12 @@ import db.database as database
 
 class Resilient(object):
 
-    def __init__(self):
-
+    def __init__(self, report_type: None):
 
 
         # Types of generation
 
-
         self.db_type =  input('Please indicate  the running mode, original - test:' )
-
 
         # Database calling
 
@@ -39,6 +36,8 @@ class Resilient(object):
         self.database = database.General(db_type = self.db_type)
 
         # Report Type
+
+        self.report_type = report_type
 
         self.gen_type = input('Please indicate  the type of report you want to generate, all - one - create: ')
 
@@ -124,45 +123,56 @@ class Resilient(object):
 
 
     def run_all_participants(self):
+        
+        try:
+            if self.id_available is not None:
+                print(self.id_available)
+                
+                total_participants = len(self.id_available)
+                for i in range (total_participants):
+
+                    id_report = self.id_available[i]
+                    reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
+                                        costumer_secret = dev_credentials.costumer_secret,
+                                        callback_uri = dev_credentials.callback_uri,
+                                        report_type = 0,
+                                        id_participant = id_report,
+                                        running_type = self.db_type)
+
+                    reports_resilient.get_user_credentials()
+                    reports_resilient.register_devices()
+                    reports_resilient.devices_info()
+                    #reports_resilient.scale_data()
+                    #reports_resilient.sleep()
+                    #reports_resilient.sleep_daily()
+                    ###################################
+                    reports_resilient.scale_data_v2()
+                    #reports_resilient.sleep_v2()
+                    #reports_resilient.intra_sleep_v2()
+                    #reports_resilient.intra_activitydata_watch_v2()
+                    #reports_resilient.activity_data_watch_v2()
+                    #reports_resilient.plot_creatorV2()
+                    #print(HOLA)
+                    ###########################################
+                    reports_resilient.activity_data_watch()
+                    reports_resilient.plot_creator()
+                    #print(HOLA)
+                    reports_resilient.db_filling()
+                    reports_resilient.doc_generation()
+                    reports_resilient.usage_levels()
+                    reports_resilient.remove_images()
+                    reports_resilient.db_cleaning()
+            
+            return("success")
+        
+        except Exception as e:
+            # You can log the error or print it if needed
+            print(f"An error occurred: {e}")
+            return "failure"
+        
+
 
         
-        if self.id_available is not None:
-            print(self.id_available)
-            
-            total_participants = len(self.id_available)
-            for i in range (total_participants):
-
-                id_report = self.id_available[i]
-                reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
-		                            costumer_secret = dev_credentials.costumer_secret,
-		                            callback_uri = dev_credentials.callback_uri,
-		                            report_type = 0,
-                                    id_participant = id_report,
-                                    running_type = self.db_type)
-
-                reports_resilient.get_user_credentials()
-                reports_resilient.register_devices()
-                reports_resilient.devices_info()
-                #reports_resilient.scale_data()
-                #reports_resilient.sleep()
-                #reports_resilient.sleep_daily()
-                ###################################
-                reports_resilient.scale_data_v2()
-                #reports_resilient.sleep_v2()
-                #reports_resilient.intra_sleep_v2()
-                #reports_resilient.intra_activitydata_watch_v2()
-                #reports_resilient.activity_data_watch_v2()
-                #reports_resilient.plot_creatorV2()
-                #print(HOLA)
-                ###########################################
-                reports_resilient.activity_data_watch()
-                reports_resilient.plot_creator()
-                #print(HOLA)
-                reports_resilient.db_filling()
-                reports_resilient.doc_generation()
-                reports_resilient.usage_levels()
-                reports_resilient.remove_images()
-                reports_resilient.db_cleaning()
 
 
     
