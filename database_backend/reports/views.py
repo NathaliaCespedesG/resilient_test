@@ -46,6 +46,5 @@ class ReportGeneration(View):
             return JsonResponse({'status': 'error', 'message': 'Invalid JSON format'}, status=400)
         
         except ValueError as e:
-            
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
