@@ -23,17 +23,17 @@ import pandas as pd
 
 #Module: Data utilities module - preprocessing of the data 
 
-import data_utils.data_utils as data_utils
+import utils.Withings_ScanWatch.data_utils.data_utils as data_utils
 # Module: Database libraries to save Users' data 
-import db.database as database
+import utils.Withings_ScanWatch.db.database as database
 #Module : Databasde Django api
 
-import db.database_django as database_api
+import utils.Withings_ScanWatch.db.database_django as database_api
 
 #Module: Graphics generation class
-import resources.Graph_generation as graph
+import utils.Withings_ScanWatch.resources.Graph_generation as graph
 # Module: PDF generation class to generate the reports 
-import resources.PDF_generation as pdf_gen
+import utils.Withings_ScanWatch.resources.PDF_generation as pdf_gen
 
 
 
@@ -198,10 +198,6 @@ class Devices_OAuth2flow(object):
 
 		if self.report_type == 0:
 			self.dates_SPC_charts()
-
-
-		
-
 
 	def dates(self):
 
@@ -414,18 +410,7 @@ class Devices_OAuth2flow(object):
 
 		#self.graph.plot_continous(self.dates_scale_agg,self.weight_agg, "Scale")
 		#self.database_api.upload_scale_data(user = self.uuid_db, date = self.scale_data_w['date'], scale_id = self.values_devices['scale'], weight = self.weight,
-									  muscle_mass = self.muscle_mass, bone_mass = self.bone_mass, fat_mass =self.fat_mass)
-
-	
-		
-
-		
-
-
-
-
-
-
+		#muscle_mass = self.muscle_mass, bone_mass = self.bone_mass, fat_mass =self.fat_mass)
 
 	#Functions to acquire watch values
 	def intra_activitydata_watch_v2(self):

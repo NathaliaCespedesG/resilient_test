@@ -10,7 +10,7 @@ import numpy as np
 import time
 
 # Resources for PDF generating
-import Devices_OAuth2flow as reports
+import utils.Withings_ScanWatch.Devices_OAuth2flow as reports
 import resources.PDF_usage_generation as usage_pdf
 
 # Developer credentials

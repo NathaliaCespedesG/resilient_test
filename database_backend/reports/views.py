@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from Withings_ScanWatch.Resilient import Resilient
+from utils.Withings_ScanWatch.Resilient import Resilient
 from typing_extensions import Final
 
 import json
