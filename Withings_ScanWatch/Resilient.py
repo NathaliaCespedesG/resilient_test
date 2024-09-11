@@ -10,7 +10,7 @@ import numpy as np
 import time
 
 # Resources for PDF generating
-import Withings_ScanWatch.Devices_OAuth2flow as reports
+import Devices_OAuth2flow as reports
 import resources.PDF_usage_generation as usage_pdf
 
 # Developer credentials
@@ -50,15 +50,44 @@ class Resilient(object):
 
         self.general = 'db/General'
         self.current_path = os.getcwd()
-    
+        
+    def create_new_user(self, id_user = None, code = None, role = None):
+        self.id_available = id_user
+        #register participant - csv API
+        self.database.SM.set_date_report(date = datetime.now().strftime('%Y-%m-%d'))
+        self.database.register(user = self.id_available)
+        # register participant - database API
+        self.role = input('Please provide the role: ')
+        self.password = 'NoneYet'
+        self.path_cred = 'Path'
+        self.database_api.register(user = self.id_available, role = self.role, password_hash = self.password, credential_path = self.path_cred)
+        reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
+		                            costumer_secret = dev_credentials.costumer_secret,
+		                            callback_uri = dev_credentials.callback_uri,
+		                            report_type = 0,
+                                    id_participant = id_user,
+                                    running_type = self.db_type)
+        reports_resilient.save
+        
+        reports_resilient.get_user_credentials()
+        
+    def custom_sort(self,val):
+        try:
+            return (int(val), '')  # Return the number as primary sorting key
+        except ValueError:
+            # If conversion fails (for strings like '4s'), return the numeric part and original string
+            numeric_part = ''.join([c for c in val if c.isdigit()])  # Extract numeric part
+            return (int(numeric_part), val) 
+
+        
+            
     def individual_report_generation(self):
 
         users = self.current_users()
-        print(users)
-
         if self.gen_type == 'all':
 
             self.id_available = users
+            self.id_available.sort(key=self.custom_sort)
             try:
                 self.run_all_participants()
 
@@ -67,6 +96,7 @@ class Resilient(object):
             except Exception as e:
                 # You can log the error or print it if needed
                 print(f"An error occurred: {e}")
+                print(hola)
                 
                 return({'status': 'failed', 'path': None})
         
@@ -149,9 +179,8 @@ class Resilient(object):
         
         if self.id_available is not None:
             print(self.id_available)
-            
             total_participants = len(self.id_available)
-            for i in range (total_participants):
+            for i in range (21,total_participants):
 
                 id_report = self.id_available[i]
                 reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
@@ -164,11 +193,14 @@ class Resilient(object):
                 reports_resilient.get_user_credentials()
                 reports_resilient.register_devices()
                 reports_resilient.devices_info()
-                #reports_resilient.scale_data()
-                #reports_resilient.sleep()
-                #reports_resilient.sleep_daily()
+                reports_resilient.scale_data()
+                time.sleep(0.5)
+                reports_resilient.sleep()
+                time.sleep(0.5)
+                reports_resilient.sleep_daily()
+                time.sleep(0.5)
                 ###################################
-                reports_resilient.scale_data_v2()
+                #reports_resilient.scale_data_v2()
                 #reports_resilient.sleep_v2()
                 #reports_resilient.intra_sleep_v2()
                 #reports_resilient.intra_activitydata_watch_v2()
@@ -184,10 +216,8 @@ class Resilient(object):
                 reports_resilient.usage_levels()
                 reports_resilient.remove_images()
                 reports_resilient.db_cleaning()
+                print(id_report)
             
-           
-        
-    
     def create_participant(self, user = None):
         
         reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
@@ -404,10 +434,11 @@ class Resilient(object):
         
     @classmethod
     def main(cls):
-        a = cls()
-        a.individual_report_generation()
+        a = cls(report_type = None,
+                   user = None)
+        #a.individual_report_generation()
         a.create_folder_reports()
-        a.usage_reports()
+        #a.usage_reports()
         a.merge_pdf()
 		
 

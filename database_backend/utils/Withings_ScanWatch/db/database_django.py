@@ -29,6 +29,19 @@ class Database_API(object):
         print('HIII')
         if response.status_code == 400:
             print('Not working')
+            
+    def register_update(self, user_uid = None, path = None):
+        url= 'http://127.0.0.1:8000/api/user/' + user_uid +'/'
+        data = {
+             "withings_connected": True,
+             "active":True,
+             "withings_credentials_path": path
+        }
+        response = requests.patch(url,json=data)
+        if response.status_code == 200:
+             print("PATCH request successful")
+        else:
+             print(f"PATCH request failed with status code {response.status_code}")
 
     def get_users(self):
         

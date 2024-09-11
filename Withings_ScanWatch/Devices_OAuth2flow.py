@@ -23,17 +23,17 @@ import pandas as pd
 
 #Module: Data utilities module - preprocessing of the data 
 
-import Withings_ScanWatch.data_utils.data_utils as data_utils
+import data_utils.data_utils as data_utils
 # Module: Database libraries to save Users' data 
-import Withings_ScanWatch.db.database as database
+import db.database as database
 #Module : Databasde Django api
 
-import Withings_ScanWatch.db.database_django as database_api
+import db.database_django as database_api
 
 #Module: Graphics generation class
-import Withings_ScanWatch.resources.Graph_generation as graph
+import resources.Graph_generation as graph
 # Module: PDF generation class to generate the reports 
-import Withings_ScanWatch.resources.PDF_generation as pdf_gen
+import resources.PDF_generation as pdf_gen
 
 
 
@@ -91,7 +91,9 @@ class Devices_OAuth2flow(object):
 	
 
 		# ID for each user
-		self.id_user = str(next(iter(id_participant)))
+		#self.id_user = str(next(iter(id_participant)))
+  
+		self.id_user = id_participant
 	
 
 		#Create the credentials File

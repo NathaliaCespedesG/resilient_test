@@ -11,100 +11,65 @@ import time
 
 # Resources for PDF generating
 import utils.Withings_ScanWatch.Devices_OAuth2flow as reports
-import resources.PDF_usage_generation as usage_pdf
+import utils.Withings_ScanWatch.resources.PDF_usage_generation as usage_pdf
 
 # Developer credentials
-import withings_devOp_credentials as dev_credentials
+import utils.Withings_ScanWatch.withings_devOp_credentials as dev_credentials
 
 # Database API
-import db.database_django as database_api
-import db.database as database
+import utils.Withings_ScanWatch.db.database_django as database_api
+import utils.Withings_ScanWatch.db.database as database
 
 
 class Resilient(object):
 
-    def __init__(self, report_type: None,
-                user: None):
-
-
-        # Types of generation
-
-        self.db_type =  input('Please indicate  the running mode, original - test:' )
+    def __init__(self):
 
         # Database calling
-
         self.database_api = database_api.Database_API()
-        self.database = database.General(db_type = self.db_type)
-
-        # Report Type
-        self.report_type = report_type
-        self.gen_type = input('Please indicate  the type of report you want to generate, all - one - create: ')
-
-        #Participant number if the incoming report type is one
-        self.participant = user
-
-        
-
-        # Database from CVS files instructions
-        #self.users_path()
-
+        self.database = database.General(db_type = None)
         self.general = 'db/General'
         self.current_path = os.getcwd()
+        
+    def create_credentials(self, code = None, user_uid = None, username = None, role = None):
+        #Patch the withings credentials in the application
+        
+        
+        m = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
+		                            costumer_secret = dev_credentials.costumer_secret,
+		                            callback_uri = dev_credentials.callback_uri,
+		                            report_type = 0,
+                                    id_participant = username,
+                                    running_type = None)
+        path = m.CREDENTIALS_FILE
+        self.database_api.register_update(user_uid = user_uid, path = path)
+        m.create_credentials(code = code)
+        m.register_devices()
     
-    def individual_report_generation(self):
+    def report_generation(self, report_type = None, username = None):
 
         users = self.current_users()
-        print(users)
-
+        self.gen_type = report_type
+        
         if self.gen_type == 'all':
-
             self.id_available = users
             try:
                 self.run_all_participants()
-
                 return({'status': 'success', 'path': 'withings_reports'})
         
             except Exception as e:
                 # You can log the error or print it if needed
                 print(f"An error occurred: {e}")
-                
                 return({'status': 'failed', 'path': None})
         
-
-        elif self.gen_type == 'create' :
-
-            id_user = input('Please provide the id for the user: ')
-            
-            if id_user in users:
-                print("Participant already in the database")
-            else:
-                self.id_available = id_user
-                #register participant - csv API
-                self.database.SM.set_date_report(date = datetime.now().strftime('%Y-%m-%d'))
-                self.database.register(user = self.id_available)
-                # register participant - database API
-                self.role = input('Please provide the role: ')
-                self.password = 'NoneYet'
-                self.path_cred = 'Path'
-                self.database_api.register(user = self.id_available, role = self.role, password_hash = self.password, credential_path = self.path_cred)
-
-                self.create_participant(user = id_user)
-                
-
         elif self.gen_type == 'one':
-
             self.id_available = [] 
-
-            id_user = input('Please provide the id for the user: ')
-            # when using the incoming value from web
-            #id_user = self.participant    
-
+            id_user = username 
             if id_user in users:
                 try:
                     self.id_available.append(id_user)
                     self.run_all_participants()
                     return({'status': 'success', 'path':'one'})
-                
                 except Exception as e:
                     # You can log the error or print it if needed
                     print(f"An error occurred: {e}")
@@ -141,9 +106,7 @@ class Resilient(object):
         
         data = self.database_api.get_users()
         usernames = [list(item.values())[0] for item in data]
-
         return(usernames)
-
 
     def run_all_participants(self):
         
@@ -185,32 +148,7 @@ class Resilient(object):
                 reports_resilient.remove_images()
                 reports_resilient.db_cleaning()
             
-           
-        
-    
-    def create_participant(self, user = None):
-        
-        reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
-		                            costumer_secret = dev_credentials.costumer_secret,
-		                            callback_uri = dev_credentials.callback_uri,
-		                            report_type = 0,
-                                    id_participant = user,
-                                    running_type = self.db_type)
 
-        reports_resilient.get_user_credentials()
-        reports_resilient.register_devices()
-        reports_resilient.devices_info()
-        reports_resilient.sleep()
-        reports_resilient.sleep_daily()
-        reports_resilient.activity_data_watch()
-        reports_resilient.plot_creator()
-        reports_resilient.db_filling()
-        reports_resilient.doc_generation()
-        reports_resilient.remove_images()
-        reports_resilient.usage_levels()
-        reports_resilient.db_cleaning()
-
-    
     def sort_files(self, files):
         return sorted(files, key=lambda x: x[3]) 
 
@@ -405,7 +343,7 @@ class Resilient(object):
     @classmethod
     def main(cls):
         a = cls()
-        a.individual_report_generation()
+        a.report_generation()
         a.create_folder_reports()
         a.usage_reports()
         a.merge_pdf()

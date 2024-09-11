@@ -15,13 +15,19 @@ class WithingsCredentials(View):
             # Process the data here
             # For demonstration, we'll just print it and send it back in the response
             print(data)
+            print(type(data))
+            code = data['code']
+            state = data['state']
+            user_id = data['userId']
+            username = data['username']
+            report = Resilient()
+            report.create_credentials(code = code, user_uid = user_id, username = username, role = "study-participant")
             return JsonResponse({'status': 'success', 'data': data})
-        #HERE SHOULD BE THE CODE TO UNDERSTAND THE CALLBACK URL
-        
-
 
         except json.JSONDecodeError:
             return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+        
+        
 
     def get(self, request, *args, **kwargs):
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
@@ -36,8 +42,8 @@ class ReportGeneration(View):
             participant_number = data.get('participant_number')  # Optional for 'single' report
             
             #Answer from Resilient generation
-            report_generator = Resilient(report_type = report_type, user = participant_number)
-            report = report_generator.individual_report_generation()
+            report_generator = Resilient()
+            report = report_generator.report_generation(report_type = None, user = None)
 
             return JsonResponse({'status': 'success', 'report': report})
         
