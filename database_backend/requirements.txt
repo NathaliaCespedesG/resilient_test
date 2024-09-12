@@ -32,4 +32,4 @@ types-python-dateutil==2.9.0.20240316
 tzdata==2024.1
 zipp==3.18.1
 zope.interface==6.2
--e ../python_withings_api
+-e ./python_withings_api

@@ -9,6 +9,7 @@ COPY ./database_backend/api /app/api
 COPY ./database_backend/config /app/config
 COPY ./database_backend/manage.py /app/manage.py
 COPY ./database_backend/requirements.txt /app/requirements.txt
+COPY ./withings_api /app/withings_api
 
 # Install dependencies
 RUN pip install -r requirements.txt
