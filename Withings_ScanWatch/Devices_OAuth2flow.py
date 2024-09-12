@@ -1117,10 +1117,13 @@ class Devices_OAuth2flow(object):
 	
 		self.weight_m, muscle_mass_m, bone_mass_m, fat_mass_m, hydration_m = self.data_utils.scale_data_extractor(self.monthly_scale_data['measures'])
 		self.monthly_scale_data['date'], self.weight_m = self.data_utils.data_cleaning(self.monthly_scale_data['date'], self.weight_m)
-		
-		print('monthly_scale_data', self.monthly_scale_data['date'])
-		print('weight m', self.weight_m)
-		print(hola)
+		self.graph = graph.Graph_generator(start_date =self.initial_dates,
+										   end_date = self.ending_dates,
+										   report_type = self.report_type)
+		self.graph.plot_continous(self.monthly_scale_data['date'],self.weight_m,"Scale")
+		#print('monthly_scale_data', self.monthly_scale_data['date'])
+		#print('weight m', self.weight_m)
+
 
 		
 
@@ -1142,10 +1145,7 @@ class Devices_OAuth2flow(object):
 		#print('WEIGHT', self.weight_m)
 		#print('monthly_scale_data', self.monthly_scale_data['date'])
 
-		self.graph = graph.Graph_generator(start_date =self.initial_dates,
-										   end_date = self.ending_dates,
-										   report_type = self.report_type)
-		self.graph.plot_continous(self.monthly_scale_data['date'],self.weight_m,"Scale")
+		
 	
 	def sleep(self):
 
