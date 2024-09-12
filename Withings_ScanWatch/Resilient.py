@@ -180,7 +180,7 @@ class Resilient(object):
         if self.id_available is not None:
             print(self.id_available)
             total_participants = len(self.id_available)
-            for i in range (21,total_participants):
+            for i in range (total_participants):
 
                 id_report = self.id_available[i]
                 reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
@@ -436,10 +436,10 @@ class Resilient(object):
     def main(cls):
         a = cls(report_type = None,
                    user = None)
-        #a.individual_report_generation()
-        a.create_folder_reports()
+        a.individual_report_generation()
+        #a.create_folder_reports()
         #a.usage_reports()
-        a.merge_pdf()
+        #a.merge_pdf()
 		
 
 	

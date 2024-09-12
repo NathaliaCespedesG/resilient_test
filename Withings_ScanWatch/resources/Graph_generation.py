@@ -440,42 +440,35 @@ class Graph_generator(object):
 
 		#plt.show()
 
-	def plot_continous(self,date_weight, weight, date_muscle_mass, muscle_mass, date_bone_mass,
-							bone_mass, date_fat_mass, fat_mass, date_hydration, hydration, st_date, ed_date, device):
+	def plot_continous(self,date_weight, weight, device):
+
+		print('SCALEEEEEEEEEEEEEEEE')
+
+		print(weight)
+		print(date_weight)
+		print(hola)
 
 		# Create a scatter plot
 		sns.set_style("whitegrid",{ "grid.linewidth":0.5, "grid.color": ".8", "grid.linestyle": ":", "ytick.left": True})
 
 		index_0 = [index for index, value in enumerate(weight) if value is None or value == 0 or math.isnan(value)]
-		index_1 = [index for index, value in enumerate(muscle_mass) if value is None or value == 0 or math.isnan(value)]
-		index_2 = [index for index, value in enumerate(bone_mass) if value is None or value == 0 or math.isnan(value)]
-		index_3 = [index for index, value in enumerate(fat_mass) if value is None or value == 0 or math.isnan(value)]
-		index_4 = [index for index, value in enumerate(hydration) if value is None or value == 0 or math.isnan(value)]
-
+		
 		#x = [datetime.fromtimestamp(a.timestamp()) for a in x]
 		#print(x)
 		weight = [value for value in weight if value is not None and value != 0 and not math.isnan(value)]
-		muscle_mass = [value for value in muscle_mass if value is not None and value != 0 and not math.isnan(value)]
-		bone_mass = [value for value in bone_mass if value is not None and value != 0 and not math.isnan(value)]
-		fat_mass = [value for value in fat_mass if value is not None and value != 0 and not math.isnan(value)]
-		hydration = [value for value in hydration if value is not None and value != 0 and not math.isnan(value)]
+		
 		
 		date_weight = [value for index, value in enumerate(date_weight) if index not in index_0]
-		date_muscle_mass = [value for index, value in enumerate(date_muscle_mass) if index not in index_1]
-		date_bone_mass = [value for index, value in enumerate(date_bone_mass) if index not in index_2]
-		date_fat_mass = [value for index, value in enumerate(date_fat_mass) if index not in index_3]
-		date_hydration = [value for index, value in enumerate(date_hydration) if index not in index_4]
+		
 
-		#print('SCALEEEEEEEEEEEEEEEE')
+		print('SCALEEEEEEEEEEEEEEEE')
 
-		#print(weight)
-		#print(date_weight)
+		print(weight)
+		print(date_weight)
+		print(hola)
 
 		weight_date_avg, weight_avg = self.weekly_average(date_weight, weight)
-		mm_date_avg , mm_avg = self.weekly_average(date_muscle_mass, muscle_mass)
-		bm_date_avg, bm_avg = self.weekly_average(date_bone_mass, bone_mass)
-		fm_date_avg, fm_avg = self.weekly_average(date_fat_mass, fat_mass)
-		hydration_date_avg, hydration_avg = self.weekly_average(date_hydration, hydration)
+		
 
 		#date_strings = [dt.strftime('%Y-%m-%d') for dt in weight_date_avg]
 
@@ -483,12 +476,7 @@ class Graph_generator(object):
 		#x_s,y_s = self.smooth_lines(date_weight,weight)
 		x_s = date_weight
 		y_s = weight
-		#y_s = [round(elem) for elem in y_s]
-		x_s2,z_s = self.smooth_lines(date_muscle_mass,muscle_mass)
-		x_s3,w_s = self.smooth_lines(date_bone_mass,bone_mass)
-		x_s4,t_s = self.smooth_lines(date_fat_mass,fat_mass)
-		x_s5,l_s = self.smooth_lines(date_hydration,hydration)
-
+		
 		
 
 		max_thresh = np.mean(y_s) + np.std(y_s)
@@ -544,17 +532,7 @@ class Graph_generator(object):
 
 					plt.text(weight_date_avg[index], weight_avg[index], math.floor(weight_avg[index]), size = 11,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lightblue', edgecolor='white'))
 
-			#for index in range(len(mm_date_avg)):
-				#plt.text(mm_date_avg[index], mm_avg[index], math.floor(mm_avg[index]), size = 11.5,  rotation = 45, fontdict = self.font)
-				#plt.text(bm_date_avg[index], bm_avg[index], math.floor(bm_avg[index]), size = 11.5,  rotation = 45, fontdict = self.font)
-				#plt.text(fm_date_avg[index], fm_avg[index], math.floor(fm_avg[index]), size = 11.5,  rotation = 45, fontdict = self.font)
-				#plt.text(hydration_date_avg[index], hydration_avg[index], math.floor(hydration_avg[index]), size = 11.5,  rotation = 45, fontdict = self.font)
-
-
-
-			#if len(z_s) == 0:
-				#plt.ylim(min(y_s)-0.5, max(y_s)+0.5)
-
+		
 			plt.gca().set_title('Weight',fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
 			plt.ylabel("kg", fontdict = self.font)
 			#plt.tick_params(axis = 'x', which = 'major', labelsize = 11)

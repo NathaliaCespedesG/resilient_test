@@ -1080,21 +1080,22 @@ class Devices_OAuth2flow(object):
 
 		self.meas_current = self.api.measure_get_meas(startdate=arrow.utcnow().shift(days= self.starting_day_c).replace(hour=23, minute=59, second=59), enddate = arrow.utcnow().shift(days= self.ending_day_c).replace(hour=23, minute=59, second=59), lastupdate = None)
 		self.meas_monthly = self.api.measure_get_meas(startdate = arrow.utcnow().shift(days= self.starting_day_c), enddate = arrow.utcnow().shift(days= self.ending_day_c).replace(hour=23, minute=59, second=59), lastupdate = None)
-
+		
 		#Current week values
 		self.scale_data['date'] = [arrow.get(x.date) for x in self.meas_current.measuregrps]
 		self.scale_data['measures'] = [x.measures for x in self.meas_current.measuregrps]
 		print('SCALEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 		self.last_scale = self.scale_data['date']
-		print(self.scale_data['date'])
+		#print(self.scale_data['date'])
 		#print(scale_data['measures'])
 		self.weight, self.muscle_mass, self.bone_mass, self.fat_mass, hydration = self.data_utils.scale_data_extractor(self.scale_data['measures'])
+		
 		#print('weight values', self.weight)
 		#Cleaning data for the table
 		self.scale_data['date'], self.weight = self.data_utils.data_cleaning(self.scale_data['date'],self.weight)
-		#print('date', scale_data['date'])
+		#print('date', self.scale_data['date'])
 		#print('weight', self.weight)
-
+		
 		
 
 		#Monthly values
@@ -1115,9 +1116,13 @@ class Devices_OAuth2flow(object):
 		self.monthly_scale_data['measures'] = [x.measures for x in self.meas_monthly.measuregrps]
 	
 		self.weight_m, muscle_mass_m, bone_mass_m, fat_mass_m, hydration_m = self.data_utils.scale_data_extractor(self.monthly_scale_data['measures'])
+		self.monthly_scale_data['date'], self.weight_m = self.data_utils.data_cleaning(self.monthly_scale_data['date'], self.weight_m)
+		
+		print('monthly_scale_data', self.monthly_scale_data['date'])
+		print('weight m', self.weight_m)
+		print(hola)
 
-		#print('monthly_scale_data', self.monthly_scale_data['date'])
-		#print('weight m', self.weight_m)
+		
 
 
 		#Cleaning data for the table
@@ -1136,6 +1141,11 @@ class Devices_OAuth2flow(object):
 
 		#print('WEIGHT', self.weight_m)
 		#print('monthly_scale_data', self.monthly_scale_data['date'])
+
+		self.graph = graph.Graph_generator(start_date =self.initial_dates,
+										   end_date = self.ending_dates,
+										   report_type = self.report_type)
+		self.graph.plot_continous(self.monthly_scale_data['date'],self.weight_m,"Scale")
 	
 	def sleep(self):
 
@@ -1480,8 +1490,7 @@ class Devices_OAuth2flow(object):
 
 		self.graph.plot_bar(self.activity_data['date'],self.activity_data['steps'])
 		self.graph.plot_scatter(x = self.dates_hr_1, y = self.HR_watch, k = self.activity_data['date'], j = self.final_hr, name = "HR_ScanWatch")
-		self.graph.plot_continous(self.monthly_scale_data['date'],self.weight_m, self.monthly_scale_data['date_mm'], self.muscle_mass_m, self.monthly_scale_data['date_bm'],self.bone_mass_m,
-								  self.monthly_scale_data['date_fm'], self.fat_mass_m, self.monthly_scale_data['date_h'], self.hydration_m, self.scale_starting_date, self.scale_ending_date, "Scale")
+		self.graph.plot_continous(self.monthly_scale_data['date'],self.weight_m,"Scale")
 		self.graph.plot_stacked_bar(x = self.current_dates_ss, y = self.current_sleep_time,
 									z = self.current_awake_bed, o = self.current_out_bed)
 		self.graph.plot_scatter(x = self.dates_rr, y = self.RR , k = self.current_dates_ss, j = self.rr_mean_bu, name = "RR")
