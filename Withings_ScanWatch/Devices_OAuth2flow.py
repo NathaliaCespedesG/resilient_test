@@ -316,6 +316,7 @@ class Devices_OAuth2flow(object):
 		# This function register the device information.
 		ids_list = [] 
 		devices = self.api.user_get_device()
+		print(devices)
 		devices = devices['devices']
 
 		self.values_devices = {
@@ -386,9 +387,7 @@ class Devices_OAuth2flow(object):
 
 		weight_db = [entry['weight'] for entry in data]
 		weight_db = np.array(weight_db, dtype=float)
-		print(weight_db)
-		print(type(weight_db))
-
+	
 		muscle_mass_db = [entry['muscle_mass'] for entry in data]
 		#muscle_mass_db = np.array(muscle_mass_db, dtype=float)
 
@@ -704,8 +703,6 @@ class Devices_OAuth2flow(object):
 		self.rr_mean_bu = self.data_utils.backup_data(value1 = mean_rr, value2 = self.current_rr)
 		self.hr_mean_bu = self.data_utils.backup_data(value1 = mean_hr, value2 = self.current_heart_rate)
 		
-		#print(self.hr_mean_bu)
-
 		#Summary values for the graph
 		# Database API data to merge it with current values
 
@@ -715,11 +712,17 @@ class Devices_OAuth2flow(object):
 		start_date = start_date.datetime
 		
 		#Data from the database API
-		data = self.database_api.get_sleep_summary_data(user = self.id_user, start_date= end_date, end_date= start_date)
+		data = self.database_api.get_sleep_summary_data(user = self.id_user, start_date = start_date, end_date= end_date)
 		dates_hr_db = [entry['hr_date_af'] for entry in data]
 		dates_rr_db = [entry['hr_date_rr'] for entry in data]
 		hr_af = [entry['hr_af'] for entry in data]
 		hr_rr = [entry['hr_rr'] for entry in data]
+
+		print(hr_af)
+		print(hr_rr)
+		print(hola)
+
+		
 
 		sleep = zip(dates_hr_db, hr_af, dates_rr_db, hr_rr)
 		filtered_sleep = [(date_hr_db, af, date_rr_db, rr) for (date_hr_db, af, date_rr_db, rr) in sleep if date_hr_db is not None]
@@ -1117,20 +1120,21 @@ class Devices_OAuth2flow(object):
 	
 		self.weight_m, muscle_mass_m, bone_mass_m, fat_mass_m, hydration_m = self.data_utils.scale_data_extractor(self.monthly_scale_data['measures'])
 		self.monthly_scale_data['date'], self.weight_m = self.data_utils.data_cleaning(self.monthly_scale_data['date'], self.weight_m)
-		self.graph = graph.Graph_generator(start_date =self.initial_dates,
-										   end_date = self.ending_dates,
-										   report_type = self.report_type)
-		self.graph.plot_continous(self.monthly_scale_data['date'],self.weight_m,"Scale")
+		#self.graph = graph.Graph_generator(start_date =self.initial_dates,
+										   #end_date = self.ending_dates,
+										   #report_type = self.report_type)
+		#self.graph.plot_continous(self.monthly_scale_data['date'],self.weight_m,"Scale")
 		#print('monthly_scale_data', self.monthly_scale_data['date'])
 		#print('weight m', self.weight_m)
+
 
 
 		
 
 
 		#Cleaning data for the table
-		self.monthly_scale_data['date'], self.weight_m = self.data_utils.unique_values_scale(self.monthly_scale_data['date'], self.weight_m)
-		self.monthly_scale_data['date'], self.weight_m = self.data_utils.data_cleaning(self.monthly_scale_data['date'], self.weight_m)
+		#self.monthly_scale_data['date'], self.weight_m = self.data_utils.unique_values_scale(self.monthly_scale_data['date'], self.weight_m)
+		#self.monthly_scale_data['date'], self.weight_m = self.data_utils.data_cleaning(self.monthly_scale_data['date'], self.weight_m)
 		self.monthly_scale_data['date_mm'], self.muscle_mass_m = self.data_utils.unique_values_scale(self.monthly_scale_data['date'], muscle_mass_m)
 		self.monthly_scale_data['date_mm'], self.muscle_mass_m = self.data_utils.data_cleaning(self.monthly_scale_data['date'], muscle_mass_m)
 		self.monthly_scale_data['date_bm'], self.bone_mass_m = self.data_utils.unique_values_scale(self.monthly_scale_data['date'], bone_mass_m)
@@ -1489,8 +1493,9 @@ class Devices_OAuth2flow(object):
 
 
 		self.graph.plot_bar(self.activity_data['date'],self.activity_data['steps'])
-		self.graph.plot_scatter(x = self.dates_hr_1, y = self.HR_watch, k = self.activity_data['date'], j = self.final_hr, name = "HR_ScanWatch")
 		self.graph.plot_continous(self.monthly_scale_data['date'],self.weight_m,"Scale")
+		self.graph.plot_scatter(x = self.dates_hr_1, y = self.HR_watch, k = self.activity_data['date'], j = self.final_hr, name = "HR_ScanWatch")
+		
 		self.graph.plot_stacked_bar(x = self.current_dates_ss, y = self.current_sleep_time,
 									z = self.current_awake_bed, o = self.current_out_bed)
 		self.graph.plot_scatter(x = self.dates_rr, y = self.RR , k = self.current_dates_ss, j = self.rr_mean_bu, name = "RR")
@@ -1507,11 +1512,10 @@ class Devices_OAuth2flow(object):
 		self.graph.plot_stacked_bar(x = self.dates_agg_ss, y = self.current_sleep_time,
 									z = self.current_awake_bed, o = self.current_out_bed)
 		self.graph.plot_scatter(x = self.dates_rr, y = self.rr_sleephf , k = self.dates_summ_rr_sleep, j = self.summ_rr_sleep, name = "RR")
-		self.graph.plot_scatter(x = self.dates_hr_sleep, y = self.hr_sleephf , k = self.dates_summ_hr_sleep,  j = self.summ_hr_sleep, name = "HR")
+		#self.graph.plot_scatter(x = self.dates_hr_sleep, y = self.hr_sleephf , k = self.dates_summ_hr_sleep,  j = self.summ_hr_sleep, name = "HR")
 	
 	#The following function is to fill the database with the values from the devices (modules called: db)
 	def db_filling(self):
-
 		self.database.SM.load_intra_activity(hr = self.HR_watch, time = self.dates_hr, time_steps = self.dates_steps, steps = self.steps_watch, time_calories = self.dates_calories, calories = self.calories_watch)
 		self.database.SM.load_ScanWatch(hr = self.activity_data['heart_rate'], calories = self.activity_data['calories'], steps = self.activity_data['steps'], hr_max = self.activity_data['hr_max'],
 								hr_min = self.activity_data['hr_min'],time = self.activity_data['date'] )

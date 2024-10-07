@@ -67,12 +67,14 @@ class Graph_generator(object):
 	def weekly_average(self,x, y):
 
 		weekly_data = defaultdict(list)
+		
 
 		#x = [datetime.strptime(date.strftime('%Y-%m-%d'), '%Y-%m-%d') for date in x]
 
 		for date, value in zip(x, y):
 
 			if isinstance(date, np.datetime64):
+				print('HERE IN WEEKLY')
 
 				date = np.datetime64(date).astype(datetime)
 
@@ -157,8 +159,8 @@ class Graph_generator(object):
 		# k, start_date and end_date are arroe types (e.g.,  <Arrow [2023-08-27T01:00:00+01:00]>)
 		k = [value for index, value in enumerate(k) if index not in index_1]
 		#print(name)
-		#if name != 'RR':
-			#k = np.array([np.datetime64(date.datetime) for date in k]) #ESTA EN LA V2 +D
+		if name != 'RR':
+			k = np.array([np.datetime64(date.datetime) for date in k]) #ESTA EN LA V2 +D
 
 
 		plt.clf()
@@ -349,7 +351,7 @@ class Graph_generator(object):
 		#plt.close()
 
 		# Display the plot
-		#plt.show()
+		plt.show()
 
 
 	def plot_min_max_av(self,x_values,y_average,y_min,y_max,device,type_d):
@@ -438,15 +440,10 @@ class Graph_generator(object):
 		plt.savefig(device+"_"+type_d, dpi = 500)
 		plt.close()
 
-		#plt.show()
+		plt.show()
 
 	def plot_continous(self,date_weight, weight, device):
 
-		print('SCALEEEEEEEEEEEEEEEE')
-
-		print(weight)
-		print(date_weight)
-		print(hola)
 
 		# Create a scatter plot
 		sns.set_style("whitegrid",{ "grid.linewidth":0.5, "grid.color": ".8", "grid.linestyle": ":", "ytick.left": True})
@@ -465,10 +462,20 @@ class Graph_generator(object):
 
 		print(weight)
 		print(date_weight)
-		print(hola)
+		print(type(weight[0]))
+		print(type(date_weight[0]))
+		
+		
+		
 
 		weight_date_avg, weight_avg = self.weekly_average(date_weight, weight)
-		
+		#print(hola)
+		print(weight_avg)
+		print(weight_date_avg)
+		print(type(weight_avg[0]))
+		print(type(weight_date_avg[0]))
+		#print(hola)
+
 
 		#date_strings = [dt.strftime('%Y-%m-%d') for dt in weight_date_avg]
 
@@ -557,7 +564,7 @@ class Graph_generator(object):
 
 
 		plt.savefig(device, dpi = 500)
-		#plt.show()
+		plt.show()
 		plt.close()
 
 	def plot_bar(self,x,y):
@@ -661,7 +668,7 @@ class Graph_generator(object):
 		#plt.close()
 
 		# Display the plot
-		#plt.show()
+		plt.show()
 
 	def plot_stacked_bar(self,x,y,z,o):
 		print(x)
@@ -761,7 +768,7 @@ class Graph_generator(object):
 		plt.savefig('sleep_summary', dpi = 500)
 
 		# Show the chart
-		#plt.show()
+		plt.show()
 
 
 	def plot_events(self,start_times, end_times, amplitudes):

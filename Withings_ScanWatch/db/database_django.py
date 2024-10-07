@@ -152,7 +152,10 @@ class Database_API(object):
             # Unsuccessful response
             print('GET request failed:', response.status_code)
 
-        return(scale_dict)
+        filtered_data = {'scales': [item for item in scale_dict['scales'] if end_date <= arrow.get(item['date']).datetime <= start_date]}
+
+        return(filtered_data)
+
 
 
 

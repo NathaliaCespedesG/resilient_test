@@ -152,20 +152,27 @@ class Database_API(object):
         return(converted_dict)
     
     def get_scale_data(self, user = None, start_date = None, end_date = None):
+        print(hola)
 
         url = 'http://127.0.0.1:8000/api/scales/' + '?username=' + user
         response = requests.get(url)
         scale_dict = {}
+        print(hola)
         # Checking the status code of the response
         if response.status_code == 200:
             print('GET request successful')
             # Accessing the response data
             scale_dict = response.json()  # Assuming the response is JSON data
+            print(scale_dict)
+            print(hola)
         else:
             # Unsuccessful response
             print('GET request failed:', response.status_code)
 
-        return(scale_dict)
+        # Filter data based on start_date and end_date
+        filtered_data = {'scales': [item for item in scale_dict['scales'] if end_date <= arrow.get(item['date']).datetime <= start_date]}
+
+        return(filtered_data)
 
 
 

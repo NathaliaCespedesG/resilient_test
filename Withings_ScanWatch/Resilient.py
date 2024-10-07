@@ -96,7 +96,7 @@ class Resilient(object):
             except Exception as e:
                 # You can log the error or print it if needed
                 print(f"An error occurred: {e}")
-                print(hola)
+                #print(hola)
                 
                 return({'status': 'failed', 'path': None})
         
@@ -181,7 +181,6 @@ class Resilient(object):
             print(self.id_available)
             total_participants = len(self.id_available)
             for i in range (total_participants):
-
                 id_report = self.id_available[i]
                 reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
                                     costumer_secret = dev_credentials.costumer_secret,
@@ -193,20 +192,21 @@ class Resilient(object):
                 reports_resilient.get_user_credentials()
                 reports_resilient.register_devices()
                 reports_resilient.devices_info()
-                reports_resilient.scale_data()
-                time.sleep(0.5)
-                reports_resilient.sleep()
-                time.sleep(0.5)
-                reports_resilient.sleep_daily()
-                time.sleep(0.5)
+                # reports_resilient.scale_data()
+                # time.sleep(0.5)
+                # reports_resilient.sleep()
+                # time.sleep(0.5)
+                # reports_resilient.sleep_daily()
+                # time.sleep(0.5)
                 ###################################
-                #reports_resilient.scale_data_v2()
-                #reports_resilient.sleep_v2()
-                #reports_resilient.intra_sleep_v2()
-                #reports_resilient.intra_activitydata_watch_v2()
-                #reports_resilient.activity_data_watch_v2()
-                #reports_resilient.plot_creatorV2()
-                #print(HOLA)
+                reports_resilient.scale_data_v2()
+                reports_resilient.sleep_v2()
+                reports_resilient.intra_sleep_v2()
+                reports_resilient.intra_activitydata_watch_v2()
+                reports_resilient.activity_data_watch_v2()
+                reports_resilient.plot_creatorV2()
+                reports_resilient.db_api_filling()
+                print(HOLA)
                 ###########################################
                 reports_resilient.activity_data_watch()
                 reports_resilient.plot_creator()
@@ -238,7 +238,7 @@ class Resilient(object):
         reports_resilient.doc_generation()
         reports_resilient.remove_images()
         reports_resilient.usage_levels()
-        reports_resilient.db_cleaning()
+        #reports_resilient.db_cleaning()
 
     
     def sort_files(self, files):
@@ -437,9 +437,9 @@ class Resilient(object):
         a = cls(report_type = None,
                    user = None)
         a.individual_report_generation()
-        #a.create_folder_reports()
+        a.create_folder_reports()
         #a.usage_reports()
-        #a.merge_pdf()
+        a.merge_pdf()
 		
 
 	
