@@ -180,7 +180,7 @@ class Resilient(object):
         if self.id_available is not None:
             print(self.id_available)
             total_participants = len(self.id_available)
-            for i in range (total_participants):
+            for i in range (13):
                 id_report = self.id_available[i]
                 reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
                                     costumer_secret = dev_credentials.costumer_secret,
@@ -209,12 +209,13 @@ class Resilient(object):
                 print(HOLA)
                 ###########################################
                 reports_resilient.activity_data_watch()
-                reports_resilient.plot_creator()
-                #print(HOLA)
                 reports_resilient.db_filling()
-                reports_resilient.doc_generation()
-                reports_resilient.usage_levels()
-                reports_resilient.remove_images()
+                #reports_resilient.plot_creator()
+                #print(HOLA)
+                
+                #reports_resilient.doc_generation()
+                #reports_resilient.usage_levels()
+                #reports_resilient.remove_images()
                 reports_resilient.db_cleaning()
                 print(id_report)
             

@@ -159,8 +159,8 @@ class Graph_generator(object):
 		# k, start_date and end_date are arroe types (e.g.,  <Arrow [2023-08-27T01:00:00+01:00]>)
 		k = [value for index, value in enumerate(k) if index not in index_1]
 		#print(name)
-		if name != 'RR':
-			k = np.array([np.datetime64(date.datetime) for date in k]) #ESTA EN LA V2 +D
+		#if name != 'RR':
+			#k = np.array([np.datetime64(date.datetime) for date in k]) #ESTA EN LA V2 +D
 
 
 		plt.clf()
@@ -351,7 +351,7 @@ class Graph_generator(object):
 		#plt.close()
 
 		# Display the plot
-		plt.show()
+		#plt.show()
 
 
 	def plot_min_max_av(self,x_values,y_average,y_min,y_max,device,type_d):
@@ -440,7 +440,7 @@ class Graph_generator(object):
 		plt.savefig(device+"_"+type_d, dpi = 500)
 		plt.close()
 
-		plt.show()
+		#plt.show()
 
 	def plot_continous(self,date_weight, weight, device):
 
@@ -564,7 +564,7 @@ class Graph_generator(object):
 
 
 		plt.savefig(device, dpi = 500)
-		plt.show()
+		#plt.show()
 		plt.close()
 
 	def plot_bar(self,x,y):
@@ -668,7 +668,7 @@ class Graph_generator(object):
 		#plt.close()
 
 		# Display the plot
-		plt.show()
+		#plt.show()
 
 	def plot_stacked_bar(self,x,y,z,o):
 		print(x)
@@ -768,7 +768,7 @@ class Graph_generator(object):
 		plt.savefig('sleep_summary', dpi = 500)
 
 		# Show the chart
-		plt.show()
+		#plt.show()
 
 
 	def plot_events(self,start_times, end_times, amplitudes):
@@ -859,5 +859,5 @@ class Graph_generator(object):
 
 		# Display the plot
 		plt.legend(handles= handles, labels = labels, loc = "upper right", frameon=False)
-		plt.show()
+		#plt.show()
 		plt.close()

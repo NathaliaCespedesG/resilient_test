@@ -372,8 +372,7 @@ class DatabaseServer_csv(object):
 
                         for j in range(len(dict)):
                             date_s = dict[j]['date'][:-6]
-                            print(date_s)
-                            print(type(date_s))
+                            
                             date_s = datetime.strptime(date_s, '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d')
 
                             start_date = dict[j]['start_date']
@@ -383,6 +382,27 @@ class DatabaseServer_csv(object):
                             end_date = dict[j]['end_date']
                             end_date = parser.parse(end_date)
                             end_date = end_date.isoformat()
+
+                            hr_date_af = dict[j]['date_hr_sleep_ap']
+                            print(hr_date_af)
+                            print(type(hr_date_af))
+                            if isinstance(hr_date_af, str) and hr_date_af.strip():
+                                hr_date_af_s = datetime.strptime(hr_date_af, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+                                print(hr_date_af_s)
+                            elif isinstance(hr_date_af, float) and math.isnan(hr_date_af):
+                                hr_date_af_s = None  
+                            else:
+                                hr_date_af_s = None 
+
+                            hr_date_rr = dict[j]['date_rr_sleep_ap']
+                            if isinstance(hr_date_rr, str) and hr_date_rr.strip():
+                                hr_date_rr_s = datetime.strptime(hr_date_rr, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+                            elif isinstance(hr_date_rr, float) and math.isnan(hr_date_rr):
+                                hr_date_rr_s = None  
+                            else:
+                                hr_date_rr_s = None 
+
+
                             #start_date = start_date.date()
                             #start_date = datetime.strptime(date_s, '%Y-%m-%d %H:%M:%S')
 
@@ -403,7 +423,14 @@ class DatabaseServer_csv(object):
                             awake_in_bed = None if math.isnan(float(dict[j]['Awake in bed'])) else float(dict[j]['Awake in bed'])
                             apnea = None if math.isnan(float(dict[j]['Apnea'])) else float(dict[j]['Apnea'])
                             out_of_bed_count = None if math.isnan(float(dict[j]['Out of bed count'])) else float(dict[j]['Out of bed count'])
-                   
+                            hr_af = None if math.isnan(float(dict[j]['rr_sleep_ap'])) else float(dict[j]['rr_sleep_ap'])
+                            hr_rr = None if math.isnan(float(dict[j]['rr_sleep_ap'])) else float(dict[j]['rr_sleep_ap'])
+                            rr_max = None if math.isnan(float(dict[j]['RR max'])) else float(dict[j]['RR max'])
+                            rr_min = None if math.isnan(float(dict[j]['RR min'])) else float(dict[j]['RR min'])
+                            hr_max = None if math.isnan(float(dict[j]['HR max'])) else float(dict[j]['HR max'])
+                            hr_min = None if math.isnan(float(dict[j]['HR min'])) else float(dict[j]['HR min'])
+                            snoring_episodes = None if math.isnan(float(dict[j]['Snoring episodes'])) else float(dict[j]['Snoring episodes'])
+                            snoring_time = None if math.isnan(float(dict[j]['Snoring time'])) else float(dict[j]['Snoring time'])
                             data ={
                                 "device": sleep_id,
                                 "user":id,
@@ -425,7 +452,17 @@ class DatabaseServer_csv(object):
                                 "apnea": apnea,
                                 "out_of_bed_count":out_of_bed_count,
                                 "start_date":start_date,
-                                "end_date":end_date
+                                "end_date":end_date,
+                                "hr_date_af": hr_date_af_s,
+                                "hr_date_rr":hr_date_rr_s,
+                                "hr_af": hr_af,
+                                "hr_rr": hr_rr,
+                                "hr_max":hr_max,
+                                "hr_min": hr_min,
+                                "rr_max": rr_max,
+                                "rr_min": rr_min,
+                                "snoring_episodes":snoring_episodes,
+                                "snoring_time":snoring_time
                                 }
                             
                             #print(data)
@@ -566,12 +603,12 @@ db_csv = DatabaseServer_csv(path = path_user)
 db_csv.get_users()
 #db_csv.upload_device_info()
 db_csv.get_device_info()
-db_csv.upload_scale_summary_data()
-db_csv.upload_scanwatch_summary_data()
+#db_csv.upload_scale_summary_data()
+#db_csv.upload_scanwatch_summary_data()
 db_csv.upload_sleep_summary_data()
-db_csv.upload_intra_sleep_summary_data()
+#db_csv.upload_intra_sleep_summary_data()
 #db_csv.upload_usage_data()
-db_csv.upload_intra_scanwatch_summary_data()
+#db_csv.upload_intra_scanwatch_summary_data()
 #db_csv.upload_report_data()
 #db_csv.get_report_id(username = 1)
     

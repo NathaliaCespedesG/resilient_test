@@ -255,13 +255,13 @@ class Devices_OAuth2flow(object):
 
 		#print(self.starting_day)
 		#print(hola)
-		if days_difference > 90:
-			self.starting_day_c = -(90 - self.ending_day_c)
-		else:
-			self.starting_day_c = - days_difference
+		# if days_difference > 90:
+		# 	self.starting_day_c = -(90 - self.ending_day_c)
+		# else:
+		# 	self.starting_day_c = - days_difference
 		
-		#self.ending_day_c = -90
-		#self.starting_day_c = -120
+		self.ending_day_c = -360
+		self.starting_day_c = -430
 
 		self.ending_day_p = self.data_utils.initial_day()
 		self.starting_day_p = self.ending_day_p - 6
@@ -1174,13 +1174,11 @@ class Devices_OAuth2flow(object):
 
 		#self.graph.plot_events(sleephf_data['start_date'], sleephf_data['end_date'], sleephf_data['state'])
 
-
 		#print('SLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEP')
 		#print(self.ending_day_c)
 		self.sleep_summary = self.api.sleep_get_summary(data_fields=GetSleepSummaryField, startdateymd=arrow.utcnow().shift(days = self.starting_day_c),enddateymd=arrow.utcnow().shift(days = self.ending_day_c), lastupdate = None)
 		self.prev_sleep_summary = self.api.sleep_get_summary(data_fields=GetSleepSummaryField, startdateymd=arrow.utcnow().shift(days = self.starting_day_p),enddateymd=arrow.utcnow().shift(days= self.ending_day_p), lastupdate = None)
-		
-		#print(self.sleep_summary)
+
 		self.sleeps_data['date'] = [arrow.get(x.date) for x in self.sleep_summary.series]
 		#print('SLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEP')
 		#print(sleeps_data['date'] )
@@ -1215,6 +1213,8 @@ class Devices_OAuth2flow(object):
 		self.sleeps_data['rem sleep duration'] = [x.remsleepduration for x in self.sleeps_data['data']]
 		self.sleeps_data['rr average'] = [x.rr_average for x in self.sleeps_data['data']]
 		self.sleeps_data['sleep score'] = [x.sleep_score for x in self.sleeps_data['data']]
+		self.sleeps_data['snoring'] = [x.snoring for x in self.sleeps_data['data']]
+		self.sleeps_data['snoring_count'] = [x.snoringepisodecount for x in self.sleeps_data['data']]
 		self.sleeps_data['wake up count'] = [x.wakeupcount for x in self.sleeps_data['data']]
 		self.sleeps_data['total sleep time'] = [x.total_sleep_time for x in self.sleeps_data['data']]
 		self.sleeps_data['total timeinbed'] = [x.total_timeinbed for x in self.sleeps_data['data']]
@@ -1524,7 +1524,8 @@ class Devices_OAuth2flow(object):
 								 dtw = self.sleeps_data['duration to wakeup'], hr = self.sleeps_data['hr average'], lsd = self.sleeps_data['light sleep duration'], rsd = self.sleeps_data['rem sleep duration'], 
 								 rr = self.sleeps_data['rr average'], ss = self.sleeps_data['sleep score'], wpc = self.sleeps_data['wake up count'], wpd = self.sleeps_data['wake up duration'],
 								 tst = self.sleeps_data_1['total sleep time'],ttb = self.sleeps_data_1['total timeinbed'], awb = self.sleeps_data_1['awake in bed'], ap = self.sleeps_data_1['apnea'], obc = self.sleeps_data_1['out of bed count'],
-								 start_date = self.sleeps_data['start_date'], end_date = self.sleeps_data['end_date'], date_hr_ap = self.current_dates_ss, hr_ap = self.hr_mean_bu , date_rr_ap = self.current_dates_ss, rr_ap =  self.rr_mean_bu)
+								 start_date = self.sleeps_data['start_date'], end_date = self.sleeps_data['end_date'], date_hr_ap = self.current_dates_ss, hr_ap = self.hr_mean_bu , date_rr_ap = self.current_dates_ss, rr_ap =  self.rr_mean_bu,
+								 hr_min = self.sleeps_data['hr_min'], hr_max = self.sleeps_data['hr_max'], rr_min = self.sleeps_data['rr_min'] , rr_max = self.sleeps_data['rr_max'], snoring = self.sleeps_data['snoring'], snc = self.sleeps_data['snoring_count'] )
 		
 		
 		#self.database.SM.load_SleepMat(time = self.sleeps_data['date'], bd = self.sleeps_data['breathing disturbances'], dsd = self.sleeps_data['deep sleep duration'], dts = self.sleeps_data['duration to sleep'],

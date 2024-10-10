@@ -42,8 +42,9 @@ class DatabaseManager(object):
 
 		self.ScanWatchfile.close()
 
-	def load_SleepMat(self, time = None, bd = None, dsd = None, dts = None, dtw = None, hr = None, lsd = None, rsd = None, rr = None, ss = None,wpc = None, wpd = None,
-				   tst = None,ttb = None, awb = None, ap = None, obc = None, start_date = None, end_date = None, date_hr_ap = None, hr_ap = None, date_rr_ap = None, rr_ap = None):
+	def load_SleepMat(self, time = None, bd = None, dsd = None, dts = None, dtw = None, hr = None, hr_min = None, hr_max = None, lsd = None, rsd = None, rr = None, rr_min = None,
+					rr_max = None, ss = None, snoring = None, snc = None,wpc = None, wpd = None, tst = None,ttb = None, awb = None, ap = None, obc = None, start_date = None, end_date = None, date_hr_ap = None,
+					hr_ap = None, date_rr_ap = None, rr_ap = None):
 
 		#Loading data
 		self.SleepMatFile = open(self.sleepmat_name, 'a')
@@ -63,10 +64,13 @@ class DatabaseManager(object):
 		#print(len(rr_ap))
 		#print(hola)
 		for i in range (len(time)):
-			self.df_sleepsummary = self.df_sleepsummary.append({'date': time[i], 'Breathing disturbances': bd[i], 'Deep sleep duration': dsd[i], 'Duration to sleep': dts[i] , 'Duration to wakeup': dtw[i],
-								'HR average': hr[i], 'Light sleep duration': lsd[i], 'Rem sleep duration': rsd[i], 'RR average': rr[i], 'Sleep score': ss[i], 'Wake up count': wpc[i],
-								'Wake up duration': wpd[i], 'Total sleep time': tst[i], 'Total time in bed': ttb[i], 'Awake in bed': awb[i], 'Apnea': ap[i], 'Out of bed count': obc[i],
-								'start_date': start_date[i], 'end_date': end_date[i], 'date_hr_sleep_ap':date_hr_ap[i] , 'hr_sleep_ap':hr_ap[i], 'date_rr_sleep_ap':date_rr_ap[i], 'rr_sleep_ap':rr_ap[i]}, ignore_index=True)
+			self.df_sleepsummary = self.df_sleepsummary.append({'date': time[i], 'start_date': start_date[i], 'end_date': end_date[i], 'Apnea': ap[i], 'Breathing disturbances': bd[i],
+													   'Deep sleep duration': dsd[i], 'Duration to sleep': dts[i] , 'Duration to wakeup': dtw[i],'HR average': hr[i], 'HR max': hr_max[i],
+													   'HR min': hr_min[i], 'Light sleep duration': lsd[i], 'Rem sleep duration': rsd[i], 'RR average': rr[i], 'RR max': rr_max[i], 
+													   'RR min': rr_min[i], 'Sleep score': ss[i], 'Snoring time': snoring[i], 'Snoring episodes': snc[i], 'Wake up count': wpc[i], 
+													   'Wake up duration': wpd[i], 'Total sleep time': tst[i], 'Total time in bed': ttb[i], 'Awake in bed': awb[i], 'Out of bed count': obc[i],
+													   'date_hr_sleep_ap':date_hr_ap[i] , 'hr_sleep_ap':hr_ap[i], 'date_rr_sleep_ap':date_rr_ap[i], 'rr_sleep_ap':rr_ap[i]},
+													    ignore_index=True)
 		self.df_sleepsummary.to_csv(self.sleepmat_name, index = False )
 
 	
@@ -267,10 +271,12 @@ class DatabaseManager(object):
 			self.df_sleepsummary = existing_data_sleep
 
 		except:
-			self.df_sleepsummary = pd.DataFrame({'date': [], 'Breathing disturbances': [], 'Deep sleep duration': [], 'Duration to sleep': [] , 'Duration to wakeup': [],
-									'HR average': [], 'Light sleep duration': [], 'Rem sleep duration': [], 'RR average': [], 'Sleep score': [], 'Wake up count': [],
-								 	'Wake up duration': [], 'Total Sleep Time': [], 'Wake up duration': [], 'Total sleep time': [], 'Total time in bed': [], 'Awake in bed': [], 'Apnea': [], 'Out of bed count': [], 'start_date': [],
-									'end_date': [], 'date_hr_sleep_ap':[] , 'hr_sleep_ap':[], 'date_rr_sleep_ap':[], 'rr_sleep_ap':[] } )
+			self.df_sleepsummary = pd.DataFrame({'date':[], 'start_date': [], 'end_date': [], 'Apnea': [], 'Breathing disturbances': [],
+										'Deep sleep duration': [], 'Duration to sleep': [] , 'Duration to wakeup': [],'HR average': [],
+										'HR max': [], 'HR min': [], 'Light sleep duration': [], 'Rem sleep duration': [], 'RR average': [],
+										'RR max': [], 'RR min': [], 'Sleep score': [], 'Snoring time': [], 'Snoring episodes': [], 'Wake up count': [],
+										'Wake up duration': [], 'Total sleep time': [], 'Total time in bed': [], 'Awake in bed': [], 'Out of bed count': [],
+										'date_hr_sleep_ap': [] , 'hr_sleep_ap': [], 'date_rr_sleep_ap': [], 'rr_sleep_ap':[]})
 			self.df_sleepsummary.to_csv(self.sleepmat_name, index = False )
 		try:
 			existing_data_scanintra = pd.read_csv(self.scanwatch_intraday)
