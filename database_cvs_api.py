@@ -423,7 +423,7 @@ class DatabaseServer_csv(object):
                             awake_in_bed = None if math.isnan(float(dict[j]['Awake in bed'])) else float(dict[j]['Awake in bed'])
                             apnea = None if math.isnan(float(dict[j]['Apnea'])) else float(dict[j]['Apnea'])
                             out_of_bed_count = None if math.isnan(float(dict[j]['Out of bed count'])) else float(dict[j]['Out of bed count'])
-                            hr_af = None if math.isnan(float(dict[j]['rr_sleep_ap'])) else float(dict[j]['rr_sleep_ap'])
+                            hr_af = None if math.isnan(float(dict[j]['hr_sleep_ap'])) else float(dict[j]['hr_sleep_ap'])
                             hr_rr = None if math.isnan(float(dict[j]['rr_sleep_ap'])) else float(dict[j]['rr_sleep_ap'])
                             rr_max = None if math.isnan(float(dict[j]['RR max'])) else float(dict[j]['RR max'])
                             rr_min = None if math.isnan(float(dict[j]['RR min'])) else float(dict[j]['RR min'])

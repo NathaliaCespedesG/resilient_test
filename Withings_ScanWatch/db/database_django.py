@@ -222,6 +222,7 @@ class Database_API(object):
                 # Accessing the response data
                 sleep_summary_dict = response.json()  # Assuming the response is JSON data
                 
+                
         else:
             # Unsuccessful response
             print('GET request failed:', response.status_code)

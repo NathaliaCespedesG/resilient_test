@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from collections import defaultdict
 import matplotlib.dates as mdates
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
 from matplotlib.path import Path
 import seaborn as sns
 import itertools
@@ -47,8 +47,8 @@ class Graph_generator(object):
 
 		# Calculate average value for each unique date
 		averaged_values = []
-		for date in unique_dates:
-			mask = x == date
+		for date_value in unique_dates:
+			mask = x == date_value
 			avg_value = np.mean(y[mask])
 			averaged_values.append(avg_value)
 
@@ -60,9 +60,13 @@ class Graph_generator(object):
 		return(x_unique, y_avg)
 
 
-	def truncate_time(self,date):
+	def truncate_time(self,dt):
 
-		return date.replace(hour=0, minute=0, second=0, microsecond=0)
+		if isinstance(dt, date) and not isinstance(dt, datetime):
+			
+			dt = datetime.combine(dt, datetime.min.time())
+
+		return dt.replace(hour=0, minute=0, second=0, microsecond=0)
 
 	def weekly_average(self,x, y):
 
@@ -71,15 +75,17 @@ class Graph_generator(object):
 
 		#x = [datetime.strptime(date.strftime('%Y-%m-%d'), '%Y-%m-%d') for date in x]
 
-		for date, value in zip(x, y):
+		for date_value, value in zip(x, y):
 
-			if isinstance(date, np.datetime64):
+			if isinstance(date_value, np.datetime64):
 				print('HERE IN WEEKLY')
+				print(date_value)
 
-				date = np.datetime64(date).astype(datetime)
+				date_value = np.datetime64(date_value).astype(datetime)
+				print(date_value)
+				print(type(date_value))
 
-			# Truncate time information
-			truncated_date = self.truncate_time(date)
+			truncated_date = self.truncate_time(date_value)
 
 			# Calculate the start of the week for the truncated date
 			week_start = truncated_date - timedelta(days=truncated_date.weekday())
@@ -159,8 +165,10 @@ class Graph_generator(object):
 		# k, start_date and end_date are arroe types (e.g.,  <Arrow [2023-08-27T01:00:00+01:00]>)
 		k = [value for index, value in enumerate(k) if index not in index_1]
 		#print(name)
+		
+		k = np.array([np.datetime64(date_value) if not isinstance(date_value, np.datetime64) else date_value for date_value in k])
 		#if name != 'RR':
-			#k = np.array([np.datetime64(date.datetime) for date in k]) #ESTA EN LA V2 +D
+			#k = np.array([np.datetime64(date_value.datetime) for date_value in k]) #ESTA EN LA V2 +D
 
 
 		plt.clf()
@@ -351,7 +359,7 @@ class Graph_generator(object):
 		#plt.close()
 
 		# Display the plot
-		#plt.show()
+		plt.show()
 
 
 	def plot_min_max_av(self,x_values,y_average,y_min,y_max,device,type_d):
@@ -440,7 +448,7 @@ class Graph_generator(object):
 		plt.savefig(device+"_"+type_d, dpi = 500)
 		plt.close()
 
-		#plt.show()
+		plt.show()
 
 	def plot_continous(self,date_weight, weight, device):
 
@@ -564,7 +572,7 @@ class Graph_generator(object):
 
 
 		plt.savefig(device, dpi = 500)
-		#plt.show()
+		plt.show()
 		plt.close()
 
 	def plot_bar(self,x,y):
@@ -668,7 +676,7 @@ class Graph_generator(object):
 		#plt.close()
 
 		# Display the plot
-		#plt.show()
+		plt.show()
 
 	def plot_stacked_bar(self,x,y,z,o):
 		print(x)
@@ -737,9 +745,9 @@ class Graph_generator(object):
 				print('HELLOOOOOOOOOOOOOO')
 				print(val_avg)
 				sns.lineplot(x = date_avg, y = val_avg, color = "lavender", markersize = 14, label = "Times out of bed weekly average",  linestyle='--', linewidth = 2 )
-				for date, val in zip(date_avg, val_avg):
+				for date_value, val in zip(date_avg, val_avg):
 					if not np.isnan(val):
-						plt.text(date, val, math.floor(val), size=11, rotation=45, fontdict= self.font, bbox=dict(boxstyle='circle', facecolor='lavender', edgecolor='white'))
+						plt.text(date_value, val, math.floor(val), size=11, rotation=45, fontdict= self.font, bbox=dict(boxstyle='circle', facecolor='lavender', edgecolor='white'))
 
 				
 				#for index in range(len(date_avg)):
@@ -768,7 +776,7 @@ class Graph_generator(object):
 		plt.savefig('sleep_summary', dpi = 500)
 
 		# Show the chart
-		#plt.show()
+		plt.show()
 
 
 	def plot_events(self,start_times, end_times, amplitudes):
@@ -859,5 +867,5 @@ class Graph_generator(object):
 
 		# Display the plot
 		plt.legend(handles= handles, labels = labels, loc = "upper right", frameon=False)
-		#plt.show()
+		plt.show()
 		plt.close()

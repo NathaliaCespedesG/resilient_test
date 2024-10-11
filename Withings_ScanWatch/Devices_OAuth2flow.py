@@ -255,13 +255,13 @@ class Devices_OAuth2flow(object):
 
 		#print(self.starting_day)
 		#print(hola)
-		# if days_difference > 90:
-		# 	self.starting_day_c = -(90 - self.ending_day_c)
-		# else:
-		# 	self.starting_day_c = - days_difference
+		if days_difference > 90:
+			self.starting_day_c = -(90 - self.ending_day_c)
+		else:
+			self.starting_day_c = - days_difference
 		
-		self.ending_day_c = -360
-		self.starting_day_c = -430
+		#self.ending_day_c = -360
+		#self.starting_day_c = -430
 
 		self.ending_day_p = self.data_utils.initial_day()
 		self.starting_day_p = self.ending_day_p - 6
@@ -712,7 +712,9 @@ class Devices_OAuth2flow(object):
 		start_date = start_date.datetime
 		
 		#Data from the database API
-		data = self.database_api.get_sleep_summary_data(user = self.id_user, start_date = start_date, end_date= end_date)
+		data = self.database_api.get_sleep_summary_data(user = self.id_user, start_date = end_date, end_date= start_date)
+		print(data)
+	
 		dates_hr_db = [entry['hr_date_af'] for entry in data]
 		dates_rr_db = [entry['hr_date_rr'] for entry in data]
 		hr_af = [entry['hr_af'] for entry in data]
@@ -720,7 +722,7 @@ class Devices_OAuth2flow(object):
 
 		print(hr_af)
 		print(hr_rr)
-		print(hola)
+		#print(hola)
 
 		
 
@@ -1502,6 +1504,7 @@ class Devices_OAuth2flow(object):
 		self.graph.plot_scatter(x = self.dates_hr_sleep, y = self.HR , k = self.current_dates_ss,  j = self.hr_mean_bu, name = "HR")
 
 	def plot_creatorV2(self):
+		
 
 		self.graph = graph.Graph_generator(start_date =self.initial_dates,
 										   end_date = self.ending_dates,
@@ -1512,7 +1515,7 @@ class Devices_OAuth2flow(object):
 		self.graph.plot_stacked_bar(x = self.dates_agg_ss, y = self.current_sleep_time,
 									z = self.current_awake_bed, o = self.current_out_bed)
 		self.graph.plot_scatter(x = self.dates_rr, y = self.rr_sleephf , k = self.dates_summ_rr_sleep, j = self.summ_rr_sleep, name = "RR")
-		#self.graph.plot_scatter(x = self.dates_hr_sleep, y = self.hr_sleephf , k = self.dates_summ_hr_sleep,  j = self.summ_hr_sleep, name = "HR")
+		self.graph.plot_scatter(x = self.dates_hr_sleep, y = self.hr_sleephf , k = self.dates_summ_hr_sleep,  j = self.summ_hr_sleep, name = "HR")
 	
 	#The following function is to fill the database with the values from the devices (modules called: db)
 	def db_filling(self):
