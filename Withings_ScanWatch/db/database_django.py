@@ -5,6 +5,7 @@ import math
 import numpy as np
 from datetime import datetime, timezone
 import arrow
+from dateutil import parser, relativedelta
 #from database_backend.api.models import User
 
 
@@ -487,7 +488,8 @@ class Database_API(object):
         if scale_id is not None:
 
             for j in range(len(date)):
-                date = date[j].isoformat()
+                print(date[j])
+                date_s = date[j].isoformat()
                 # Convert 'nan' values to None
                 weight_s = None if math.isnan(weight[j]) else float(weight[j])  
                 muscle_mass_s = None if math.isnan(muscle_mass[j]) else float(muscle_mass[j]) 
@@ -499,7 +501,7 @@ class Database_API(object):
                 data ={
                     "device": scale_id,
                     "user": user, 
-                    "date": date,
+                    "date": date_s,
                     "weight": weight_s,
                     "muscle_mass": muscle_mass_s,
                     "bone_mass": bone_mass_s,
@@ -510,9 +512,7 @@ class Database_API(object):
                 print(data)
                 response = requests.post(url, json=data)
                 print(response)
-    
-    def cleaning(self, table_type = None):
-        pass
+
 
     
        

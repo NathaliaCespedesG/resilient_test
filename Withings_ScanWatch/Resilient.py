@@ -206,16 +206,16 @@ class Resilient(object):
                 reports_resilient.activity_data_watch_v2()
                 reports_resilient.plot_creatorV2()
                 reports_resilient.db_api_filling()
-                print(HOLA)
+                reports_resilient.doc_generationV2()
                 ###########################################
-                reports_resilient.activity_data_watch()
-                reports_resilient.db_filling()
+                #reports_resilient.activity_data_watch()
+                #reports_resilient.db_filling()
                 #reports_resilient.plot_creator()
                 #print(HOLA)
                 
                 #reports_resilient.doc_generation()
                 #reports_resilient.usage_levels()
-                #reports_resilient.remove_images()
+                reports_resilient.remove_images()
                 reports_resilient.db_cleaning()
                 print(id_report)
             

@@ -506,12 +506,22 @@ class Data_Handler(object):
 	#The following function is to extract the data of the last week from all the values since registration
 
 	def values_dates_intersection(self, dates = None, start_date = None, end_date = None, values = None):
-		dates =  np.array(dates, dtype='datetime64')
 
+		dates = [date_value.datetime if isinstance(date_value, arrow.Arrow) else date_value for date_value in dates]
+
+		print('inter1')
+		dates =  np.array(dates, dtype='datetime64')
+		print('inter2')
 		start_date = np.datetime64(start_date.format('YYYY-MM-DD'))
+		print('inter3')
 		end_date = np.datetime64(end_date.format('YYYY-MM-DD'))
 
+
+		
+
 		# Create a boolean mask for filtering
+		#print('Printing the mask for usage')
+		#print(mask)
 		mask = [(start_date <= date <= end_date) for date in dates]
 		#print('Printing the mask for usage')
 		#print(mask)

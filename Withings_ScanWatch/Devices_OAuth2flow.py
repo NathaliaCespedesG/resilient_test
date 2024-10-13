@@ -848,13 +848,18 @@ class Devices_OAuth2flow(object):
 		#Sleep Heart Rate
 
 		hr_sleep_db = [entry['average_heart_rate'] for entry in data]
-		hr_sleep_db = [math.nan if x == -2.0 else x for x in hr_sleep_db]
+		#hr_sleep_db = [math.nan if x == -2.0 else x for x in hr_sleep_db]
 		hr_sleep_db   = [math.nan if x is None else x for x in hr_sleep_db]
 
 		#Respiration Rate
 		rr_sleep_db = [entry['average_rr'] for entry in data]
-		rr_sleep_db = [math.nan if x == -2.0 else x for x in rr_sleep_db]
+		#rr_sleep_db = [math.nan if x == -2.0 else x for x in rr_sleep_db]
 		rr_sleep_db   = [math.nan if x is None else x for x in rr_sleep_db]
+
+		#Apnea
+
+		apnea_sleep_db = [entry['apnea']for entry in data]
+		apnea_sleep_db = [math.nan if x is None else x for x in apnea_sleep_db]
 
 
 
@@ -869,6 +874,7 @@ class Devices_OAuth2flow(object):
 		self.out_bed_agg = self.sleeps_data['out of bed count'] + out_of_bed_db
 		self.hr_sleep_agg = self.sleeps_data['hr average'] + hr_sleep_db
 		self.rr_sleep_agg = self.sleeps_data['rr average'] + rr_sleep_db
+		self.apnea_sleep_agg = self.sleeps_data['apnea'] + apnea_sleep_db
 
 		
 		
@@ -898,7 +904,7 @@ class Devices_OAuth2flow(object):
 		self.dates_agg_ss, self.current_out_bed, _ = self.data_utils.unique_values_sleep(self.dates_agg , self.start_dates_agg, self.end_dates_agg, self.out_bed_agg) 
 
 		# Unique values for Sleep Apnoea - Graph and Table
-		#self.current_dates_ss, self.current_apnea, _ = self.data_utils.unique_values_sleep(self.sleeps_data['date'], self.sleeps_data['start_date'], self.sleeps_data['end_date'], self.sleeps_data['apnea']) 
+		self.current_dates_ss, self.current_apnea, _ = self.data_utils.unique_values_sleep(self.dates_agg, self.start_dates_agg, self.end_dates_agg, self.apnea_sleep_agg) 
 		#self.current_dates_ss, self.current_apnea = self.data_utils.data_cleaning(self.current_dates_ss, self.current_apnea)
 
 		#Unique values calculation (The values for the variables are the ones taken between the biggest difference from start date and end date)
@@ -1545,34 +1551,28 @@ class Devices_OAuth2flow(object):
 
 	def db_api_filling(self):
 
+		print('*****************SCALE****************************')
 		self.database_api.upload_scale_data(user = self.uuid_db, date = self.scale_data_w['date'], scale_id = self.values_devices['scale'], weight = self.weight,
 									  muscle_mass = self.muscle_mass, bone_mass = self.bone_mass, fat_mass =self.fat_mass)
-
+		print('******************INTRASCANWATCH***************************')
 		self.database_api.upload_intra_scanwatch_summary_data(user = self.uuid_db, watch_id = self.values_devices['scan_watch'], 
 														date_hr_i = self.dates_HR_watch_agg, hr_i = self.hr_watch_agg, date_calories_i = self.dates_cal_watch_agg,
 														cal_i = self.cal_watch_agg, date_steps_i= self.dates_step_watch_agg, steps_i = self.steps_watch_agg)
 
-
+		print('******************SCANWATCHSUMMARY***************************')
 		self.database_api.upload_scanwatch_summary_data(user = self.uuid_db, watch_id = self.values_devices['scan_watch'], date = self.date_activity, hr_i = self.final_hr,
 												  cal_i = self.summary_calories, steps_i = self.summary_steps, hr_max_i = self.summary_hr_max, hr_min_i = self.summary_hr_min)
+		print('*************************SLEEPSUMMARY******************************')
 		self.database_api.upload_sleep_summary_data(user = self.uuid_db, sleep_id = self.values_devices['sleep_mat'], date = self.sleeps_data['date'], bd = self.sleeps_data['breathing disturbances'], dsd = self.sleeps_data['deep sleep duration'], dts = self.sleeps_data['duration to sleep'],
                                    dtw = self.sleeps_data['duration to wakeup'], hr = self.sleeps_data['hr average'], lsd = self.sleeps_data['light sleep duration'], rsd = self.sleeps_data['rem sleep duration'], rr = self.sleeps_data['rr average'],
 								   ss = self.sleeps_data['sleep score'], wc = self.sleeps_data['wake up count'], wd = self.sleeps_data['wake up duration'], tst = self.sleeps_data['total sleep time'], tib = self.sleeps_data['total timeinbed'], ab = self.sleeps_data['awake in bed'],
 								   apn = self.sleeps_data['apnea'], obc = self.sleeps_data['out of bed count'], start_date = self.sleeps_data['start_date'], end_date = self.sleeps_data['end_date'], hr_date_ap = self.current_dates_ss, hr_ap = self.hr_mean_bu,
 								   rr_date_ap = self.current_dates_ss, rr_ap = self.rr_mean_bu)
-		
+		print('************************INTRA*SLEEPSUMMARY******************************')
 
 		self.database_api.upload_intra_sleep_summary_data(user = self.uuid_db, sleep_id = self.values_devices['sleep_mat'], start_date = self.sleephf_startdate_w, end_date = self.sleephf_enddate_w, ss = self.sleephf_states_w,
                                         date_hr = self.dates_hr_sleep_w, hr = self.hr_sleephf_w, date_rr = self.dates_rr_w, rr = self.rr_sleephf_w, date_s = self.dates_snoring_w, sn = self.snoring_sleephf_w, date_sddn = self.dates_sdnn_w,
 										sdnn_1 = self.sdnn_1_sleephf_w)
-		
-
-	def db_api_cleaning(self):
-
-		pass
-
-		
-
 
 	def db_cleaning(self):
 		self.database.SM.cleaning_cvs_files(cvs_from ='Scan_summary')
@@ -1636,6 +1636,39 @@ class Devices_OAuth2flow(object):
 
 
 	#The following function is to calculate the usage for the devices and update them into the db
+			
+	def table_filler2(self):
+
+		print('here in table filler 2')
+
+		self.current_sleep_hr = self.data_utils.values_dates_intersection(dates = self.dates_summ_hr_sleep, start_date = arrow.utcnow().shift(days = self.starting_day_p) , end_date = arrow.utcnow().shift(days = self.ending_day_p), values = self.summ_hr_sleep)
+		print('11111111111111')
+		self.current_sleep_rr = self.data_utils.values_dates_intersection(dates = self.dates_summ_rr_sleep, start_date = arrow.utcnow().shift(days = self.starting_day_p) , end_date = arrow.utcnow().shift(days = self.ending_day_p), values = self.summ_rr_sleep)
+		print('222222222222222')
+		self.current_sleep_time_1 = self.data_utils.values_dates_intersection(dates = self.dates_agg_ss, start_date = arrow.utcnow().shift(days = self.starting_day_p) , end_date = arrow.utcnow().shift(days = self.ending_day_p), values = self.current_sleep_time)
+		print('33333333333')
+		self.current_apnea_1 = self.data_utils.values_dates_intersection(dates = self.dates_agg_ss, start_date = arrow.utcnow().shift(days = self.starting_day_p) , end_date = arrow.utcnow().shift(days = self.ending_day_p), values = self.current_apnea)
+		print('444444444444')
+		self.current_weight = self.data_utils.values_dates_intersection(dates = self.dates_scale_agg, start_date = arrow.utcnow().shift(days = self.starting_day_p).replace(hour=0, minute=0, second=0), end_date = arrow.utcnow().shift(days = self.ending_day_p + 1).replace(hour=0, minute=0, second=0), values = self.weight_agg)
+		print('555555555')
+		self.current_daily_hr = self.data_utils.values_dates_intersection(dates = self.activity_data['date'], start_date = arrow.utcnow().shift(days = self.starting_day_p) , end_date = arrow.utcnow().shift(days = self.ending_day_p), values = self.activity_data['heart rate'])
+		print('66666666666')
+		self.current_steps = self.data_utils.values_dates_intersection(dates = self.activity_data['date'], start_date = arrow.utcnow().shift(days = self.starting_day_p) , end_date = arrow.utcnow().shift(days = self.ending_day_p), values = self.activity_data['steps'])
+
+		#Sleep
+		self.HR_Sleep_table = ([self.current_sleep_hr, self.summ_hr_sleep, []])
+		self.RR_Sleep_table = ([self.current_sleep_rr, self.summ_rr_sleep, []])
+		self.ST_Sleep_table = ([self.current_sleep_time_1, self.current_sleep_time,[]])
+		self.AP_Sleep_table = ([self.current_apnea_1,self.current_apnea,[]])
+
+		#Scale
+		self.Weight_table = (self.current_weight,self.weight_agg,[])
+
+		#ScanWatch
+		self.HR_table = ([self.current_daily_hr,self.activity_data['heart rate'],[]]) 
+		self.Steps_table = ([self.current_steps,self.activity_data['steps'],[]])
+
+
 
 	def usage_levels(self):
 		print('Here in usages')
@@ -1746,6 +1779,26 @@ class Devices_OAuth2flow(object):
 		print("Using credentials saved in:", self.CREDENTIALS_FILE)
 		with open(self.CREDENTIALS_FILE, "rb") as file_handle:
 			return cast(CredentialsType, pickle.load(file_handle))
+		
+	
+	def doc_generationV2(self):
+
+		path = self.database.SM.get_path()
+
+		self.table_filler2()
+
+		self.document_generation = pdf_gen.PDF_generation(day_hr = self.HR_table, 
+					night_hr = self.HR_Sleep_table, 
+					night_rr = self.RR_Sleep_table,
+					steps = self.Steps_table, 
+					sleep_duration = self.ST_Sleep_table, 
+					sleep_apnoea = self.AP_Sleep_table,
+					weight = self.Weight_table,
+					c_date = self.initial_dates_table,
+					e_date = self.ending_dates_table,
+					path = path,
+					id_nhs = self.id_user,
+					report_type = self.report_type)
 
 
 	def doc_generation(self):
