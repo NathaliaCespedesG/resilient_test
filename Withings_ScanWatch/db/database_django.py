@@ -153,7 +153,7 @@ class Database_API(object):
             # Unsuccessful response
             print('GET request failed:', response.status_code)
 
-        filtered_data = {'scales': [item for item in scale_dict['scales'] if end_date <= arrow.get(item['date']).datetime <= start_date]}
+        filtered_data = {'scales': [item for item in scale_dict['scales'] if start_date <= arrow.get(item['date']).datetime <= end_date]}
 
         return(filtered_data)
 
@@ -181,7 +181,7 @@ class Database_API(object):
             print('GET request failed:', response.status_code)
 
         # Filter data based on start_date and end_date
-        filtered_data = {'scanwatches_summary': [item for item in scanwatch_dict['scanwatches_summary'] if end_date <= arrow.get(item['date']).datetime <= start_date]}
+        filtered_data = {'scanwatches_summary': [item for item in scanwatch_dict['scanwatches_summary'] if start_date <= arrow.get(item['date']).datetime <= end_date]}
         
         return(filtered_data)
     
@@ -484,6 +484,13 @@ class Database_API(object):
     def upload_scale_data(self, user = None, scale_id = None, date = None, weight = None, muscle_mass= None,
                           bone_mass = None, fat_mass = None):
         url = 'http://127.0.0.1:8000/api/scales/'
+        print(user)
+        print(scale_id)
+        print(date)
+        print(weight)
+        print(muscle_mass)
+        print(bone_mass)
+        print(fat_mass)
 
         if scale_id is not None:
 
@@ -492,11 +499,9 @@ class Database_API(object):
                 date_s = date[j].isoformat()
                 # Convert 'nan' values to None
                 weight_s = None if math.isnan(weight[j]) else float(weight[j])  
-                muscle_mass_s = None if math.isnan(muscle_mass[j]) else float(muscle_mass[j]) 
-                bone_mass_s = None if math.isnan(bone_mass[j]) else float(bone_mass[j]) 
-                fat_mass_s = None if math.isnan(fat_mass[j]) else float(fat_mass[j])
-
-                print(muscle_mass)
+                muscle_mass_s = None if muscle_mass[j] is None or math.isnan(muscle_mass[j]) else float(muscle_mass[j])
+                bone_mass_s = None if bone_mass[j] is None or math.isnan(bone_mass[j]) else float(bone_mass[j])
+                fat_mass_s = None if fat_mass[j] is None or math.isnan(fat_mass[j]) else float(fat_mass[j])
         
                 data ={
                     "device": scale_id,

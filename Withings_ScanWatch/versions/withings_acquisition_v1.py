@@ -84,7 +84,7 @@ class Devices_OAuth2flow(object):
 		# This file has the authorization and refresh token which are
 		# used to acquire the data fromo Withings server 
 
-		self.base_path = path.dirname(os.path.abspath(__file__))
+		self.base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 		self.db_path = "db"
 		self.additional_path = "db/General"
 		credentials_path = ".credentials"
@@ -104,6 +104,7 @@ class Devices_OAuth2flow(object):
 		self.uuid_db = self.db_id['users'][0]['id']
 		
 		self.CREDENTIALS_FILE: Final = self.final_path
+		print(self.CREDENTIALS_FILE)
 		
 	def create_auth_url(self):
 
@@ -332,7 +333,7 @@ class Devices_OAuth2flow(object):
 		self.pre_activity_data['heart_rate'] = [x.hr_average for x in self.prev_meas_activity.activities]
 		self.pre_activity_data['steps'] = [x.steps for x in self.prev_meas_activity.activities]
 
-	def intra_activitydata(self, type_time = None):
+	def intra_activitydata_watch(self, type_time = None):
 
 		watch_data = []
 		self.HR_watch = []
@@ -612,7 +613,7 @@ class Devices_OAuth2flow(object):
 		self.wakeup_hours_prev = end_dates[:-1]
 		self.fellasleep_hours_prev = start_dates[1:]
 
-	def sleep_daily(self):
+	def intra_sleep(self):
 
 		sleephf_data = []
 		sleephf_data_hr = []

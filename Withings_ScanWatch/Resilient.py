@@ -10,7 +10,8 @@ import numpy as np
 import time
 
 # Resources for PDF generating
-import Devices_OAuth2flow as reports
+import versions.withings_acquisition_v1 as reports
+import versions.withings_acquisition_v2 as reports_v2
 import resources.PDF_usage_generation as usage_pdf
 
 # Developer credentials
@@ -26,15 +27,14 @@ class Resilient(object):
     def __init__(self, report_type: None,
                 user: None):
 
+        # Types of version
 
-        # Types of generation
-
-        self.db_type =  input('Please indicate  the running mode, original - test:' )
+        self.version = "v2"
 
         # Database calling
 
         self.database_api = database_api.Database_API()
-        self.database = database.General(db_type = self.db_type)
+        self.database = database.General(db_type = None)
 
         # Report Type
         self.report_type = report_type
@@ -43,33 +43,8 @@ class Resilient(object):
         #Participant number if the incoming report type is one
         self.participant = user
 
-        
-
-        # Database from CVS files instructions
-        #self.users_path()
-
         self.general = 'db/General'
         self.current_path = os.getcwd()
-        
-    def create_new_user(self, id_user = None, code = None, role = None):
-        self.id_available = id_user
-        #register participant - csv API
-        self.database.SM.set_date_report(date = datetime.now().strftime('%Y-%m-%d'))
-        self.database.register(user = self.id_available)
-        # register participant - database API
-        self.role = input('Please provide the role: ')
-        self.password = 'NoneYet'
-        self.path_cred = 'Path'
-        self.database_api.register(user = self.id_available, role = self.role, password_hash = self.password, credential_path = self.path_cred)
-        reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
-		                            costumer_secret = dev_credentials.costumer_secret,
-		                            callback_uri = dev_credentials.callback_uri,
-		                            report_type = 0,
-                                    id_participant = id_user,
-                                    running_type = self.db_type)
-        reports_resilient.save
-        
-        reports_resilient.get_user_credentials()
         
     def custom_sort(self,val):
         try:
@@ -79,8 +54,6 @@ class Resilient(object):
             numeric_part = ''.join([c for c in val if c.isdigit()])  # Extract numeric part
             return (int(numeric_part), val) 
 
-        
-            
     def individual_report_generation(self):
 
         users = self.current_users()
@@ -171,81 +144,87 @@ class Resilient(object):
         
         data = self.database_api.get_users()
         usernames = [list(item.values())[0] for item in data]
+        print(usernames)
 
         return(usernames)
-
+    
+    def run_reports(self,id_report):
+        if self.version == "v1":
+            self.reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
+                                    costumer_secret = dev_credentials.costumer_secret,
+                                    callback_uri = dev_credentials.callback_uri,
+                                    report_type = 0,
+                                    id_participant = id_report,
+                                    running_type = None)
+        elif self.version == "v2":
+            print("in v2")
+            self.reports_resilient = reports_v2.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
+                                    costumer_secret = dev_credentials.costumer_secret,
+                                    callback_uri = dev_credentials.callback_uri,
+                                    report_type = 0,
+                                    id_participant = id_report,
+                                    running_type = None,
+                                    setup_month = True,
+					                from_report = None,
+					                to_report = None)
 
     def run_all_participants(self):
         
         if self.id_available is not None:
             print(self.id_available)
             total_participants = len(self.id_available)
-            for i in range (13):
+            for i in range (total_participants):
+                print('in run all')
                 id_report = self.id_available[i]
-                reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
-                                    costumer_secret = dev_credentials.costumer_secret,
-                                    callback_uri = dev_credentials.callback_uri,
-                                    report_type = 0,
-                                    id_participant = id_report,
-                                    running_type = self.db_type)
-
-                reports_resilient.get_user_credentials()
-                reports_resilient.register_devices()
-                reports_resilient.devices_info()
-                # reports_resilient.scale_data()
-                # time.sleep(0.5)
-                # reports_resilient.sleep()
-                # time.sleep(0.5)
-                # reports_resilient.sleep_daily()
-                # time.sleep(0.5)
-                ###################################
-                reports_resilient.scale_data_v2()
-                reports_resilient.sleep_v2()
-                reports_resilient.intra_sleep_v2()
-                reports_resilient.intra_activitydata_watch_v2()
-                reports_resilient.activity_data_watch_v2()
-                reports_resilient.plot_creatorV2()
-                reports_resilient.db_api_filling()
-                reports_resilient.doc_generationV2()
-                ###########################################
-                #reports_resilient.activity_data_watch()
-                #reports_resilient.db_filling()
-                #reports_resilient.plot_creator()
-                #print(HOLA)
-                
-                #reports_resilient.doc_generation()
+                self.run_reports(id_report = id_report)
+                self.reports_resilient.get_user_credentials()
+                self.reports_resilient.register_devices()
+                self.reports_resilient.devices_info()
+                self.reports_resilient.scale_data()
+                self.reports_resilient.sleep()
+                time.sleep(0.5)
+                self.reports_resilient.intra_sleep()
+                time.sleep(0.5)
+                self.reports_resilient.intra_activitydata_watch()
+                self.reports_resilient.activity_data_watch()
+                self.reports_resilient.plot_creator()
+                self.reports_resilient.doc_generation()
                 #reports_resilient.usage_levels()
-                reports_resilient.remove_images()
-                reports_resilient.db_cleaning()
+                self.reports_resilient.remove_images()
+                self.reports_resilient.db_filling()
+                if self.version == "v2":
+                    self.reports_resilient.db_api_filling()
+                
+                #reports_resilient.db_cleaning()
                 print(id_report)
             
     def create_participant(self, user = None):
         
-        reports_resilient = reports.Devices_OAuth2flow(client_id = dev_credentials.client_id, 
-		                            costumer_secret = dev_credentials.costumer_secret,
-		                            callback_uri = dev_credentials.callback_uri,
-		                            report_type = 0,
-                                    id_participant = user,
-                                    running_type = self.db_type)
-
-        reports_resilient.get_user_credentials()
-        reports_resilient.register_devices()
-        reports_resilient.devices_info()
-        reports_resilient.sleep()
-        reports_resilient.sleep_daily()
-        reports_resilient.activity_data_watch()
-        reports_resilient.plot_creator()
-        reports_resilient.db_filling()
-        reports_resilient.doc_generation()
-        reports_resilient.remove_images()
-        reports_resilient.usage_levels()
+        self.run_reports(id_report= user)
+        self.reports_resilient.get_user_credentials()
+        self.reports_resilient.register_devices()
+        self.reports_resilient.devices_info()
+        self.reports_resilient.scale_data()
+        self.reports_resilient.sleep()
+        time.sleep(0.5)
+        self.reports_resilient.intra_sleep()
+        time.sleep(0.5)
+        self.reports_resilient.intra_activitydata_watch()
+        self.reports_resilient.activity_data_watch()
+        self.reports_resilient.plot_creator()
+        self.reports_resilient.doc_generation()
+        #reports_resilient.usage_levels()
+        self.reports_resilient.remove_images()
+        self.reports_resilient.db_filling()
+        if self.version == "v2":
+            self.reports_resilient.db_api_filling()
+                
         #reports_resilient.db_cleaning()
+        print(id_report)
 
-    
     def sort_files(self, files):
         return sorted(files, key=lambda x: x[3]) 
 
-    
     def merge_pdf(self):
        
         reports_folder = '/Withings_reports'
