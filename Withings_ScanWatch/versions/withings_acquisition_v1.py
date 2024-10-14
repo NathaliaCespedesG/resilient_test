@@ -212,7 +212,7 @@ class Devices_OAuth2flow(object):
 		#print(self.starting_day)
 		#print(hola)
 		if days_difference > 90:
-			self.starting_day_c = -(90 - self.ending_day_c)
+			self.starting_day_c = -(15 - self.ending_day_c)
 		else:
 			self.starting_day_c = - days_difference
 		
@@ -327,14 +327,16 @@ class Devices_OAuth2flow(object):
 		self.activity_data['hr_max'] = [x.hr_max for x in self.meas_activity.activities]
 		self.activity_data['date'], self.activity_data['hr_max'] = self.data_utils.data_cleaning(self.activity_data['date'],self.activity_data['hr_max'])
 
-		self.intra_activitydata(type_time = "current")
-
+		#self.intra_activitydata_w(type_time = "current")
+		self.final_hr = self.data_utils.backup_data(value2 = self.activity_data['heart_rate'], value1 = self.hr_based_sleep)
+		
 		#Previous Week
 		self.pre_activity_data['heart_rate'] = [x.hr_average for x in self.prev_meas_activity.activities]
 		self.pre_activity_data['steps'] = [x.steps for x in self.prev_meas_activity.activities]
 
 	def intra_activitydata_watch(self, type_time = None):
 
+		type_time = "current"
 		watch_data = []
 		self.HR_watch = []
 		self.steps_watch = []
@@ -403,7 +405,7 @@ class Devices_OAuth2flow(object):
 				start_dates_hr = self.wakeup_hours
 				end_dates_hr = self.fellasleep_hours
 				self.hr_based_sleep = self.data_utils.hr_average_basedon_sleep(dates = dates_to_test, HR = hr_to_test, startdates = start_dates_hr, enddates = end_dates_hr )
-				self.final_hr = self.data_utils.backup_data(value2 = self.activity_data['heart_rate'], value1 = self.hr_based_sleep)
+				
 
 			if type_time == "prev":
 				start_dates_hr = self.wakeup_hours_prev
@@ -813,7 +815,7 @@ class Devices_OAuth2flow(object):
 			self.Weight_table = (self.current_weight,self.weight,[])
 
 			#ScanWatch
-			self.prev_hr = self.intra_activitydata(type_time = 'prev')
+			#self.prev_hr = self.intra_activitydata(type_time = 'prev')
 			self.HR_table = ([self.current_daily_hr,self.final_hr,[]]) 
 			self.Steps_table = ([self.current_steps,self.activity_data['steps'],[]])
 

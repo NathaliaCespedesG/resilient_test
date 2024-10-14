@@ -359,7 +359,7 @@ class Graph_generator(object):
 		#plt.close()
 
 		# Display the plot
-		plt.show()
+		#plt.show()
 
 
 	def plot_min_max_av(self,x_values,y_average,y_min,y_max,device,type_d):
@@ -448,7 +448,7 @@ class Graph_generator(object):
 		plt.savefig(device+"_"+type_d, dpi = 500)
 		plt.close()
 
-		plt.show()
+		#plt.show()
 
 	def plot_continous(self,date_weight, weight, device):
 
@@ -470,18 +470,10 @@ class Graph_generator(object):
 
 		print(weight)
 		print(date_weight)
-		print(type(weight[0]))
-		print(type(date_weight[0]))
-		
-		
-		
-
 		weight_date_avg, weight_avg = self.weekly_average(date_weight, weight)
 		#print(hola)
 		print(weight_avg)
 		print(weight_date_avg)
-		print(type(weight_avg[0]))
-		print(type(weight_date_avg[0]))
 		#print(hola)
 
 
@@ -572,7 +564,7 @@ class Graph_generator(object):
 
 
 		plt.savefig(device, dpi = 500)
-		plt.show()
+		#plt.show()
 		plt.close()
 
 	def plot_bar(self,x,y):
@@ -676,7 +668,7 @@ class Graph_generator(object):
 		#plt.close()
 
 		# Display the plot
-		plt.show()
+		#plt.show()
 
 	def plot_stacked_bar(self,x,y,z,o):
 		print(x)
@@ -776,7 +768,7 @@ class Graph_generator(object):
 		plt.savefig('sleep_summary', dpi = 500)
 
 		# Show the chart
-		plt.show()
+		#plt.show()
 
 
 	def plot_events(self,start_times, end_times, amplitudes):
@@ -867,5 +859,5 @@ class Graph_generator(object):
 
 		# Display the plot
 		plt.legend(handles= handles, labels = labels, loc = "upper right", frameon=False)
-		plt.show()
+		#plt.show()
 		plt.close()

@@ -20,7 +20,7 @@ import withings_devOp_credentials as dev_credentials
 # Database API
 import db.database_django as database_api
 import db.database as database
-
+import traceback
 
 class Resilient(object):
 
@@ -29,7 +29,7 @@ class Resilient(object):
 
         # Types of version
 
-        self.version = "v2"
+        self.version = "v1"
 
         # Database calling
 
@@ -70,6 +70,7 @@ class Resilient(object):
                 # You can log the error or print it if needed
                 print(f"An error occurred: {e}")
                 #print(hola)
+                traceback.print_exc()
                 
                 return({'status': 'failed', 'path': None})
         
@@ -111,6 +112,7 @@ class Resilient(object):
                 except Exception as e:
                     # You can log the error or print it if needed
                     print(f"An error occurred: {e}")
+                    traceback.print_exc()
                     return({'status': 'failed', 'path': None})
             else:
                 print("Participant not in the database")
@@ -181,17 +183,23 @@ class Resilient(object):
                 self.reports_resilient.register_devices()
                 self.reports_resilient.devices_info()
                 self.reports_resilient.scale_data()
+                print('111111111111111')
                 self.reports_resilient.sleep()
+                print('22222222222222')
                 time.sleep(0.5)
                 self.reports_resilient.intra_sleep()
                 time.sleep(0.5)
+                print('3333333333333')
                 self.reports_resilient.intra_activitydata_watch()
+                print('444444444444444')
                 self.reports_resilient.activity_data_watch()
+                print('555555555555')
                 self.reports_resilient.plot_creator()
                 self.reports_resilient.doc_generation()
-                #reports_resilient.usage_levels()
+                self.reports_resilient.usage_levels()
+                print('after usage level')
                 self.reports_resilient.remove_images()
-                self.reports_resilient.db_filling()
+                #self.reports_resilient.db_filling()
                 if self.version == "v2":
                     self.reports_resilient.db_api_filling()
                 
@@ -213,7 +221,7 @@ class Resilient(object):
         self.reports_resilient.activity_data_watch()
         self.reports_resilient.plot_creator()
         self.reports_resilient.doc_generation()
-        #reports_resilient.usage_levels()
+        self.reports_resilient.usage_levels()
         self.reports_resilient.remove_images()
         self.reports_resilient.db_filling()
         if self.version == "v2":
@@ -356,8 +364,6 @@ class Resilient(object):
 
 
         self.usage = 'Usage.csv'
-
-
         for i in range (len(self.id_available)):
             #General database path for the users folders
             new_path = path.abspath(path.join(self.current_path, self.general, self.id_available[i], self.usage))
@@ -369,6 +375,7 @@ class Resilient(object):
                     print(self.id_available[i])
                     df = pd.read_csv(new_path, header = 0, delimiter=',')
                     print('after df')
+                    print(df)
                     last_row_values = df.iloc[-1].tolist()
                     print('after df 1')
 
@@ -418,7 +425,7 @@ class Resilient(object):
                    user = None)
         a.individual_report_generation()
         a.create_folder_reports()
-        #a.usage_reports()
+        a.usage_reports()
         a.merge_pdf()
 		
 
