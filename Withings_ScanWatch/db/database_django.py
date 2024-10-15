@@ -47,9 +47,10 @@ class Database_API(object):
         else:
             # Unsuccessful response
             print('GET request failed:', response.status_code)
-
         # Filter by participant and study participant
-        self.filtered_data = [{entry['id']: entry['username']} for entry in self.user_data['users'] if entry['role'] in ['study-participant', 'study-partner-participant']]
+        self.filtered_data = [{entry['id']: entry['username']} for entry in self.user_data['users'] 
+                              if entry['role'] in ['study-participant', 'study-partner-participant']
+                              and entry['active'] is True]
         
         return(self.filtered_data)
     
