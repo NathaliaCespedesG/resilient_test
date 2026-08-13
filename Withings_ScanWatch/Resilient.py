@@ -45,6 +45,14 @@ class Resilient(object):
 
         self.general = 'db/General'
         self.current_path = os.getcwd()
+        users = self.current_users()
+        self.id_available = users
+        self.id_available.sort(key=self.custom_sort)
+
+
+        
+
+        
         
     def custom_sort(self,val):
         try:
@@ -57,10 +65,10 @@ class Resilient(object):
     def individual_report_generation(self):
 
         users = self.current_users()
+        self.id_available = users
+        self.id_available.sort(key=self.custom_sort)
+        
         if self.gen_type == 'all':
-
-            self.id_available = users
-            self.id_available.sort(key=self.custom_sort)
             try:
                 self.run_all_participants()
 
@@ -71,6 +79,7 @@ class Resilient(object):
                 print(f"An error occurred: {e}")
                 #print(hola)
                 traceback.print_exc()
+                #print(hola)
                 
                 return({'status': 'failed', 'path': None})
         
@@ -175,7 +184,7 @@ class Resilient(object):
         if self.id_available is not None:
             print(self.id_available)
             total_participants = len(self.id_available)
-            for i in range (total_participants):
+            for i in range (49,total_participants):     
                 print('in run all')
                 id_report = self.id_available[i]
                 self.run_reports(id_report = id_report)
@@ -199,11 +208,11 @@ class Resilient(object):
                 self.reports_resilient.usage_levels()
                 print('after usage level')
                 self.reports_resilient.remove_images()
-                #self.reports_resilient.db_filling()
+                self.reports_resilient.db_filling()
                 if self.version == "v2":
                     self.reports_resilient.db_api_filling()
-                
-                #reports_resilient.db_cleaning()
+                print('AFTEEEEEEEEEEEEEEEEEEEEEEEEEEEER')
+                self.reports_resilient.db_cleaning()
                 print(id_report)
             
     def create_participant(self, user = None):
@@ -222,12 +231,13 @@ class Resilient(object):
         self.reports_resilient.plot_creator()
         self.reports_resilient.doc_generation()
         self.reports_resilient.usage_levels()
+        #print(hola)
         self.reports_resilient.remove_images()
         self.reports_resilient.db_filling()
         if self.version == "v2":
             self.reports_resilient.db_api_filling()
                 
-        #reports_resilient.db_cleaning()
+        #self.reports_resilient.db_cleaning()
         print(id_report)
 
     def sort_files(self, files):
@@ -286,12 +296,6 @@ class Resilient(object):
 
         folder_path =  'Withings_reports'
         self.general = 'db/General'
-        #source_folder = path.abspath(path.join(self.current_path,
-        users = self.current_users()
-        self.id_available = users
-        print(users)
-
-        
         if os.path.exists(folder_path):
             self.delete_files(folder_path)
         else:
@@ -360,10 +364,12 @@ class Resilient(object):
     
     def usage_reports(self):
         usage_users = []
-
-
-
+        users = self.current_users()
+        self.id_available = users
+        self.id_available.sort(key=self.custom_sort)
         self.usage = 'Usage.csv'
+        print(self.id_available)
+
         for i in range (len(self.id_available)):
             #General database path for the users folders
             new_path = path.abspath(path.join(self.current_path, self.general, self.id_available[i], self.usage))
@@ -374,11 +380,8 @@ class Resilient(object):
                 with open(new_path, 'r', newline='') as csv_file:
                     print(self.id_available[i])
                     df = pd.read_csv(new_path, header = 0, delimiter=',')
-                    print('after df')
                     print(df)
                     last_row_values = df.iloc[-1].tolist()
-                    print('after df 1')
-
                     usage_users.append(last_row_values)
                     
                     
@@ -388,7 +391,7 @@ class Resilient(object):
         
         # Convert each tuple to a list
         result_usage = [list(column) for column in usage_data]
-        print(result_usage)
+        #print(result_usage)
 
         start_dates_str = [str(x) for x in result_usage[1]]
         end_dates_str = [str(x) for x in result_usage[2]]
@@ -403,7 +406,7 @@ class Resilient(object):
         formatted_watchlast_dates = [(' ' if date_str == 'nan' else datetime.strptime(date_str[:10], '%Y-%m-%d').strftime('%b %d')) for date_str in watch_last]
         formatted_scalelast_dates = [(' ' if date_str == 'nan' else datetime.strptime(date_str[:10], '%Y-%m-%d').strftime('%b %d')) for date_str in scale_last]
 
-        print(formatted_start_dates)
+        #print(formatted_start_dates)
         usage_reports = usage_pdf.PDF_Usage(id_user = self.id_available,
                                             path = None,
                                             start_date = formatted_start_dates,
@@ -425,7 +428,7 @@ class Resilient(object):
                    user = None)
         a.individual_report_generation()
         a.create_folder_reports()
-        a.usage_reports()
+        #a.usage_reports()
         a.merge_pdf()
 		
 

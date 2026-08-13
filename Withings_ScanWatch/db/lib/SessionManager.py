@@ -3,7 +3,6 @@ import os
 import datetime
 import pandas as pd
 import numpy as np
-
 #Object to manage all the user's data
 
 class DatabaseManager(object):
@@ -89,59 +88,107 @@ class DatabaseManager(object):
 		self.DevicesFile.close()
 
 
-	def load_intra_activity(self, time = None, hr = None, time_steps = None, steps = None,  time_calories = None, calories = None):
+	def load_intra_activity(self, time = None, hr = None, time_steps = None, steps = None,  time_calories = None, calories = None, chunk_size = 10000):
 
-		self.ScanIntraFile = open(self.scanwatch_intraday, 'a')
+		print('-------------------------------------------------------')
+		print(len(time))
+		print(len(hr))
+		print(len(time_steps))
+		print(len(steps))
+		print(len(time_calories))
+		print(len(calories))
+		print('-------------------------------------------------------')
 
+		# Determine the maximum size among the key arrays
 		max_size = max(len(time), len(time_steps), len(time_calories))
 
-		if len(time) < max_size:
+		# Helper function to pad arrays with np.nan if they are shorter than max_size
+		def pad_array(arr, size):
+			if len(arr) < size:
+				return np.append(arr, [np.nan] * (size - len(arr)))
+			return arr
 
-			time = np.append(time, [np.nan] * (max_size - len(time)))
-			hr = np.append(hr, [np.nan] * (max_size - len(hr)))
+		# Pad the arrays so they all have the same length
+		time         = pad_array(time, max_size)
+		hr           = pad_array(hr, max_size)
+		time_steps   = pad_array(time_steps, max_size)
+		steps        = pad_array(steps, max_size)
+		time_calories = pad_array(time_calories, max_size)
+		calories     = pad_array(calories, max_size)
 
-		# Fill time_steps and steps with NaN until they reach max_size
+		# Build the DataFrame at once from the padded arrays
+		df = pd.DataFrame({
+			'date HR': time,
+			'Heart Rate': hr,
+			'date Steps': time_steps,
+			'Steps': steps,
+			'date Calories': time_calories,
+			'Calories': calories
+		})
 
-		if len(time_steps) < max_size:
+		# Check if the target CSV file exists to determine whether to write a header
+		file_exists = os.path.exists(self.scanwatch_intraday)
 
-			time_steps = np.append(time_steps, [np.nan] * (max_size - len(time_steps)))
-			steps = np.append(steps, [np.nan] * (max_size - len(steps)))
-
-		# Fill time_calories and calories with NaN until they reach max_size
-
-		if len(time_calories) < max_size:
-			time_calories = np.append(time_calories, [np.nan] * (max_size - len(time_calories)))
-			calories = np.append(calories, [np.nan] * (max_size - len(calories)))
-
-
-		for i in range(max_size):
-
-			self.df_scawatch_intra = self.df_scawatch_intra.append({'date HR': time[i], 'Heart Rate': hr[i], 'date Steps': time_steps[i], 'Steps': steps[i], 'date Calories': time_calories[i] , 'Calories': calories[i]},ignore_index = True)
-
-		self.df_scawatch_intra.to_csv(self.scanwatch_intraday, index = False)
-		self.ScanIntraFile.close()
-
-	def load_intra_sleep(self, start_date = None, end_date = None, ss = None, hr = None, hr_date = None, rr = None, rr_date = None, snoring = None, snoring_date = None, sdnn_1 = None, sdnn_1_date = None):
-
-		max_size = max(len(start_date), len(hr_date))
-		self.SleepIntraFile = open(self.sleepmat_intraday, 'a')
-		#print(hr)
-
-		if len(start_date) < max_size:
-
-			start_date = np.append(start_date, [np.nan] * (max_size - len(start_date)))
-			end_date = np.append(end_date, [np.nan] * (max_size - len(end_date)))
-			ss = np.append(ss, [np.nan] * (max_size - len(ss)))
-
-		for i in range(max_size):
-			#print('Here intra')
-
-			self.df_sleep_intra  = self.df_sleep_intra.append({'startdate': start_date[i], 'enddate': end_date[i], 'Sleep state':ss[i], 'Heart Rate date': hr_date[i], 'Heart Rate': hr[i] ,  'Respiration rate date': rr_date[i],
-			 													'Respiration rate': rr[i] , 'Snoring date': snoring_date[i], 'Snoring': snoring[i], 'sdnn_1 date': sdnn_1_date[i], 'sdnn_1': sdnn_1[i]} ,ignore_index = True)
+		# Write the DataFrame in chunks to the CSV file
+		for i in range(0, len(df), chunk_size):
+			chunk = df.iloc[i:i+chunk_size]
+			# Write header only for the first chunk if the file doesn't already exist
+			header = not file_exists and i == 0
+			chunk.to_csv(self.scanwatch_intraday, mode='a', index=False, header=header)
 
 
-		self.df_sleep_intra.to_csv(self.sleepmat_intraday, index = False)
-		self.SleepIntraFile.close()
+	def load_intra_sleep(self, start_date = None, end_date = None, ss = None, hr = None, hr_date = None, rr = None, rr_date = None, snoring = None,
+					   snoring_date = None, sdnn_1 = None, sdnn_1_date = None, chunk_size = 10000):
+
+		# Determine the maximum size among key arrays
+		max_size = max(len(start_date), len(hr_date), len(rr_date))
+		
+		# Define a helper to pad arrays to the maximum size with np.nan
+		def pad_array(arr, size):
+			if len(arr) < size:
+				return np.pad(arr, (0, size - len(arr)), constant_values=np.nan)
+			return arr
+
+		# Pad all arrays to max_size
+		start_date   = pad_array(start_date, max_size)
+		end_date     = pad_array(end_date, max_size)
+		ss           = pad_array(ss, max_size)
+		hr_date      = pad_array(hr_date, max_size)
+		hr           = pad_array(hr, max_size)
+		rr_date      = pad_array(rr_date, max_size)
+		rr           = pad_array(rr, max_size)
+		snoring_date = pad_array(snoring_date, max_size)
+		snoring      = pad_array(snoring, max_size)
+		sdnn_1_date  = pad_array(sdnn_1_date, max_size)
+		sdnn_1       = pad_array(sdnn_1, max_size)
+
+		# Create a DataFrame with all your data
+		df = pd.DataFrame({
+			'startdate': start_date,
+			'enddate': end_date,
+			'Sleep state': ss,
+			'Heart Rate date': hr_date,
+			'Heart Rate': hr,
+			'Respiration rate date': rr_date,
+			'Respiration rate': rr,
+			'Snoring date': snoring_date,
+			'Snoring': snoring,
+			'sdnn_1 date': sdnn_1_date,
+			'sdnn_1': sdnn_1
+		})
+
+		# Check if file exists to determine whether to write header
+		file_exists = os.path.exists(self.sleepmat_intraday)
+		
+		# Write the data in chunks
+		for i in range(0, len(df), chunk_size):
+			chunk = df.iloc[i:i+chunk_size]
+			# Write header only for the first chunk if the file does not already exist
+			header = not file_exists and i == 0
+			chunk.to_csv(self.sleepmat_intraday, mode='a', index=False, header=header)
+
+		
+
 
 
 	def load_usage(self, user_id = None, start_date = None, end_date = None, report_generation_date = None, sleep_usage = None, sleep_battery = None, sleep_lastday = None,  watch_usage = None, watch_battery = None, watch_lastday = None,  scale_usage = None, scale_battery = None, scale_lastday = None):	
@@ -316,9 +363,7 @@ class DatabaseManager(object):
 		self.SleepIntraFile.close()
 
 
-	def cleaning_cvs_files(self, cvs_from = None):
-
-
+	def cleaning_cvs_files(self, cvs_from=None):
 		if cvs_from == 'Scan_summary':
 			file_name = self.scanwatch_name
 			ref_column_name = 'date'
@@ -334,42 +379,34 @@ class DatabaseManager(object):
 		elif cvs_from == 'Intra_sleep':
 			file_name = self.sleepmat_intraday
 			ref_column_name = 'startdate'
-		
-		# Open the corresponding data file
-		df = pd.read_csv(file_name, header = 0, delimiter=',')
-		#Converting the dates to datetime
-		#print(HOLA)
-		if cvs_from == 'Intra_watch':
-			df[ref_column_name] = pd.to_datetime(df[ref_column_name], unit = 's') 
-		elif cvs_from == 'Intra_sleep':
-			df[ref_column_name] = pd.to_datetime(df[ref_column_name], unit = 's')
+
+		df = pd.read_csv(file_name, header=0, delimiter=',')
+
+		# Convert date columns, handle bad values
+		if cvs_from in ['Intra_watch', 'Intra_sleep']:
+			# Filter out invalid/unrealistic timestamps
+			def safe_to_datetime(val):
+				try:
+					val = float(val)
+					# reasonable bounds: 1970 to 2100
+					if 0 <= val <= 4102444800:  # 01-01-2100 in Unix time
+						return pd.to_datetime(val, unit='s')
+				except:
+					pass
+				return pd.NaT
+
+			df[ref_column_name] = df[ref_column_name].apply(safe_to_datetime)
 		else:
-			df[ref_column_name] = pd.to_datetime(df[ref_column_name])
+			df[ref_column_name] = pd.to_datetime(df[ref_column_name], errors='coerce')
 
-		# Sorting values according the date
-		df = df.sort_values(by = ref_column_name, ascending=False)
-		df = df.drop_duplicates(subset=ref_column_name, keep = 'first')
-		
+		df = df.sort_values(by=ref_column_name, ascending=False)
+		df = df.drop_duplicates(subset=ref_column_name, keep='first')
 
-	
-
-		if cvs_from == 'Intra_watch':
+		if cvs_from in ['Intra_watch', 'Intra_sleep']:
 			df[ref_column_name] = df[ref_column_name].apply(lambda x: x.timestamp() if pd.notnull(x) else np.nan)
-		if cvs_from == 'Intra_sleep':
-			df[ref_column_name] = df[ref_column_name].apply(lambda x: x.timestamp() if pd.notnull(x) else np.nan)
-		
-			
 
-
-
-		#Info to csv file
 		df.to_csv(file_name, index=False)
-		#file_name.close()
 	
-	
-
-
-
 
 	def set_user(self, p):
 

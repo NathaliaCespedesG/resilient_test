@@ -509,28 +509,23 @@ class Data_Handler(object):
 
 		dates = [date_value.datetime if isinstance(date_value, arrow.Arrow) else date_value for date_value in dates]
 
-		print('inter1')
+	
 		dates =  np.array(dates, dtype='datetime64')
-		print('inter2')
 		start_date = np.datetime64(start_date.format('YYYY-MM-DD'))
-		print('inter3')
 		end_date = np.datetime64(end_date.format('YYYY-MM-DD'))
-
-
-		
-
 		# Create a boolean mask for filtering
 		#print('Printing the mask for usage')
 		#print(mask)
 		mask = [(start_date <= date <= end_date) for date in dates]
-		#print('Printing the mask for usage')
-		#print(mask)
-
 		# Apply the mask to get filtered values
+		filtered_dates = [date for date, m in zip(dates, mask) if m]
 		filtered_values = [value for value, m in zip(values, mask) if m]
 
+		#print(filtered_dates)
+		#print(type(filtered_dates[0]))
 
-		return(filtered_values)
+
+		return(filtered_dates, filtered_values)
 	
 	# The following function is to understand the weekly devices usage during the week
 	def usage_understanding(self, start_date = None, end_date = None, start_date_scale = None, sleep_u = None, watch_u = None, scale_u = None):
@@ -591,23 +586,59 @@ class Data_Handler(object):
 
 
 		print(usage)
+		return(usage)
+	
+	def calculate_usage(self, start_date = None, end_date = None, dates = None, values = None, device = None):
+		start_date = np.datetime64(start_date.datetime)
+		end_date = np.datetime64(end_date.datetime)		
+		# Filter dates and values within the specified range
+		if len(dates) == 0:
+			date_diff = (end_date - start_date).astype('timedelta64[D]').item().days
+			filtered_dates = np.full(date_diff, np.nan)  
+			filtered_values = np.full(date_diff, np.nan)
+		else:
+			mask = (dates >= start_date) & (dates <= end_date)
+			filtered_dates = np.compress(mask, dates)
+			filtered_values = np.array(values)[mask]
+			filtered_values = np.array([v if v is not None else np.nan for v in np.array(values)[mask]], dtype=float)
+			#filtered_values = np.array([v if isinstance(v, (int, float)) else np.nan for v in filtered_values], dtype=float)
 
+		# Calculate non-NaN values count and percentage
+		non_nan_count = np.count_nonzero(~np.isnan(filtered_values))
+		total_count =(end_date - start_date).astype('timedelta64[D]').item().days
+		non_nan_percentage = (non_nan_count / total_count) * 100 if total_count > 0 else 0
 
-
-
-
-		# Usage understanding for watch
-
-		# Usage understanding for scale 
-
-
-
-
-
-
+		if device == 'scale':
+			upper_tresh = 20
+			mid_thresh = 7
+		else:
+			upper_tresh = 85
+			mid_thresh = 60
 
 		
-		return(usage)
+
+		# Determine usage level based on the non-NaN percentage
+		if non_nan_percentage > upper_tresh:
+			usage = "high"
+		elif mid_thresh <= non_nan_percentage <= upper_tresh:
+			usage = "medium"
+		else:
+			usage = "low"
+
+		print({
+			"filtered_dates": filtered_dates.tolist(),
+			"filtered_values": filtered_values.tolist(),
+			"non_nan_count": non_nan_count,
+			"usage": usage
+		})
+		# Return results
+		return {
+			"filtered_dates": filtered_dates.tolist(),
+			"filtered_values": filtered_values.tolist(),
+			"non_nan_count": non_nan_count,
+			"usage": usage
+		}
+
 
 
 

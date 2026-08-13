@@ -85,6 +85,7 @@ class DatabaseServer_csv(object):
             print('GET request failed:', response.status_code)
         
         self.user_data = {user['username']: user for user in self.user_data['users']}
+        print(self.user_data)
         self.id_available =  list(self.user_data.keys())
         print(self.id_available)
         #print(self.id_username_dict)
@@ -100,34 +101,20 @@ class DatabaseServer_csv(object):
             
     def upload_device_info(self):
         url= 'http://127.0.0.1:8000/api/devices/'
-        current_users = {key: value for key, value in self.id_username_dict.items() if value in self.id_available }
-        print(current_users)
-        #print(HOla)
-        for i in range(len(self.id_available)):
-            path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/Devices.csv'
-           
-            if os.path.exists(path):
-                # Open the CSV file in read mode
-                with open(path, 'r', newline='') as csv_file:
-                    df = pd.read_csv(path, header = 0, delimiter=',')
-                    dict = df.to_dict(orient = 'records')
-                    
-
-                    for j in range(len(dict)):
-
-                        user_key = [key for key, val in current_users.items() if val == self.id_available[i]]
-
-                        print(self.id_available[i])    
-                    
-                        data ={
-                            "user": user_key[0],
-                            "device_hash": dict[j]['Hash_deviceid'],
-                            "device_type": {'Activity Tracker': 'scan_watch', 'Sleep Monitor': 'sleep_mat','Scale':'scale'}.get(dict[j]['Device'], 'default_value'),
-                            "mac_address": dict[j]['MAC_address'],
-                            "is_active": True
-                            }
-                        #print(data)
-                        response = requests.post(url, json=data)
+        print('****************************')
+        print(dict)
+    
+        for j in range(len(dict)):
+            
+            data ={
+                "device_hash": dict[j]['Hash_deviceid'],
+                "device_type": {'Activity Tracker': 'scan_watch', 'Sleep Monitor': 'sleep_mat','Scale':'scale'}.get(dict[j]['Device'], 'default_value'),
+                "mac_address": dict[j]['MAC_address'],
+                "is_active": True
+                }
+            #print(data)
+            response = requests.post(url, json=data)
+            #print(response)
 
     def get_device_info(self):
         
@@ -320,10 +307,14 @@ class DatabaseServer_csv(object):
     def upload_intra_scanwatch_summary_data(self):
 
         url = 'http://127.0.0.1:8000/api/scanwatches/intra_activity/'
-        for i in range(len(self.id_available)):
-            path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/ScanWatch_intra_activity.csv'
+        self.id_available_sorted = sorted(self.id_available)
+        print(self.id_available_sorted[12])
+        print(len(self.id_available_sorted))
+        #Before running I put until 16
+        for i in range(60,64):
+            path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available_sorted[i]) + '/ScanWatch_intra_activity.csv'
             #watch_id = self.get_device_id(id_user = str(self.id_available[i]), devices_dict = self.devices_dict, device_type = 'scan_watch')
-            id,_,watch_id,_= self.extract_user_data(self.id_available[i])
+            id,_,watch_id,_= self.extract_user_data(self.id_available_sorted[i])
             #print(scale_id)
             if os.path.exists(path):
                 # Open the CSV file in read mode
@@ -372,7 +363,6 @@ class DatabaseServer_csv(object):
 
                         for j in range(len(dict)):
                             date_s = dict[j]['date'][:-6]
-                            
                             date_s = datetime.strptime(date_s, '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d')
 
                             start_date = dict[j]['start_date']
@@ -387,7 +377,10 @@ class DatabaseServer_csv(object):
                             print(hr_date_af)
                             print(type(hr_date_af))
                             if isinstance(hr_date_af, str) and hr_date_af.strip():
-                                hr_date_af_s = datetime.strptime(hr_date_af, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+                                try:
+                                    hr_date_af_s = datetime.strptime(hr_date_af, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+                                except:
+                                    hr_date_af_s = datetime.strptime(hr_date_af, '%Y-%m-%d').strftime('%Y-%m-%d')
                                 print(hr_date_af_s)
                             elif isinstance(hr_date_af, float) and math.isnan(hr_date_af):
                                 hr_date_af_s = None  
@@ -395,8 +388,13 @@ class DatabaseServer_csv(object):
                                 hr_date_af_s = None 
 
                             hr_date_rr = dict[j]['date_rr_sleep_ap']
+
                             if isinstance(hr_date_rr, str) and hr_date_rr.strip():
-                                hr_date_rr_s = datetime.strptime(hr_date_rr, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+                                try:
+                                    hr_date_rr_s = datetime.strptime(hr_date_rr, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+                                except:
+                                    hr_date_rr_s = datetime.strptime(hr_date_rr, '%Y-%m-%d').strftime('%Y-%m-%d')
+
                             elif isinstance(hr_date_rr, float) and math.isnan(hr_date_rr):
                                 hr_date_rr_s = None  
                             else:
@@ -491,9 +489,13 @@ class DatabaseServer_csv(object):
 
         
         url = 'http://127.0.0.1:8000/api/sleepmats/intraactivity/'
-        for i in range(len(self.id_available)):
-            path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available[i]) + '/Sleepmat_intra_activity.csv'
-            id,_,_,sleep_id= self.extract_user_data(self.id_available[i])
+        self.id_available_sorted = sorted(self.id_available)
+        print(self.id_available_sorted[10])
+        print(len(self.id_available_sorted))
+        #primer run hasta 15 - 16 (de a 6 7 pos)
+        for i in range(60,64):
+            path = '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/db/General/'+ str(self.id_available_sorted[i]) + '/Sleepmat_intra_activity.csv'
+            id,_,_,sleep_id= self.extract_user_data(self.id_available_sorted[i])
             #print(scale_id)
             if os.path.exists(path):
                 # Open the CSV file in read mode
@@ -605,10 +607,12 @@ db_csv.get_users()
 db_csv.get_device_info()
 #db_csv.upload_scale_summary_data()
 #db_csv.upload_scanwatch_summary_data()
-db_csv.upload_sleep_summary_data()
+#ULTIMA CORRIDA ACA puse hasta el 64
 #db_csv.upload_intra_sleep_summary_data()
 #db_csv.upload_usage_data()
-#db_csv.upload_intra_scanwatch_summary_data()
+#db_csv.upload_sleep_summary_data()
+#ULTIMA CORRIDA ACA puse hasta el 64
+db_csv.upload_intra_scanwatch_summary_data()
 #db_csv.upload_report_data()
 #db_csv.get_report_id(username = 1)
     

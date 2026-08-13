@@ -430,9 +430,9 @@ class Database_API(object):
                     "hr_date_rr": date_rr_sleep_ap,
                     "hr_rr":None if np.isnan(rr_af) else rr_af
                     }
+                print(data)
                 response = requests.post(url, json=data)
                 print(response)
-
 
     def upload_intra_sleep_summary_data(self, user = None, sleep_id = None, start_date = None, end_date = None, ss = None,
                                         date_hr = None, hr = None, date_rr = None, rr = None, date_s = None, sn = None, date_sddn = None, sdnn_1 = None):

@@ -9,6 +9,9 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Image, Spac
 
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from datetime import datetime
+import pandas as pd
+import traceback
 
 # Register the Arial font
 pdfmetrics.registerFont(TTFont('Arial', '/usr/share/fonts/truetype/msttcorefonts/Arial.ttf'))  # Replace with the actual path
@@ -44,51 +47,122 @@ class PDF_Usage(object):
         self.scale_battery = scale_battery
         self.scale_last = scale_last
 
+        # Define colors
+        self.pale_red = colors.Color(red=0.9, green=0.1, blue=0.1)     # Lightened red
+        self.pale_orange = colors.Color(red=1, green=0.75, blue=0.5)  # Lightened orange
+        self.pale_yellow = colors.Color(red=1, green=1, blue=0.7)   # Lightened yellow
+
 
         self.create_pdf()
+  
+    
+    def conditional_highlight_1(self, row, end_date):
+    
+        # Date format
+        date_format = '%b %d'
+        # Convert end date to datetime object
+        end_date_dt = datetime.strptime(end_date[0], date_format)
+        
+        # Convert row[3] and row[6] dates if not NaN
+      
+        row_date_dt = datetime.strptime(row[3], date_format) if not pd.isna(row[3]) and row[3].strip() != '' else None
+        row_date_6_dt = datetime.strptime(row[6], date_format) if not pd.isna(row[6]) and row[6].strip() != ''  else None
+    
+        # Rule 1 for Pale Red: All usages are "low"
+        all_usages_low = (
+            (row[1] == "low" ) and 
+            (row[4] == "low" ) and 
+            (row[7] == "low")
+        )
+        # Rule 2 for Pale Red: Sleep last date is two days before end date
+        sleep_last_two_days_before = (row_date_dt - end_date_dt).days == 2 if row_date_dt else False
 
+        # Rule 3 for Pale Red: NaN in any of the last readings
+        nan_in_last_reading = pd.isna(row[3]) or pd.isna(row[6]) or pd.isna(row[9])
+        none_in_last_reading =(row[3].strip() == '') or (row[6].strip() == '') or (row[9].strip() == '')
 
-    def conditional_highlight(self,row):
-        return row[1] == "Low" or row[4] == "Low" or row[7] == "Low"
+        # New Rule: Highlight in red if row[6] is less than 7 days from the end date
+        within_seven_days = (
+            abs((row_date_6_dt - end_date_dt).days) > 7 
+            if row_date_6_dt else False
+        )
+        # Apply Pale Red if any of the Pale Red conditions are met or the new rule is true
+        if all_usages_low or sleep_last_two_days_before or nan_in_last_reading or within_seven_days or none_in_last_reading:
+            return self.pale_red
+        
+        high_high_low_condition = (row[1] == "high") and \
+                              (row[4] == "high") and \
+                              (row[7] == "low")
+        
+        print('high_high_yellow', high_high_low_condition)
+    
+        if high_high_low_condition:
+            return self.pale_yellow
 
+        # Rule for Pale Orange: Any device usage is "low" and last reading is not NaN
+        any_usage_low_with_reading = (
+            (row[1] == "low" or row[4] == "low" or row[7] == "low") and 
+            not pd.isna(row[3]) and not pd.isna(row[6]) and not pd.isna(row[9])
+        )
 
+        if any_usage_low_with_reading:
+            return self.pale_orange
+        # Default return if no conditions are met
+        return None
+    
     def create_title_page(self, canvas, doc):
         
         styles = getSampleStyleSheet()
-        
-
-		#Draw the years in the upper part of the report
-        
-        #text_year = self.current_year
-        #canvas.setFont("Arial", 11)
-        #canvas.drawString(doc.leftMargin + 16.5 * cm , doc.height + 4.2* cm, text_year)
-
 		# Draw NEWS2 text
         text_scale = 'Scale Usage: ' + str(self.start_date[0]) + ' - ' + str(self.end_date[0]) 
         canvas.setFont("Arial", 11)
-        canvas.drawString(doc.leftMargin + 12 * cm , doc.height + 1.6 * cm, text_scale)
+        canvas.drawString(doc.leftMargin + 12 * cm , doc.height + 1 * cm, text_scale)
         #Draw sd text
         canvas.setFont("Arial", 11)
         text_watch = 'Watch Usage: ' + str(self.start_date[0]) + ' - ' + str(self.end_date[0]) 
-        canvas.drawString(doc.leftMargin + 12 * cm , doc.height + 2.2 * cm, text_watch)
-        
-          
+        canvas.drawString(doc.leftMargin + 12 * cm , doc.height + 1.6 * cm, text_watch)
+    
         text_sleep = 'Sleepmat Usage: ' + str(self.start_date[0]) + ' - ' + str(self.end_date[0]) 
-        canvas.drawString(doc.leftMargin + 12 * cm , doc.height + 2.8* cm, text_sleep)
+        canvas.drawString(doc.leftMargin + 12 * cm , doc.height + 2.2* cm, text_sleep)
+
+        # Define color meanings and positions
+        color_explanations = [
+            {"color": self.pale_red, "text": [
+            "Urgently check this participant.Participant has generally low usage, either sleepmat not connected",
+            "or watch not used in more than 7 days."], "y_offset": -0.3 * cm},
+            {"color": self.pale_orange, "text": ["Check watch usage or scale, please ask participants to synchronize watch and/or use scale."], "y_offset": -1.25 * cm},
+            {"color": self.pale_yellow, "text": ["Low priority, please just ask participant to use the scale more."], "y_offset": -1.85 * cm},
+        ]
+
+        for item in color_explanations:
+            # Draw the color square
+            canvas.setFillColor(item["color"])
+            canvas.rect(doc.leftMargin + 0.1 * cm, doc.height + item["y_offset"], 0.5 * cm, 0.5 * cm, fill=True, stroke=False)
+
+            # Draw the explanatory text next to the square
+            text_x = doc.leftMargin + 0.8 * cm
+            text_y = doc.height + item["y_offset"] + 0.2 * cm  # Adjust vertical alignment with the square
+
+            text_obj = canvas.beginText(text_x, text_y)
+            text_obj.setFont("Arial", 11)
+            text_obj.setFillColor(colors.black)
+
+            # Add each line of text
+            for line in item["text"]:
+                text_obj.textLine(line)  # Each line is added separately to create multi-line text
+
+            # Draw the TextObject on the canvas
+            canvas.drawText(text_obj)
             
         #Add the Surrey logo project watermark
-            
         surrey_image = Image("img/surrey_logo.jpg", width = 2.143*cm, height = 1.058*cm)
         surrey_image.drawOn(canvas, doc.leftMargin - 0.5*cm , 1*cm)
-        
         #Add the Imperial logo project watermark
         imperial_image = Image("img/Imperial_logo.jpg", width = 4.021*cm, height = 1.058*cm)
         imperial_image.drawOn(canvas, doc.leftMargin + 1.943*cm , 1*cm)
-        
         #Add the NIHR project watermark
         nihr_image = Image("img/nihr_logo.jpg", width = 5.979*cm, height = 1.058*cm)
         nihr_image.drawOn(canvas, doc.leftMargin + 6.264*cm , 1*cm )
-        
         #Add the EPSCR project watermark
         epscr_image = Image("img/epsrc_logo.jpg", width = 4.233*cm, height = 1.058*cm)
         epscr_image.drawOn(canvas, doc.leftMargin + 12.543*cm , 1*cm )
@@ -101,39 +175,42 @@ class PDF_Usage(object):
         title_text = "RESILIENT: Weekly Usage Report"
         title_style = styles['Title']
         title_style.alignment = 1  # Set alignment to center
-        title_style.fontSize = 14 
+        title_style.fontSize = 15 
         title_style.fontName = "Arial-Bold" 
         
         title = Paragraph(title_text, title_style)
         title.wrapOn(canvas, doc.width, doc.height)
         title.drawOn(canvas, doc.leftMargin, doc.height + 3 * cm )
 
-        
-
+    
+    def set_image_in_row(self, row, index, condition):
+         #Images
+        image_paths = {
+                'low': '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/img/low_battery.jpg',
+                'medium': '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/img/medium_battery.jpg',
+                'high': '/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/img/high_battery.jpg'
+                }
+        # Set the image if the condition exists in the image_paths dictionary
+        if condition in image_paths:
+            row[index] = Image(image_paths[condition], width=10, height=10)
+            
     def create_pdf(self):
-        
         # Create a PDF document
         pdf_filename = "usage_report.pdf"
         doc = SimpleDocTemplate(pdf_filename, pagesize=letter)
         styles = getSampleStyleSheet()
         doc.build([Paragraph("", styles['Normal'])], onFirstPage=self.create_title_page)
-
-
-        #PDF texts
-        
+        #PDF texts   
         # Create a list to hold data for the table
         data = []
-        
         # Add header row to the table
         header_row = ['id', 'Sleepmat \n Usage', 'Sleepmat \n  Battery', 'Sleepmat \n Last \n  Reading', 'Watch \n Usage', 'Watch \n Battery', 'Watch \n Last \n  Reading', 'Scale \n Usage', 'Scale \n Battery', 'Scale \n Last \n Reading']
-        print(len(header_row))
         data.append(header_row)
         # Add rows with images to the table
         for x,z,m,n,l, o, p,j,i,q in zip(self.id_user, self.sleep_usage, self.sleep_battery, self.sleep_last, 
                                        self.watch_usage, self.watch_battery, self.watch_last, self.scale_usage, self.scale_battery, self.scale_last
                                         ):
             row = [x, z, m, n, l, o, p,j,i,q]
-
             if m == 'low':
                 row[2] = Image('/home/nathalia/Withings_ScanWatch/Withings_ScanWatch/img/low_battery.jpg', width = 10, height = 10)
             elif m == 'medium':
@@ -158,8 +235,6 @@ class PDF_Usage(object):
             
             data.append(row)
 
-
-        
         # Create the table and apply styles
         table = Table(data)
         table.setStyle(TableStyle([('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),
@@ -177,19 +252,20 @@ class PDF_Usage(object):
         for i in range(len(data)):
             for j in range(len(data[i])):
                 table.setStyle([('FONT', (j, i), (j, i), 'Arial', 10.5)])
-
-        # Conditional Highlighting styles
-
-        # Apply additional style to highlighted rows
-        for i, row in enumerate(data):
-            #print(row)
-            print(self.conditional_highlight(row))
-            if self.conditional_highlight(row):
-                table.setStyle(TableStyle([('BACKGROUND', (0, i), (-1, i), colors.orange)]))
-    
+        for i, row in enumerate(data[1:], start=1):
+            try:
+                highlight_color = self.conditional_highlight_1(row, self.end_date)
+                if highlight_color:
+                    table.setStyle(TableStyle([('BACKGROUND', (0, i), (-1, i), highlight_color)]))
+            except Exception as e:
+                print('NOTROW')
+                print(f"An error occurred: {e}")
+                traceback.print_exc()
+                return({'status': 'failed', 'path': None})
+        
         
         # Add the table to the PDF document
-        doc.build([spacer1,table])
+        doc.build([spacer1,spacer1,spacer1,spacer1,spacer1,table])
 
     @classmethod
     def main(cls):

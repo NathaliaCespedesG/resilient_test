@@ -4,11 +4,14 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Image, Spacer, Paragraph
 from reportlab.lib import colors
 from reportlab.lib.units import inch, cm
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 import math
 import numpy as np
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+import pikepdf
+from PIL import Image as PILImage
+import os
 
 # Register the Arial font
 pdfmetrics.registerFont(TTFont('Arial', '/usr/share/fonts/truetype/msttcorefonts/Arial.ttf'))  # Replace with the actual path
@@ -26,6 +29,7 @@ class PDF_generation(object):
 					sleep_apnoea: None,
 					weight: None,
 					c_date : None,
+					w_c_date: None,
 					e_date: None,
 					path: None,
 					id_nhs : None, 
@@ -46,11 +50,13 @@ class PDF_generation(object):
 		self.sleep_apnoea = sleep_apnoea
 		self.weight = weight
 		self.c_date = c_date
+		self.weight_c_date = w_c_date
 		self.e_date = e_date
 		
 
 		print(self.c_date)
 		print(type(self.c_date))
+
 
 		#Current year
 		self.current_year =str(datetime.datetime.now().year)
@@ -99,8 +105,9 @@ class PDF_generation(object):
 		else:
 
 			val1 = [value for value in val1 if value is not None and value != 0 and not math.isnan(value)]
+			self.mean_val1_raw = np.mean(val1)
 			self.mean_val1 = math.floor(np.mean(val1))
-			#self.mean_val1 = str("{:.2f}".format(self.mean_val1))
+			self.mean_val1_2d = str("{:.2f}".format(self.mean_val1_raw))
 			#self.mean_val11 = str(int(self.mean_val1))
 			self.sd_val1 = (np.std(val1))
 			self.sd_val1 = str("{:.1f}".format(self.sd_val1))
@@ -139,7 +146,8 @@ class PDF_generation(object):
 		else:
 			val2 = [value for value in val2 if value is not None and value != 0 and not math.isnan(value)]
 			self.mean_val2 = math.floor(np.mean(val2))
-			#self.mean_val2 = str("{:.2f}".format(self.mean_val2))
+			self.mean_val2_raw = np.mean(val2)
+			self.mean_val2_2d = str("{:.2f}".format(self.mean_val2_raw))
 			#self.mean_val2 = str(int(self.mean_val2))
 			self.sd_val2 = (np.std(val2))
 			self.sd_val2 = str("{:.1f}".format(self.sd_val2))
@@ -220,12 +228,13 @@ class PDF_generation(object):
 		nighthr_highlight = self.sd_comparisson(val2[0],val2[1], row = 1, col = 2)
 		nightrr_highlight = self.sd_comparisson(val3[0],val3[1], row = 1, col = 3)
 		steps_highlight = self.sd_comparisson(val4[0],val4[1], row = 1, col = 4)
-		weight_highlight = self.sd_comparisson(val5[0],val5[1], row = 1, col = 5)
-		sleepdur_highlight = self.sd_comparisson(val6[0],val6[1], row = 1, col = 6)
-		#sleepap_hightlight = self.sd_comparisson(val7[0],val7[1], row = 1, col = 7)
+		sleepdur_highlight = self.sd_comparisson(val6[0],val6[1], row = 1, col = 5)
+		weight_highlight = self.sd_comparisson(val5[0],val5[1], row = 1, col = 7)
+		
+		sleepap_hightlight = self.sd_comparisson(val7[0],val7[1], row = 1, col = 6)
 		
 	
-		highlight_styles = (dayhr_highlight + nighthr_highlight + nightrr_highlight + steps_highlight + weight_highlight + sleepdur_highlight)
+		highlight_styles = (dayhr_highlight + nighthr_highlight + nightrr_highlight + steps_highlight + sleepdur_highlight + sleepap_hightlight + weight_highlight )
 
 		return(highlight_styles)
 
@@ -247,11 +256,14 @@ class PDF_generation(object):
 		# Draw NEWS2 text
 
 		text1 = '* indicates a value that would be flagged by the NEWS2'
+		
 		canvas.setFont("Arial", 7.3)
 		if self.report_type == 1:
 			canvas.drawString(doc.leftMargin + 10.5 * cm , doc.height - 3.8* cm, text1)
+
 		if self.report_type == 0:
-			canvas.drawString(doc.leftMargin + 10.5 * cm , doc.height - 2.4* cm, text1)
+			canvas.drawString(doc.leftMargin + 10.5 * cm , doc.height - 2.9* cm, text1)
+
 		#Draw sd text
 
 		canvas.setFont("Arial", 7.3)
@@ -262,7 +274,7 @@ class PDF_generation(object):
 			
 		if self.report_type == 0:
 			text_sd = 'A value highlighted in orange indicates a change of 1 SD from the average of the previous 3 months.' 
-			canvas.drawString(doc.leftMargin - 1.5 * cm , doc.height - 2.4* cm, text_sd)
+			canvas.drawString(doc.leftMargin - 1.5 * cm , doc.height - 2.9* cm, text_sd)
 			
 
 		
@@ -273,8 +285,8 @@ class PDF_generation(object):
 			canvas.drawString(doc.leftMargin - 1.5 * cm , doc.height - 4.1* cm, text_2sd)
 			
 		if self.report_type == 0:
-			text_sd = 'A value highlighted in red indicates a change of 2 or more SD from the average of the previous 3 months.'
-			canvas.drawString(doc.leftMargin - 1.5 * cm , doc.height - 2.8* cm, text_sd)
+			text_2sd = 'A value highlighted in red indicates a change of 2 or more SD from the average of the previous 3 months.'
+			canvas.drawString(doc.leftMargin - 1.5 * cm , doc.height - 3.3* cm, text_2sd)
 			
 
 
@@ -286,7 +298,10 @@ class PDF_generation(object):
 			watermark_image = Image("img/sabp.jpg", width = 10*cm, height = 7*cm)
 			watermark_image.drawOn(canvas, doc.leftMargin - 2.6*cm , doc.height + 2.2*cm)
 
-		
+		#Add the QR code 
+
+		qr_image = Image("img/qr_code.png", width = 2.143*cm, height = 2.143*cm)
+		qr_image.drawOn(canvas, doc.leftMargin - 2.0*cm , doc.height + 2.3*cm)		
 
 		#Add the Surrey logo project watermark
 
@@ -327,8 +342,15 @@ class PDF_generation(object):
 		title.wrapOn(canvas, doc.width, doc.height)
 		title.drawOn(canvas, doc.leftMargin, doc.height + 3 * cm )
 
-		
 
+	def optimize_pdf(self,input_file, output_file):
+		with pikepdf.open(input_file) as pdf:
+			pdf.save(output_file)
+
+	def compress_image(self,input_path, output_path, quality=70):
+		with PILImage.open(input_path) as img:
+			img = img.convert("RGB")  # Ensure compatibility with JPEG
+			img.save(output_path, "JPEG", optimize=True, quality=quality)
 
 
 	def document_generation(self):
@@ -351,23 +373,35 @@ class PDF_generation(object):
 		print('Froooooooom graph')
 		print(self.weight)
 		w_c, w_p, w_m = self.averages_data(self.weight[0], self.weight[1], self.weight[2], type_d = 'weight')
-
+		# Custom paragraph style for the cell
+		w_style = ParagraphStyle(
+			name='w_style',
+			alignment=1,     # 0=left, 1=center, 2=right
+			fontSize=10,     # base font size for the main value
+			leading=12,      # line spacing
+			spaceBefore=0,
+			spaceAfter=0,
+		)
+		w_p_cell = [Paragraph(f"{w_p}", ParagraphStyle(name='big', alignment=1, fontSize=10)),
+			        Spacer(1, 1), Paragraph("<font size=6><i>comparison within the last 50 days</i></font>",
+              		ParagraphStyle(name='small', alignment=1, fontSize=6, leading=6))
+					]
 
 		if self.report_type == 1:
 			# Create a list of data for the table
 			data = [
-	    	["Overview", "Day Heart \n  Rate \n [bpm]", "Sleep \n Heart Rate \n [bpm]", "Sleep \n Respiration \n Rate", "Steps",  "Weight \n [kg]", "Sleep \n Duration \n [hours]", " Sleep \n Apnoea Index \n [AHI] "],
-	    	["Current Week \n Average",hr_c , nhr_c , rr_c , steps_c, w_c , sd_c , sa_c],
-	    	["Last Week \n Average",hr_p , nhr_p  ,rr_p , steps_p , w_p , sd_p  , sa_p],
-	    	["Monthly values \n (Mean. +/- 1 SD)", hr_m, nhr_m, rr_m , steps_m, w_m , sd_m, sa_m]
+	    	["Overview", "Day Heart \n  Rate \n [bpm]", "Sleep \n Heart Rate \n [bpm]", "Sleep \n Respiration \n Rate", "Steps", "Sleep \n Duration \n [hours]", " Sleep \n Apnoea \n Index \n [AHI] ", "Weight \n [kg]"],
+	    	["Last two Week \n Average",hr_c , nhr_c , rr_c , steps_c, sd_c , sa_c, w_c ],
+	    	["Last Week \n Average",hr_p , nhr_p  ,rr_p , steps_p, sd_p  , sa_p, w_p],
+	    	["Monthly values \n (Mean. +/- 1 SD)", hr_m, nhr_m, rr_m , steps_m, sd_m, sa_m, w_m]
 					]
 
 		elif self.report_type ==0:
 			# Create a list of data for the table
 			data = [
-	    	["Overview", "Day Heart \n  Rate \n [bpm]", "Sleep \n Heart Rate \n [bpm]", "Sleep \n Respiration \n Rate", "Steps",  "Weight \n [kg]", "Sleep \n Duration \n [hours]", " Sleep \n Apnoea Index \n [AHI] "],
-	    	["Current Week \n Average",hr_c , nhr_c , rr_c , steps_c, w_c , sd_c , sa_c],
-	    	[f"Average since \n {self.c_date}",hr_p , nhr_p  ,rr_p , steps_p , w_p , sd_p  , sa_p]
+	    	["Overview", "Day Heart \n  Rate \n [bpm]", "Sleep \n Heart Rate \n [bpm]", "Sleep \n Respiration \n Rate", "Steps", "Sleep \n Duration \n [hours]", " Sleep \n Apnoea \n Index \n [AHI] ", "Weight \n        [kg]         "],
+	    	["Last two Week \n Average",hr_c , nhr_c , rr_c , steps_c, sd_c , sa_c,  w_c],
+	    	[f"Average since \n {self.c_date}",hr_p , nhr_p  ,rr_p , steps_p, sd_p, sa_p, w_p_cell]
 	    			]
 
 		# Create a list of images for the matrix plot
@@ -379,6 +413,12 @@ class PDF_generation(object):
     		"Scale.png",
     		"sleep_summary.png",
 			]
+		
+		compressed_images = []
+		for img_path in images:
+			compressed_path = os.path.join(self.path, "compressed_" + os.path.basename(img_path).replace('.png', '.jpg'))
+			self.compress_image(img_path, compressed_path, quality=70)
+			compressed_images.append(compressed_path)
 
 		# Define the size and positioning of the table and images
 		table_width = 8 * inch
@@ -387,8 +427,11 @@ class PDF_generation(object):
 		image_height = 2.17 * inch
 		spacing = 0.4 * cm
 
+		image_list = [Image(img_path, width=image_width, height=image_height) for img_path in compressed_images]
+		image_table = Table([image_list[i:i + 2] for i in range(0, len(image_list), 2)])
+
 		# Create a canvas and set the size
-		doc = SimpleDocTemplate(document_file, pagesize = A4, title="Resilient")
+		doc = SimpleDocTemplate(document_file, pagesize = A4, title="Resilient", compress=True)
 
 		# Add the title page to the document
 		styles = getSampleStyleSheet()
@@ -404,6 +447,7 @@ class PDF_generation(object):
     		('TEXTCOLOR', (0, 0), (0, -1), colors.black),
     		('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
     		('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+			('VALIGN', (0, 0), (-1, -1), 'TOP'),
     		('FONTNAME', (0, 0), (-1, 0), 'Arial-Bold'),
     		('BOTTOMPADDING', (0, 0), (-1, 0), 10),
     		('GRID', (0, 0), (-1, -1), 1, colors.black),
@@ -435,18 +479,29 @@ class PDF_generation(object):
 		image_list = []
 
 
-		# Add the images to the list
+		# # Add the images to the list
 
-		for image_path in images:
-			image = Image(image_path, width=image_width, height=image_height)
-			image_list.append(image)
+		# for image_path in images:
+		# 	image = Image(image_path, width=image_width, height=image_height)
+		# 	image_list.append(image)
 
-		# Create a table for the images in a matrix-like plot
-		image_table = Table([image_list[i:i+2] for i in range(0, len(image_list), 2)])
+		# # Create a table for the images in a matrix-like plot
+		# image_table = Table([image_list[i:i+2] for i in range(0, len(image_list), 2)])
 
 		# Build the PDF document
 		elements = [spacer1,table, spacer2, spacer2, spacer1, image_table]
 		doc.build(elements)
+
+		 # Optimize PDF file
+		optimized_file = document_file.replace(".pdf", "_optimized.pdf")
+		self.optimize_pdf(document_file, optimized_file)
+		os.replace(optimized_file, document_file)
+		
+		for img_path in compressed_images:
+			if os.path.exists(img_path):
+				os.remove(img_path)
+
+
 
 
 	@classmethod

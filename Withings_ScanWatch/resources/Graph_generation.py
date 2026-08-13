@@ -6,6 +6,7 @@ import math
 
 #Graphs libraries
 import matplotlib.pyplot as plt
+import pandas as pd
 from matplotlib.patches import Rectangle
 from collections import defaultdict
 import matplotlib.dates as mdates
@@ -145,7 +146,7 @@ class Graph_generator(object):
 		print(len(y))
 		print(len(k))
 		print(len(j))
-		#print(hola)
+		
 
 		fig, ax = plt.subplots()
 
@@ -181,6 +182,7 @@ class Graph_generator(object):
 		print(j)
 		print(len(k))
 		print(len(j))
+
 	
 
 
@@ -328,9 +330,12 @@ class Graph_generator(object):
 					plt.axhline(y=aver_thresh, color='mediumseagreen', linestyle='-', label= f'Average', linewidth = 2)
 					plt.text(self.end_date.shift(days= 1), aver_thresh, f'{aver_thresh:.2f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='mediumseagreen'))
 
-					plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
-					plt.gca().xaxis.set_major_locator((MaxNLocator(nbins=7)))
+					end_dt = self.end_date.datetime if hasattr(self.end_date, "datetime") else self.end_date
+					end_dt = pd.to_datetime(end_dt)
+					plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=15))   # tick every 2 days
 					plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+					plt.gca().set_xticks(list(plt.gca().get_xticks())[:-1] + [mdates.date2num(end_dt)])
+
 					
 					#plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(days = -7), self.end_date.shift(days = 2 ))
 
@@ -344,7 +349,8 @@ class Graph_generator(object):
 				
 		
 			plt.grid(axis = "x")
-
+			end_dt = self.end_date.datetime if hasattr(self.end_date, "datetime") else self.end_date
+			plt.gca().set_xlim(right=end_dt)
 			plt.gca().spines['top'].set_visible(False)
 			plt.gca().spines['right'].set_visible(False)
 
@@ -450,122 +456,134 @@ class Graph_generator(object):
 
 		#plt.show()
 
-	def plot_continous(self,date_weight, weight, device):
+	def plot_continous(self, date_weight, weight, device):
 
+		# Shared style
+		sns.set_style("whitegrid", {
+			"grid.linewidth": 0.5,
+			"grid.color": ".8",
+			"grid.linestyle": ":",
+			"ytick.left": True
+		})
 
-		# Create a scatter plot
-		sns.set_style("whitegrid",{ "grid.linewidth":0.5, "grid.color": ".8", "grid.linestyle": ":", "ytick.left": True})
-
-		index_0 = [index for index, value in enumerate(weight) if value is None or value == 0 or math.isnan(value)]
+		# ---------------------------------------
+		# FILTER INVALID VALUES
+		# ---------------------------------------
 		
-		#x = [datetime.fromtimestamp(a.timestamp()) for a in x]
-		#print(x)
-		weight = [value for value in weight if value is not None and value != 0 and not math.isnan(value)]
-		
-		
-		date_weight = [value for index, value in enumerate(date_weight) if index not in index_0]
-		
+		clean_date = []
+		clean_weight = []
 
-		print('SCALEEEEEEEEEEEEEEEE')
-
-		print(weight)
-		print(date_weight)
-		weight_date_avg, weight_avg = self.weekly_average(date_weight, weight)
-		#print(hola)
-		print(weight_avg)
-		print(weight_date_avg)
-		#print(hola)
-
-
-		#date_strings = [dt.strftime('%Y-%m-%d') for dt in weight_date_avg]
-
-		# Smooth lines
-		#x_s,y_s = self.smooth_lines(date_weight,weight)
-		x_s = date_weight
-		y_s = weight
-		
+		for d, w in zip(date_weight, weight):
+			if w is not None and w != 0 and not math.isnan(w):
+				clean_date.append(d)
+				clean_weight.append(w)
 		
 
-		max_thresh = np.mean(y_s) + np.std(y_s)
-		min_thresh = np.mean(y_s) - np.std(y_s)
-		aver_thresh = np.mean(y_s)
-		print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
-		print(y_s)
-		print(max_thresh)
-		print(min_thresh)
-		print(aver_thresh)
+		# If no valid data → return EMPTY plot
+		if len(clean_weight) == 0:
+			plt.clf()
+			plt.title("Weight", fontsize=14, loc="left", pad=30)
+
+			# Set a minimal empty frame
+			plt.gca().set_xlim(datetime.now() - timedelta(days=1),
+							datetime.now() + timedelta(days=1))
+			plt.gca().set_ylim(0, 1)
+
+			plt.text(datetime.now(), 0.5, "No data available",
+					ha="center", va="center", fontsize=12)
+
+			plt.savefig(device, dpi=500)
+			plt.close()
+			return
+
+		# ---------------------------------------
+		# WEEKLY AVERAGE
+		# ---------------------------------------
+		weight_date_avg, weight_avg = self.weekly_average(clean_date, clean_weight)
+
+		# ---------------------------------------
+		# 50-DAY THRESHOLDS
+		# ---------------------------------------
+		try:
+			threshold_date = clean_date[0] - timedelta(days=50)
+			last50 = [w for w, d in zip(clean_weight, clean_date) if d >= threshold_date]
+		except:
+			last50 = []
+
+		# Safe threshold values
+		if len(last50) > 1:
+			max_thresh = np.mean(last50) + np.std(last50)
+			min_thresh = np.mean(last50) - np.std(last50)
+			avg_thresh = np.mean(last50)
+		else:
+			max_thresh = min_thresh = avg_thresh = None
+
+		# ---------------------------------------
+		# PLOTTING
+		# ---------------------------------------
 		plt.clf()
 
-		#plt.gca().set_xticks(weight)
+		# Only one point → scatter only
+		if len(clean_date) < 2:
+			sns.scatterplot(x=clean_date, y=clean_weight, color="darkblue")
+			single_date = clean_date[0]
+			plt.gca().set_xlim(single_date - timedelta(days=1),
+							single_date + timedelta(days=1))
+		else:
+			print('HERE :)')
+			print(clean_date)
+			print(clean_weight)
+			# Main weight curves
+			sns.lineplot(x=clean_date, y=clean_weight, label="Weight", color="cornflowerblue")
+			sns.lineplot(x=weight_date_avg, y=weight_avg, label="Weekly Average",
+						color="darkblue", linewidth=2)
+			plt.gca().set_xlim(self.start_date.replace(hour=0, minute=0, second=0, microsecond=0).shift(hours = -5), self.end_date)
 
+			# ---------------------------------------
+			# Draw thresholds only if valid
+			# ---------------------------------------
+			if max_thresh is not None:
+				start_date = weight_date_avg[0]
+				x_pos = start_date + timedelta(days=4)
 
+				for val, c, txt in [
+					(max_thresh, "darkorange", "Upper limit"),
+					(min_thresh, "darkorange", "Lower limit"),
+					(avg_thresh, "mediumseagreen", "Average"),
+				]:
+					plt.axhline(y=val, linestyle="--", color=c)
+					plt.text(x_pos, val, f"{val:.2f}", fontdict=self.font,
+							bbox=dict(boxstyle="square", facecolor="white", edgecolor=c))
 
-		if device == "Scale":
-			
-			#print(date_weight)
-			# Create a scatter plot
-			sns.set_style("whitegrid",{ "grid.linewidth":0.5, "grid.color": ".8", "grid.linestyle": ":", "ytick.left": True})
-			
-			if len(date_weight) < 2:
-				sns.scatterplot( x= date_weight, y = weight, label = "Weight readings", color = "darkblue")
-			else:
-				#print('******************************************************')
-				#print(date_weight)
-				sns.lineplot(x = date_weight, y = weight, label = "Weight readings", color = "cornflowerblue", linestyle=':', linewidth = 2)
-				sns.lineplot(x= weight_date_avg, y = weight_avg, color = "darkblue", linestyle='-', linewidth = 2, label = "Weight Weekly Average")
-				# Threshold calculations
-				#print(weight_date_avg)
-				w_date = arrow.get(weight_date_avg[0])
-				#print(w_date)
-				plt.text(w_date.shift(days= 4), max_thresh, f'{max_thresh:.2f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
-				plt.axhline(y=max_thresh, color='darkorange', linestyle='--', label=f'Upper limit', linewidth = 1)
-				plt.text(w_date.shift(days= 4), min_thresh, f'{min_thresh:.2f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
-				plt.axhline(y=min_thresh, color='darkorange', linestyle='--', label=f'Lower limit', linewidth = 1)
-				plt.text(w_date.shift(days= 4), aver_thresh, f'{aver_thresh:.2f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='mediumseagreen'))
-				plt.axhline(y=aver_thresh, color='mediumseagreen', linestyle='-', label= f'Average', linewidth = 2)
+			# Label weekly avg points
+			for d, v in zip(weight_date_avg, weight_avg):
+				if not np.isnan(v):
+					plt.text(d, v, int(v), rotation=45,
+							bbox=dict(boxstyle="circle", facecolor="lightblue", edgecolor="white"))
 
-			#sns.lineplot(x = x_s2, y = z_s, label = "Muscle mass", linestyle='--',  color = "mediumseagreen", linewidth = 2)
-			#sns.lineplot(x = x_s3, y = w_s, label = "Bone mass",linestyle='--',  color = "yellow", linewidth = 2)
-			#sns.lineplot(x = x_s4, y = t_s, label = "Fat mass", linestyle='--', color = "mediumpurple", linewidth = 2)
-			#sns.lineplot(x = x_s5, y = l_s, label = "Hydration (%)", linestyle='--', color = "cornflowerblue", linewidth = 2)
-			# Set x-axis tick locations and labels
+		# ---------------------------------------
+		# Final plot formatting
+		# ---------------------------------------
+		plt.title("Weight", fontsize=14, loc="left", pad=30)
+		plt.ylabel("kg")
+		plt.legend()
 
-			# Make specific ticks transparent or not display them
-			#plt.gca().set_xticks([])
+		# X-axis formatting
+		plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=15))
+		plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
 
-			for index in range(len(weight_date_avg)):
+		# Y-axis formatting
+		ymin, ymax = min(clean_weight), max(clean_weight)
+		plt.yticks(range(int(ymin) - 1, int(ymax) + 3))
 
-				if not np.isnan(weight_avg[index]):
+		# Remove top/bottom borders
+		plt.gca().spines["top"].set_visible(False)
+		plt.gca().spines["right"].set_visible(False)
 
-					plt.text(weight_date_avg[index], weight_avg[index], math.floor(weight_avg[index]), size = 11,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lightblue', edgecolor='white'))
-
-		
-			plt.gca().set_title('Weight',fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
-			plt.ylabel("kg", fontdict = self.font)
-			#plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
-			#plt.gca().xaxis.set_major_locator(mdates.DayLocator())
-			plt.gca().xaxis.set_major_locator((MaxNLocator(nbins=7)))
-			plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
-			#plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(hours = -5), self.end_date.shift(days= 1))
-			plt.legend(loc= 'upper center', bbox_to_anchor = (0.5,1.09), ncol = 4, fontsize = 8.5,frameon=False)
-			# Setting y-axis ticks to integer values
-
-			if not y_s:
-				print('Scale values not available')
-			else:
-				plt.yticks(range(int(min(y_s))-1, int(max(y_s))+3))
-			# Set the x-axis format as dates
-			plt.gca().spines['top'].set_visible(False)
-			plt.gca().spines['right'].set_visible(False)
-
-			# Display the plot
-		
-			plt.grid(axis = "x")
-
-
-		plt.savefig(device, dpi = 500)
-		#plt.show()
+		plt.grid(axis="x")
+		plt.savefig(device, dpi=500)
 		plt.close()
+
 
 	def plot_bar(self,x,y):
 
@@ -635,15 +653,21 @@ class Graph_generator(object):
 					self.v_date = arrow.get(date_avg[-1])
 					# Threshold calculations
 					plt.axhline(y=max_thresh, color='darkorange', linestyle='--', label= 'Upper limit', linewidth = 1)
-					plt.text(self.v_date.shift(days= 1), max_thresh, f'{max_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
+					plt.text(self.end_date.shift(days= 5), max_thresh, f'{max_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
 					plt.axhline(y=min_thresh, color='darkorange', linestyle='--', label= 'Lower limit', linewidth = 1)
-					plt.text(self.v_date.shift(days= 1), min_thresh, f'{min_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
+					plt.text(self.end_date.shift(days= 5), min_thresh, f'{min_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='darkorange'))
 					plt.axhline(y=aver_thresh, color='mediumseagreen', linestyle='-', label= 'Average', linewidth = 2)
-					plt.text(self.v_date.shift(days= 1), aver_thresh, f'{aver_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='mediumseagreen'))
+					plt.text(self.end_date.shift(days= 5), aver_thresh, f'{aver_thresh:.1f}', fontdict = self.font, bbox=dict(boxstyle='square', facecolor='white', edgecolor='mediumseagreen'))
 
-					plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
-					plt.gca().xaxis.set_major_locator((MaxNLocator(nbins=7)))
-					plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+					
+	
+					
+				
+					#plt.tick_params(axis = 'x', which = 'major', labelsize = 11)
+					#plt.gca().xaxis.set_major_locator((MaxNLocator(nbins=7)))
+					#end_dt = self.end_date.naive if hasattr(self.end_date, "naive") else self.end_date
+					#plt.gca().set_xlim(right=end_dt)
+					#plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
 					#plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(days = -7), self.end_date.shift(days = 2 ))
 					
 
@@ -656,6 +680,29 @@ class Graph_generator(object):
 			#plt.clf()
 
 			plt.gca().set_title('Daily Step Count',fontsize = 14, loc = 'left',pad = 30, fontweight= 600, fontdict = self.font)
+			
+			end_dt = self.end_date.datetime if hasattr(self.end_date, "datetime") else self.end_date
+			end_dt = pd.to_datetime(end_dt)
+
+			# --- Disable autoscaling so Seaborn doesn't override it ---
+			plt.gca().autoscale(enable=False)
+
+			# --- Force the vi
+			#vsible window exactly ---
+			xmin, _ = plt.gca().get_xlim()
+			plt.gca().set_xlim(left=xmin, right=end_dt + pd.Timedelta(days=5))
+			
+
+			# --- Use a proper date-aware locator ---
+			plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=15))   # tick every 2 days
+			plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+			plt.gca().set_xticks(list(plt.gca().get_xticks())[:-1] + [mdates.date2num(end_dt)])
+			
+
+			plt.tick_params(axis='x', which='major', labelsize=11, rotation=0)
+
+			
+			#print(self.end_date)
 			plt.grid(axis = "x")
 			plt.legend(loc= 'upper center', bbox_to_anchor = (0.5,1.09), ncol = 4, fontsize = 8.5,frameon=False)
 			plt.gca().spines['top'].set_visible(False)
@@ -745,8 +792,14 @@ class Graph_generator(object):
 				#for index in range(len(date_avg)):
 					#plt.text(date_avg[index], val_avg[index], math.floor(val_avg[index]), size = 11,  rotation = 45, fontdict = self.font, bbox=dict(boxstyle='circle', facecolor='lavender', edgecolor='white'))
 				#plt.text(x_u[index], l_u[index], math.floor(l_u[index]), size = 11.5, color = "black", ha = 'center', va = 'center', zorder = 11 )
-				max_value_stacked = max(chain(y, z, val_avg))
-				plt.ylim(top= max_value_stacked + 2)
+				all_values = list(chain(y, z, val_avg))
+				filtered_values = [v for v in all_values if v is not None and not math.isnan(v) and not math.isinf(v)]
+
+				if filtered_values:
+					max_value_stacked = max(filtered_values)
+					plt.ylim(top=max_value_stacked + 2)
+				else:
+					print("No valid numeric values to set y-axis limit.")
 			# Add labels, title, and legend
 			#print(max(y+z))
 			plt.grid(axis = "x")
@@ -756,10 +809,16 @@ class Graph_generator(object):
 			plt.ylabel('Hours', fontsize = 11, fontdict = self.font)
 			plt.gca().set_title('Sleep Summary', fontsize = 14, loc = 'left',pad = 30, fontweight=600, fontdict = self.font)
 			#plt.gca().xaxis.set_major_locator(mdates.WeekdayLocator())
-			plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
-			plt.gca().xaxis.set_major_locator((MaxNLocator(nbins=7)))
+			#plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+			#plt.gca().xaxis.set_major_locator((MaxNLocator(nbins=7)))
 			#plt.gca().set_xlim((self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)).shift(days = -7), self.end_date)
 			# Set the locator for x-axis labels
+			end_dt = self.end_date.datetime if hasattr(self.end_date, "datetime") else self.end_date
+			end_dt = pd.to_datetime(end_dt)
+			plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=15))   # tick every 2 days
+			plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+			plt.gca().set_xticks(list(plt.gca().get_xticks())[:-1] + [mdates.date2num(end_dt)])
+
 			plt.gca().spines['top'].set_visible(False)
 			plt.gca().spines['right'].set_visible(False)
 			#plt.gca().xaxis.set_major_locator(mdates.DayLocator())
