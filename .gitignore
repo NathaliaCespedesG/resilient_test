@@ -9,4 +9,5 @@ venv/*
 .env
 __pycache__
 Users.csv
-.swp
+.swpwithings_devOp_credentials.py
+withings_devOp_credentials.py
